@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useAuthStore } from '../store/authStore';
+import { authAPI } from '../services/api';
+
+const Register = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuthStore();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await authAPI.register({ name, email, password });
+      login(response.data.user, response.data.token);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Registration error:', err);
+      
+      // Handle validation errors
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        const errorMessages = err.response.data.errors.map((e) => e.msg || e.message).join(', ');
+        setError(errorMessages);
+      } 
+      // Handle single message errors
+      else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      }
+      // Handle network errors
+      else if (err.message === 'Network Error' || !err.response) {
+        setError('Cannot connect to server. Make sure the backend is running on port 5000.');
+      }
+      // Generic error
+      else {
+        setError(err.response?.data?.error || err.message || 'Registration failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--bg-primary)]">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="card p-8 w-full max-w-md"
+      >
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold gradient-text mb-2">DoItToday</h1>
+          <p className="text-[var(--text-secondary)]">Create your account to get started</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input-field"
+              placeholder="Your name"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field"
+              placeholder="your@email.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
+              placeholder="••••••••"
+              minLength={6}
+              required
+            />
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">Must be at least 6 characters</p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Creating account...' : 'Sign Up'}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-[var(--text-secondary)]">
+            Already have an account?{' '}
+            <Link to="/login" className="text-[var(--accent-primary)] hover:text-[var(--accent-hover)] font-medium">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Register;
+
