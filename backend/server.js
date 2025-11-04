@@ -50,15 +50,24 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   
   // Connect to MongoDB
+  const mongoURI = process.env.MONGODB_URI;
+  
+  if (!mongoURI) {
+    console.error('❌ MONGODB_URI environment variable is not set!');
+    console.error('⚠️  Please set MONGODB_URI in your Render environment variables');
+    console.error('   Example: mongodb+srv://username:password@cluster.mongodb.net/dbname');
+    process.exit(1);
+  }
+  
   mongoose
-    .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/doittoday')
+    .connect(mongoURI)
     .then(() => {
       console.log('✅ Connected to MongoDB');
     })
     .catch((error) => {
       console.error('❌ MongoDB connection error:', error.message);
-      console.error('⚠️  Make sure MongoDB is running and the connection string is correct');
-      console.error('   Default: mongodb://localhost:27017/doittoday');
+      console.error('⚠️  Make sure your MONGODB_URI is correct and MongoDB Atlas allows connections');
+      console.error('   Check: MongoDB Atlas → Network Access → IP Whitelist (allow all: 0.0.0.0/0)');
     });
 });
 
