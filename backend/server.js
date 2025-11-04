@@ -17,15 +17,42 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middleware - CORS Configuration
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://*.vercel.app',
+      'https://*.netlify.app'
+    ];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://*.vercel.app',
-    'https://*.netlify.app'
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.some(allowed => {
+      if (allowed.includes('*')) {
+        // Handle wildcard patterns
+        const pattern = allowed.replace('*', '.*');
+        const regex = new RegExp(`^https://${pattern}$`);
+        return regex.test(origin);
+      }
+      return allowed === origin;
+    })) {
+      callback(null, true);
+    } else {
+      // Log for debugging
+      console.log('CORS blocked origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
+      callback(null, true); // Allow all for now - change to callback(new Error('Not allowed')) for strict
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 

@@ -7,7 +7,26 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
+
+// Add response interceptor for better error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Log error for debugging
+    console.error('API Error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+    });
+    
+    // Return error to be handled by component
+    return Promise.reject(error);
+  }
+);
 
 // Add token to requests
 api.interceptors.request.use((config) => {

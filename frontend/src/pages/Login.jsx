@@ -34,8 +34,9 @@ const Login = () => {
         setError(err.response.data.message);
       }
       // Handle network errors
-      else if (err.message === 'Network Error' || !err.response) {
-        setError('Cannot connect to server. Make sure the backend is running on port 5000.');
+      else if (err.message === 'Network Error' || err.code === 'ERR_NETWORK' || !err.response) {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        setError(`Cannot connect to server at ${apiUrl}. Please check your connection and try again.`);
       }
       // Generic error
       else {
