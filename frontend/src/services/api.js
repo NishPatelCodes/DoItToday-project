@@ -22,19 +22,35 @@ const api = axios.create({
   timeout: defaultTimeout,
 });
 
-// Health check helper
+// Health check helper - disabled for production to avoid request spam
 let isServerReady = false;
 let healthCheckPromise = null;
+let lastHealthCheckTime = 0;
+const HEALTH_CHECK_COOLDOWN = 5000; // Only check once every 5 seconds max
 
 const checkServerHealth = async () => {
+  // Skip health check in production - it causes too many requests
+  if (isProduction) {
+    isServerReady = true;
+    return true;
+  }
+  
   if (isServerReady) return true;
+  
+  // Rate limit health checks
+  const now = Date.now();
+  if (now - lastHealthCheckTime < HEALTH_CHECK_COOLDOWN && healthCheckPromise) {
+    return healthCheckPromise;
+  }
   
   if (healthCheckPromise) return healthCheckPromise;
   
+  lastHealthCheckTime = now;
+  
   healthCheckPromise = (async () => {
-    const maxRetries = isProduction ? 5 : 3;
-    const retryDelay = isProduction ? 2000 : 500;
-    const healthTimeout = isProduction ? 10000 : 2000;
+    const maxRetries = 2; // Reduced retries
+    const retryDelay = 1000;
+    const healthTimeout = 3000; // Shorter timeout
     
     // Get base URL (remove /api if present)
     const baseURL = API_URL.replace('/api', '');
@@ -49,16 +65,18 @@ const checkServerHealth = async () => {
           return true;
         }
       } catch (error) {
-        // Only retry if it's a network error, not if server is responding
+        // Only retry if it's a network error
         if (i < maxRetries - 1 && (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK')) {
-          await new Promise(resolve => setTimeout(resolve, retryDelay * (i + 1)));
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
         } else {
-          // Server is responding (even if error), consider it ready
+          // Consider server ready anyway (don't block requests)
           isServerReady = true;
           return true;
         }
       }
     }
+    // Mark as ready to avoid infinite checks
+    isServerReady = true;
     return false;
   })();
   
@@ -124,7 +142,7 @@ api.interceptors.response.use(
   }
 );
 
-// Add request interceptor to wait for server health (non-blocking)
+// Add request interceptor - health check disabled to avoid request spam
 api.interceptors.request.use(
   async (config) => {
     // Skip health check for health endpoint itself
@@ -132,13 +150,8 @@ api.interceptors.request.use(
       return config;
     }
     
-    // Check server health in background (don't block if already checking)
-    if (!isServerReady && !healthCheckPromise) {
-      // Start health check but don't wait for it
-      checkServerHealth().catch(() => {
-        // Silently handle health check failures
-      });
-    }
+    // Health check disabled - causes too many requests on Render
+    // Just proceed with the request directly
     
     return config;
   },
