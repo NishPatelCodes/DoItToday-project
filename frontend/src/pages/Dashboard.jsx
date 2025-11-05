@@ -530,6 +530,7 @@ const Dashboard = () => {
                     onEditTask={handleEditTask}
                     setIsTaskModalOpen={setIsTaskModalOpen}
                     setEditingTask={setEditingTask}
+                    currentUser={user}
                   />
                 }
               />

@@ -951,24 +951,44 @@ export const DashboardTeam = ({
                 No leaderboard data yet
               </p>
             ) : (
-              safeLeaderboard.map((user, index) => {
-                if (!user) return null;
+              safeLeaderboard.map((leaderboardUser, index) => {
+                if (!leaderboardUser) return null;
+                const userId = leaderboardUser._id || leaderboardUser.id;
+                const isCurrentUser = userId?.toString() === currentUserId?.toString();
+                
                 return (
                   <div
-                    key={user._id || user.id || index}
-                    className={`flex items-center gap-3 p-3 rounded-lg ${
+                    key={userId || index}
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
                       index === 0
                         ? 'bg-indigo-500/5 border border-indigo-500/20'
+                        : isCurrentUser
+                        ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30'
                         : 'hover:bg-[var(--bg-tertiary)]'
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 font-semibold text-sm">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                      index === 0
+                        ? 'bg-indigo-500/10 text-indigo-600'
+                        : isCurrentUser
+                        ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
+                        : 'bg-indigo-500/10 text-indigo-600'
+                    }`}>
                       {index + 1}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-[var(--text-primary)]">
+                          {leaderboardUser.name || leaderboardUser.email || 'Unknown'}
+                        </p>
+                        {isCurrentUser && (
+                          <span className="text-xs px-2 py-0.5 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] rounded-full font-medium">
+                            You
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-[var(--text-secondary)]">
-                        {user.streak || 0} streak • {user.totalTasksCompleted || 0} tasks • Level {user.level || 1}
+                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} XP • Level {leaderboardUser.level || 1}
                       </p>
                     </div>
                   </div>

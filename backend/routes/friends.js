@@ -245,7 +245,7 @@ router.delete('/:id', authenticate, async (req, res) => {
 });
 
 // @route   GET /api/friends/leaderboard
-// @desc    Get friends leaderboard sorted by streak and tasks completed
+// @desc    Get friends leaderboard sorted by XP, level, streak, and tasks completed
 router.get('/leaderboard', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate('friends');
@@ -254,10 +254,29 @@ router.get('/leaderboard', authenticate, async (req, res) => {
     // Include current user in leaderboard
     const allUsers = [req.user._id, ...friendIds];
 
+    // Get all users with their stats
     const leaderboard = await User.find({ _id: { $in: allUsers } })
-      .select('name email avatar streak totalTasksCompleted')
-      .sort({ streak: -1, totalTasksCompleted: -1 })
+      .select('name email avatar streak totalTasksCompleted xp level')
+      .lean()
       .exec();
+
+    // Sort by XP (primary), then level, then streak, then totalTasksCompleted
+    leaderboard.sort((a, b) => {
+      // Primary sort: XP (highest first)
+      if (b.xp !== a.xp) {
+        return (b.xp || 0) - (a.xp || 0);
+      }
+      // Secondary sort: Level (highest first)
+      if (b.level !== a.level) {
+        return (b.level || 1) - (a.level || 1);
+      }
+      // Tertiary sort: Streak (highest first)
+      if (b.streak !== a.streak) {
+        return (b.streak || 0) - (a.streak || 0);
+      }
+      // Quaternary sort: Total tasks completed (highest first)
+      return (b.totalTasksCompleted || 0) - (a.totalTasksCompleted || 0);
+    });
 
     res.json(leaderboard);
   } catch (error) {
