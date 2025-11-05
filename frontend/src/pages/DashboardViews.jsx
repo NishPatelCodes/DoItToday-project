@@ -512,17 +512,22 @@ export const DashboardTeam = ({
         </div>
       </div>
 
-      {/* Shared Tasks Section */}
+      {/* Shared Tasks Section - Always visible */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="card p-6"
+        className="card p-6 mt-6"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
-            <FaUserFriends />
-            Shared Tasks ({sharedTasks.length})
-          </h2>
+          <div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
+              <FaUserFriends />
+              Shared Tasks ({sharedTasks.length})
+            </h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">
+              Tasks you've shared with friends or tasks shared with you
+            </p>
+          </div>
           <button
             onClick={() => {
               setEditingTask(null);
@@ -537,9 +542,24 @@ export const DashboardTeam = ({
 
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {sharedTasks.length === 0 ? (
-            <p className="text-center text-[var(--text-secondary)] py-8">
-              No shared tasks yet. Create a task and share it with your friends!
-            </p>
+            <div className="text-center py-8">
+              <FaUserFriends className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+              <p className="text-[var(--text-secondary)] mb-2">
+                No shared tasks yet
+              </p>
+              <p className="text-sm text-[var(--text-tertiary)] mb-4">
+                Create a task and share it with your friends to collaborate!
+              </p>
+              <button
+                onClick={() => {
+                  setEditingTask(null);
+                  setIsTaskModalOpen(true);
+                }}
+                className="btn-primary"
+              >
+                Create Your First Shared Task
+              </button>
+            </div>
           ) : (
             sharedTasks.map((task) => (
               <TaskCard
