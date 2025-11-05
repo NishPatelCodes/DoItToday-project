@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine } from 'react-icons/fa';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import HabitCard from '../components/HabitCard';
@@ -9,6 +9,7 @@ import XPLevel from '../components/XPLevel';
 import GraphCard from '../components/GraphCard';
 import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
+import { useAuthStore } from '../store/authStore';
 
 // Dashboard Home View
 export const DashboardHome = ({
@@ -378,7 +379,29 @@ export const DashboardAnalytics = ({ analytics, user }) => {
 };
 
 // Team View
-export const DashboardTeam = ({ friends, leaderboard, onAddFriend, onRemoveFriend }) => {
+export const DashboardTeam = ({ 
+  friends, 
+  leaderboard, 
+  tasks,
+  onAddFriend, 
+  onRemoveFriend,
+  onToggleTask,
+  onDeleteTask,
+  onEditTask,
+  setIsTaskModalOpen,
+  setEditingTask,
+}) => {
+  const { user } = useAuthStore();
+  
+  // Get shared tasks (tasks shared with you or tasks you shared)
+  const sharedTasks = tasks.filter(task => {
+    const taskUserId = task.userId?._id || task.userId;
+    const isOwnTask = taskUserId === user?.id;
+    const isSharedWithMe = task.sharedWith?.some(f => (f._id || f) === user?.id);
+    const isMySharedTask = isOwnTask && task.sharedWith && task.sharedWith.length > 0;
+    return isSharedWithMe || isMySharedTask;
+  });
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -392,11 +415,11 @@ export const DashboardTeam = ({ friends, leaderboard, onAddFriend, onRemoveFrien
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Friends List */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends</h2>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-96 overflow-y-auto">
             {friends.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
                 No friends yet. Add friends to see their progress!
@@ -417,30 +440,78 @@ export const DashboardTeam = ({ friends, leaderboard, onAddFriend, onRemoveFrien
         {/* Leaderboard */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
-          <div className="space-y-2">
-            {leaderboard.map((user, index) => (
-              <div
-                key={user._id || user.id}
-                className={`flex items-center gap-3 p-3 rounded-lg ${
-                  index === 0
-                    ? 'bg-indigo-500/5 border border-indigo-500/20'
-                    : 'hover:bg-[var(--bg-tertiary)]'
-                }`}
-              >
-                <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 font-semibold text-sm">
-                  {index + 1}
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {leaderboard.length === 0 ? (
+              <p className="text-center text-[var(--text-secondary)] py-4 text-sm">
+                No leaderboard data yet
+              </p>
+            ) : (
+              leaderboard.map((user, index) => (
+                <div
+                  key={user._id || user.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg ${
+                    index === 0
+                      ? 'bg-indigo-500/5 border border-indigo-500/20'
+                      : 'hover:bg-[var(--bg-tertiary)]'
+                  }`}
+                >
+                  <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 font-semibold text-sm">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {user.streak || 0} streak • {user.totalTasksCompleted || 0} tasks • Level {user.level || 1}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {user.streak || 0} streak • {user.totalTasksCompleted || 0} tasks
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
+
+      {/* Shared Tasks Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card p-6"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
+            <FaUserFriends />
+            Shared Tasks ({sharedTasks.length})
+          </h2>
+          <button
+            onClick={() => {
+              setEditingTask(null);
+              setIsTaskModalOpen(true);
+            }}
+            className="btn-primary flex items-center gap-2"
+          >
+            <FaPlus />
+            <span>Create Shared Task</span>
+          </button>
+        </div>
+
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          {sharedTasks.length === 0 ? (
+            <p className="text-center text-[var(--text-secondary)] py-8">
+              No shared tasks yet. Create a task and share it with your friends!
+            </p>
+          ) : (
+            sharedTasks.map((task) => (
+              <TaskCard
+                key={task._id}
+                task={task}
+                onToggle={onToggleTask}
+                onDelete={onDeleteTask}
+                onEdit={onEditTask}
+              />
+            ))
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 };
