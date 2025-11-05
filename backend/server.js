@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import passport from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import taskRoutes from './routes/tasks.js';
 import goalRoutes from './routes/goals.js';
@@ -11,6 +12,7 @@ import habitRoutes from './routes/habits.js';
 import focusRoutes from './routes/focus.js';
 import reactionRoutes from './routes/reactions.js';
 import smartPlannerRoutes from './routes/smartPlanner.js';
+import oauthRoutes from './routes/oauth.js';
 
 dotenv.config();
 
@@ -56,8 +58,12 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Initialize Passport
+app.use(passport.initialize());
+
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/auth', oauthRoutes); // OAuth routes (no /api prefix for OAuth callbacks)
 app.use('/api/tasks', taskRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/friends', friendRoutes);
