@@ -4,6 +4,32 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './index.css';
 
+// Suppress Chrome extension errors (harmless errors from browser extensions)
+window.addEventListener('error', (event) => {
+  const errorMessage = event.message || event.error?.message || '';
+  if (errorMessage.includes('message channel closed') || 
+      errorMessage.includes('listener indicated an asynchronous response')) {
+    // Ignore Chrome extension communication errors - these are harmless
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+  }
+}, true);
+
+window.addEventListener('unhandledrejection', (event) => {
+  const errorMessage = event.reason?.message || 
+                       (typeof event.reason === 'string' ? event.reason : '') ||
+                       (event.reason?.error?.message || '');
+  
+  if (errorMessage.includes('message channel closed') || 
+      errorMessage.includes('listener indicated an asynchronous response') ||
+      errorMessage.includes('A listener indicated an asynchronous response')) {
+    // Ignore Chrome extension communication errors - these are harmless
+    event.preventDefault();
+    return false;
+  }
+});
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
