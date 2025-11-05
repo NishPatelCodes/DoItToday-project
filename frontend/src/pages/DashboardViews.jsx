@@ -741,8 +741,8 @@ export const DashboardTeam = ({
           </div>
           <button
             onClick={() => {
-              setEditingTask(null);
-              setIsTaskModalOpen(true);
+              if (setEditingTask) setEditingTask(null);
+              if (setIsTaskModalOpen) setIsTaskModalOpen(true);
             }}
             className="btn-primary flex items-center gap-2"
           >
