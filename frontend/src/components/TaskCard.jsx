@@ -22,14 +22,25 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
       <div className="flex items-start gap-3">
         <button
           onClick={() => onToggle(task._id)}
-          className={`mt-1 transition-all duration-200 ${
-            isCompleted ? 'text-green-600' : 'text-[var(--text-tertiary)] hover:text-green-600'
+          className={`mt-0.5 flex-shrink-0 w-6 h-6 rounded-lg border-2 transition-all duration-300 flex items-center justify-center ${
+            isCompleted
+              ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-600 shadow-lg shadow-green-500/30'
+              : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5'
           }`}
+          aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
         >
-          {isCompleted ? (
-            <FaCheckCircle className="text-xl" />
-          ) : (
-            <FaCircle className="text-xl" />
+          {isCompleted && (
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M5 13l4 4L19 7" />
+            </svg>
           )}
         </button>
 
