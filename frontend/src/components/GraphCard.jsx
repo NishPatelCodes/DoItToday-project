@@ -189,5 +189,3 @@ GraphCard.displayName = 'GraphCard';
 
 export default GraphCard;
 
-export default GraphCard;
-
