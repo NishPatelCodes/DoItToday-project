@@ -574,21 +574,24 @@ export const DashboardTeam = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Friends List */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends ({friends.length})</h2>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends ({(friends || []).length})</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {friends.length === 0 ? (
+            {!friends || friends.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
                 No friends yet. Add friends to see their progress!
               </p>
             ) : (
-              friends.map((friend, index) => (
-                <FriendStatus
-                  key={friend._id || friend.id}
-                  friend={friend}
-                  onRemove={onRemoveFriend}
-                  rank={index + 1}
-                />
-              ))
+              friends.map((friend, index) => {
+                if (!friend) return null;
+                return (
+                  <FriendStatus
+                    key={friend._id || friend.id || index}
+                    friend={friend}
+                    onRemove={onRemoveFriend}
+                    rank={index + 1}
+                  />
+                );
+              })
             )}
           </div>
         </div>
@@ -597,31 +600,34 @@ export const DashboardTeam = ({
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {leaderboard.length === 0 ? (
+            {!leaderboard || leaderboard.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-4 text-sm">
                 No leaderboard data yet
               </p>
             ) : (
-              leaderboard.map((user, index) => (
-                <div
-                  key={user._id || user.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg ${
-                    index === 0
-                      ? 'bg-indigo-500/5 border border-indigo-500/20'
-                      : 'hover:bg-[var(--bg-tertiary)]'
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 font-semibold text-sm">
-                    {index + 1}
+              leaderboard.map((user, index) => {
+                if (!user) return null;
+                return (
+                  <div
+                    key={user._id || user.id || index}
+                    className={`flex items-center gap-3 p-3 rounded-lg ${
+                      index === 0
+                        ? 'bg-indigo-500/5 border border-indigo-500/20'
+                        : 'hover:bg-[var(--bg-tertiary)]'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 font-semibold text-sm">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
+                      <p className="text-xs text-[var(--text-secondary)]">
+                        {user.streak || 0} streak • {user.totalTasksCompleted || 0} tasks • Level {user.level || 1}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
-                    <p className="text-xs text-[var(--text-secondary)]">
-                      {user.streak || 0} streak • {user.totalTasksCompleted || 0} tasks • Level {user.level || 1}
-                    </p>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -637,7 +643,7 @@ export const DashboardTeam = ({
           <div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
               <FaUserFriends />
-              Shared Tasks ({sharedTasks.length})
+              Shared Tasks ({(sharedTasks || []).length})
             </h2>
             <p className="text-sm text-[var(--text-secondary)] mt-1">
               Tasks you've shared with friends or tasks shared with you
@@ -656,7 +662,7 @@ export const DashboardTeam = ({
         </div>
 
         <div className="space-y-3 max-h-96 overflow-y-auto">
-          {sharedTasks.length === 0 ? (
+          {!sharedTasks || sharedTasks.length === 0 ? (
             <div className="text-center py-8">
               <FaUserFriends className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
               <p className="text-[var(--text-secondary)] mb-2">
