@@ -381,10 +381,15 @@ export const DashboardAnalytics = ({ analytics, user }) => {
 // Team View
 export const DashboardTeam = ({ 
   friends, 
+  friendRequests = [],
+  sentFriendRequests = [],
   leaderboard, 
   tasks,
   onAddFriend, 
   onRemoveFriend,
+  onAcceptFriendRequest,
+  onDeclineFriendRequest,
+  onCancelFriendRequest,
   onToggleTask,
   onDeleteTask,
   onEditTask,
