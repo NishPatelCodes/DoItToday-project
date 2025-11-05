@@ -393,13 +393,54 @@ export const DashboardTeam = ({
 }) => {
   const { user } = useAuthStore();
   
+  console.log('🔍 Filtering shared tasks. Total tasks:', tasks.length);
+  console.log('🔍 Current user ID:', user?.id || user?._id);
+  console.log('🔍 All tasks:', tasks.map(t => ({
+    id: t._id,
+    title: t.title,
+    userId: t.userId?._id || t.userId,
+    sharedWith: t.sharedWith,
+    isShared: t.isShared
+  })));
+  
   // Get shared tasks (tasks shared with you or tasks you shared)
   const sharedTasks = tasks.filter(task => {
-    const taskUserId = task.userId?._id || task.userId;
-    const isOwnTask = taskUserId === user?.id;
-    const isSharedWithMe = task.sharedWith?.some(f => (f._id || f) === user?.id);
-    const isMySharedTask = isOwnTask && task.sharedWith && task.sharedWith.length > 0;
-    return isSharedWithMe || isMySharedTask;
+    if (!task) return false;
+    
+    const taskUserId = task.userId?._id || task.userId || task.userId;
+    const currentUserId = user?.id || user?._id;
+    const isOwnTask = taskUserId?.toString() === currentUserId?.toString();
+    
+    // Check if task is shared with me (I'm in sharedWith array)
+    const isSharedWithMe = task.sharedWith?.some(f => {
+      const friendId = f?._id || f?.id || f;
+      return friendId?.toString() === currentUserId?.toString();
+    });
+    
+    // Check if it's my task that I shared with others
+    const isMySharedTask = isOwnTask && task.sharedWith && Array.isArray(task.sharedWith) && task.sharedWith.length > 0;
+    
+    // Also check if it's marked as shared (legacy support)
+    const isMarkedShared = task.isShared === true;
+    
+    const result = isSharedWithMe || isMySharedTask || (isMarkedShared && !isOwnTask);
+    
+    // Debug logging (always log for now to help debug)
+    if (result) {
+      console.log('✅ Shared task found:', {
+        taskId: task._id,
+        title: task.title,
+        isOwnTask,
+        isSharedWithMe,
+        isMySharedTask,
+        sharedWith: task.sharedWith,
+        sharedWithLength: task.sharedWith?.length || 0,
+        userId: taskUserId,
+        currentUserId
+      });
+    }
+    
+    return result;
   });
 
   return (

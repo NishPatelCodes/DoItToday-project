@@ -12,6 +12,8 @@ router.get('/', authenticate, async (req, res) => {
   try {
     // Get user's own tasks
     const ownTasks = await Task.find({ userId: req.user._id })
+      .populate('sharedWith', 'name email avatar')
+      .populate('createdBy', 'name email avatar')
       .sort({ createdAt: -1 })
       .exec();
 
@@ -22,6 +24,7 @@ router.get('/', authenticate, async (req, res) => {
     })
       .populate('userId', 'name email avatar')
       .populate('createdBy', 'name email avatar')
+      .populate('sharedWith', 'name email avatar')
       .sort({ createdAt: -1 })
       .exec();
 

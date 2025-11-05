@@ -73,8 +73,24 @@ const Dashboard = () => {
       setLoadingTasks(true);
       try {
         const tasksRes = await tasksAPI.getAll();
-        setTasks(tasksRes.data || []);
-        console.log('Tasks loaded:', tasksRes.data?.length || 0);
+        const tasksData = tasksRes.data || [];
+        setTasks(tasksData);
+        console.log('Tasks loaded:', tasksData.length);
+        
+        // Debug: Check for shared tasks
+        const sharedCount = tasksData.filter(t => {
+          const hasSharedWith = t.sharedWith && Array.isArray(t.sharedWith) && t.sharedWith.length > 0;
+          const isShared = t.isShared === true;
+          return hasSharedWith || isShared;
+        }).length;
+        console.log('Shared tasks found:', sharedCount);
+        if (sharedCount > 0) {
+          console.log('Shared tasks details:', tasksData.filter(t => {
+            const hasSharedWith = t.sharedWith && Array.isArray(t.sharedWith) && t.sharedWith.length > 0;
+            const isShared = t.isShared === true;
+            return hasSharedWith || isShared;
+          }));
+        }
       } catch (error) {
         console.error('Error loading tasks:', error);
         setError('Failed to load tasks. Please refresh the page.');
@@ -203,19 +219,21 @@ const Dashboard = () => {
 
   const handleCreateTask = async (taskData) => {
     try {
+      console.log('Creating task with data:', taskData);
       let newTask;
       if (editingTask) {
         const response = await tasksAPI.update(editingTask._id, taskData);
         newTask = response.data;
+        console.log('Task updated:', newTask);
         // Update task in store
         const { updateTask } = useDataStore.getState();
         updateTask(editingTask._id, newTask);
       } else {
         const response = await tasksAPI.create(taskData);
         newTask = response.data;
-        // Add task to store
-        const { addTask } = useDataStore.getState();
-        addTask(newTask);
+        console.log('Task created:', newTask);
+        // Reload all tasks to get properly populated sharedWith
+        await loadData();
       }
       setIsTaskModalOpen(false);
       setEditingTask(null);
