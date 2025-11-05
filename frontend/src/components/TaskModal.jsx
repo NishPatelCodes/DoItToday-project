@@ -9,6 +9,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('medium');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
   const [isShared, setIsShared] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [selectedGoalId, setSelectedGoalId] = useState('');
@@ -23,6 +24,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setDescription('');
       setPriority('medium');
       setDueDate('');
+      setDueTime('');
       setIsShared(false);
       setSelectedFriends([]);
       setSelectedGoalId('');
@@ -34,7 +36,17 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setTitle(task.title || '');
       setDescription(task.description || '');
       setPriority(task.priority || 'medium');
-      setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
+      if (task.dueDate) {
+        const date = new Date(task.dueDate);
+        setDueDate(date.toISOString().split('T')[0]);
+        // Extract time in HH:MM format
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        setDueTime(`${hours}:${minutes}`);
+      } else {
+        setDueDate('');
+        setDueTime('');
+      }
       setIsShared(task.isShared || false);
       setSelectedFriends(task.sharedWith?.map(f => f._id || f.id || f) || []);
       setSelectedGoalId(task.goalId?._id || task.goalId || '');
@@ -43,6 +55,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setDescription('');
       setPriority('medium');
       setDueDate('');
+      setDueTime('');
       setIsShared(false);
       setSelectedFriends([]);
       setSelectedGoalId('');
@@ -51,11 +64,26 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Combine date and time into a single Date object
+    let dueDateTimeValue = null;
+    if (dueDate) {
+      const dateObj = new Date(dueDate);
+      if (dueTime) {
+        const [hours, minutes] = dueTime.split(':');
+        dateObj.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+      } else {
+        // Default to 11:59 PM if no time specified
+        dateObj.setHours(23, 59, 0, 0);
+      }
+      dueDateTimeValue = dateObj.toISOString();
+    }
+    
     onSave({
       title,
       description,
       priority,
-      dueDate: dueDate || null,
+      dueDate: dueDateTimeValue,
       isShared: isShared || selectedFriends.length > 0,
       sharedWith: selectedFriends,
       goalId: selectedGoalId || null,
@@ -147,14 +175,82 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
 
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  Due Date
+                  Due Date & Time
                 </label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="input-field"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="input-field flex-1"
+                  />
+                  <input
+                    type="time"
+                    value={dueTime}
+                    onChange={(e) => setDueTime(e.target.value)}
+                    className="input-field w-32"
+                    placeholder="Optional"
+                  />
+                </div>
+                {dueDate && !dueTime && (
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                    No time specified - will default to 11:59 PM
+                  </p>
+                )}
+                {/* Quick Time Selection Buttons */}
+                {dueDate && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDueTime('09:00')}
+                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                    >
+                      9 AM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDueTime('12:00')}
+                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                    >
+                      12 PM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDueTime('15:00')}
+                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                    >
+                      3 PM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDueTime('17:00')}
+                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                    >
+                      5 PM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDueTime('19:00')}
+                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                    >
+                      7 PM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDueTime('21:00')}
+                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                    >
+                      9 PM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDueTime('')}
+                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-red-500 hover:border-red-500 transition-all"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
                 {/* Quick Date Selection Buttons */}
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button

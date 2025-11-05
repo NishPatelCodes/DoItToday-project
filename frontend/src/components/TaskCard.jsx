@@ -74,7 +74,19 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
             {task.dueDate && (
               <div className="flex items-center gap-1">
                 <FaClock className="text-xs" />
-                <span>{format(new Date(task.dueDate), 'MMM dd, yyyy')}</span>
+                <span>
+                  {format(new Date(task.dueDate), 'MMM dd, yyyy')}
+                  {(() => {
+                    const date = new Date(task.dueDate);
+                    const hours = date.getHours();
+                    const minutes = date.getMinutes();
+                    // Only show time if it's not the default 11:59 PM
+                    if (hours !== 23 || minutes !== 59) {
+                      return ` at ${format(date, 'h:mm a')}`;
+                    }
+                    return '';
+                  })()}
+                </span>
               </div>
             )}
             {!isOwnTask && task.userId && (

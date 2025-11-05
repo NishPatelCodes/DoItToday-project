@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlus, FaCalendarAlt, FaCalendarWeek } from 'react-icons/fa';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
+import WeeklyView from './WeeklyView';
 
 const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState('monthly'); // 'monthly' or 'weekly'
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -30,6 +32,36 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  
+  // If weekly view is selected, render WeeklyView component instead
+  if (viewMode === 'weekly') {
+    return (
+      <div className="space-y-4">
+        {/* View Toggle */}
+        <div className="flex items-center justify-end gap-2 p-2">
+          <button
+            onClick={() => setViewMode('monthly')}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all"
+          >
+            <FaCalendarAlt />
+            <span className="text-sm font-medium">Monthly</span>
+          </button>
+          <button
+            onClick={() => setViewMode('weekly')}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white transition-all"
+          >
+            <FaCalendarWeek />
+            <span className="text-sm font-medium">Weekly</span>
+          </button>
+        </div>
+        <WeeklyView 
+          tasks={tasks} 
+          onTaskClick={onDateClick}
+          onCreateTask={onCreateTask}
+        />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -56,13 +88,30 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
             <FaChevronRight className="text-[var(--text-secondary)]" />
           </button>
         </div>
-        <button
-          onClick={onCreateTask}
-          className="btn-primary flex items-center gap-2"
-        >
-          <FaPlus />
-          <span>New Task</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* View Toggle */}
+          <button
+            onClick={() => setViewMode('monthly')}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white transition-all"
+          >
+            <FaCalendarAlt />
+            <span className="text-sm font-medium hidden md:inline">Monthly</span>
+          </button>
+          <button
+            onClick={() => setViewMode('weekly')}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all"
+          >
+            <FaCalendarWeek />
+            <span className="text-sm font-medium hidden md:inline">Weekly</span>
+          </button>
+          <button
+            onClick={onCreateTask}
+            className="btn-primary flex items-center gap-2"
+          >
+            <FaPlus />
+            <span className="hidden md:inline">New Task</span>
+          </button>
+        </div>
       </div>
 
       {/* Calendar Grid */}
@@ -110,20 +159,33 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
                 </span>
               </div>
               <div className="space-y-1">
-                {dayTasks.slice(0, 2).map((task) => (
-                  <div
-                    key={task._id}
-                    className={`text-xs px-1.5 py-0.5 rounded truncate ${
-                      task.priority === 'high'
-                        ? 'bg-red-500/10 text-red-600'
-                        : task.priority === 'medium'
-                        ? 'bg-yellow-500/10 text-yellow-600'
-                        : 'bg-blue-500/10 text-blue-600'
-                    }`}
-                  >
-                    {task.title}
-                  </div>
-                ))}
+                {dayTasks.slice(0, 2).map((task) => {
+                  const taskDate = new Date(task.dueDate);
+                  const hours = taskDate.getHours();
+                  const minutes = taskDate.getMinutes();
+                  const hasSpecificTime = hours !== 23 || minutes !== 59;
+                  
+                  return (
+                    <div
+                      key={task._id}
+                      className={`text-xs px-1.5 py-0.5 rounded ${
+                        task.priority === 'high'
+                          ? 'bg-red-500/10 text-red-600'
+                          : task.priority === 'medium'
+                          ? 'bg-yellow-500/10 text-yellow-600'
+                          : 'bg-blue-500/10 text-blue-600'
+                      }`}
+                      title={task.title + (hasSpecificTime ? ` at ${format(taskDate, 'h:mm a')}` : '')}
+                    >
+                      <div className="truncate font-medium">{task.title}</div>
+                      {hasSpecificTime && (
+                        <div className="text-[10px] opacity-75">
+                          {format(taskDate, 'h:mm a')}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 {dayTasks.length > 2 && (
                   <div className="text-xs text-[var(--text-secondary)]">
                     +{dayTasks.length - 2} more
