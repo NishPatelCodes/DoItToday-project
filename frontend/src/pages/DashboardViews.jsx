@@ -651,8 +651,10 @@ export const DashboardTeam = ({
   onEditTask,
   setIsTaskModalOpen,
   setEditingTask,
+  currentUser,
 }) => {
   const { user } = useAuthStore();
+  const currentUserId = currentUser?.id || currentUser?._id || user?.id || user?._id;
   
   // Safety check: ensure all required props have defaults
   const safeFriends = friends || [];
