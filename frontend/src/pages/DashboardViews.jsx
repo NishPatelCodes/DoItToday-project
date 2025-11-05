@@ -188,7 +188,7 @@ export const DashboardHome = ({
               <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Goals</h2>
             </div>
             <div className="space-y-3">
-              {goals.slice(0, 3).map((goal) => (
+              {Array.isArray(goals) && goals.slice(0, 3).map((goal) => (
                 <GoalTracker
                   key={goal._id}
                   goal={goal}
@@ -332,7 +332,7 @@ export const DashboardGoals = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {goals.map((goal) => (
+        {Array.isArray(goals) && goals.map((goal) => (
           <GoalTracker
             key={goal._id}
             goal={goal}
@@ -342,7 +342,7 @@ export const DashboardGoals = ({
             onViewAnalytics={(goal) => setSelectedGoalForAnalytics(goal)}
           />
         ))}
-        {goals.length === 0 && (
+        {(!Array.isArray(goals) || goals.length === 0) && (
           <div className="col-span-2 card p-12 text-center">
             <p className="text-[var(--text-secondary)]">No goals yet. Create one to get started!</p>
           </div>

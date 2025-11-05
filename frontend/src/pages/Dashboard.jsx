@@ -275,9 +275,13 @@ const Dashboard = () => {
     try {
       const response = await goalsAPI.update(id, { progress });
       // Update goal locally without reloading all data
-      setGoals((prevGoals) =>
-        prevGoals.map((g) => (g._id === id ? { ...g, progress } : g))
-      );
+      setGoals((prevGoals) => {
+        // Ensure prevGoals is an array
+        if (!Array.isArray(prevGoals)) {
+          return prevGoals || [];
+        }
+        return prevGoals.map((g) => (g._id === id || g.id === id ? { ...g, progress } : g));
+      });
       // Only reload analytics, not all data
       try {
         const analyticsRes = await analyticsAPI.getDashboard();
@@ -410,9 +414,9 @@ const Dashboard = () => {
     }
   };
 
-  const pendingTasks = tasks.filter((t) => t.status === 'pending');
-  const completedTasks = tasks.filter((t) => t.status === 'completed');
-  const activeGoals = goals.filter((g) => (g.progress || 0) < 100);
+  const pendingTasks = Array.isArray(tasks) ? tasks.filter((t) => t.status === 'pending') : [];
+  const completedTasks = Array.isArray(tasks) ? tasks.filter((t) => t.status === 'completed') : [];
+  const activeGoals = Array.isArray(goals) ? goals.filter((g) => (g.progress || 0) < 100) : [];
 
   if (loading && tasks.length === 0) {
     return (
