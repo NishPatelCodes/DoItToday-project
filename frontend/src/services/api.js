@@ -9,10 +9,7 @@ const isProduction = API_URL.includes('render.com') ||
                      (API_URL.includes('https://') && !API_URL.includes('localhost'));
 const defaultTimeout = isProduction ? 30000 : 8000; // 30s for Render, 8s for local
 
-// Log for debugging (only in dev)
-if (isDev) {
-  console.log('API Configuration:', { API_URL, isProduction, defaultTimeout });
-}
+// Debug logging removed to reduce console noise
 
 const api = axios.create({
   baseURL: API_URL,
