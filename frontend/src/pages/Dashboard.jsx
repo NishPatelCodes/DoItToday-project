@@ -118,9 +118,20 @@ const Dashboard = () => {
       }
 
       if (friendsRes.status === 'fulfilled') {
-        setFriends(friendsRes.value.data || []);
+        const friendsData = friendsRes.value.data || {};
+        // Handle new response format (with friendRequests) or old format (array)
+        if (Array.isArray(friendsData)) {
+          setFriends(friendsData);
+        } else {
+          setFriends(friendsData.friends || []);
+          // Store friend requests if needed in future
+          if (friendsData.friendRequests) {
+            console.log('Friend requests:', friendsData.friendRequests);
+          }
+        }
       } else {
         console.error('Error loading friends:', friendsRes.reason);
+        setFriends([]);
       }
 
       if (analyticsRes.status === 'fulfilled') {
@@ -291,8 +302,17 @@ const Dashboard = () => {
 
   const handleAddFriend = async (email) => {
     try {
-      await friendsAPI.add(email);
+      const response = await friendsAPI.add(email);
+      // Reload friends and leaderboard
+      const friendsRes = await friendsAPI.getAll();
+      const friendsData = friendsRes.data || {};
+      if (Array.isArray(friendsData)) {
+        setFriends(friendsData);
+      } else {
+        setFriends(friendsData.friends || []);
+      }
       loadData(); // Reload leaderboard
+      return response;
     } catch (error) {
       console.error('Error adding friend:', error);
       throw error;

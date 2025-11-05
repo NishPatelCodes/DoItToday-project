@@ -16,11 +16,17 @@ const AddFriendModal = ({ isOpen, onClose, onAdd }) => {
     }
 
     try {
-      await onAdd(email);
+      const response = await onAdd(email);
+      // Check if it's a friend request or auto-accepted
+      if (response?.data?.message) {
+        alert(response.data.message);
+      }
       setEmail('');
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add friend');
+      const errorMessage = err.response?.data?.message || 'Failed to add friend';
+      setError(errorMessage);
+      console.error('Add friend error:', err);
     }
   };
 

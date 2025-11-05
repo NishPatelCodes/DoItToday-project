@@ -393,15 +393,9 @@ export const DashboardTeam = ({
 }) => {
   const { user } = useAuthStore();
   
-  console.log('🔍 Filtering shared tasks. Total tasks:', tasks.length);
-  console.log('🔍 Current user ID:', user?.id || user?._id);
-  console.log('🔍 All tasks:', tasks.map(t => ({
-    id: t._id,
-    title: t.title,
-    userId: t.userId?._id || t.userId,
-    sharedWith: t.sharedWith,
-    isShared: t.isShared
-  })));
+  // Debug logging (commented out for production)
+  // console.log('🔍 Filtering shared tasks. Total tasks:', tasks.length);
+  // console.log('🔍 Current user ID:', user?.id || user?._id);
   
   // Get shared tasks (tasks shared with you or tasks you shared)
   const sharedTasks = tasks.filter(task => {
