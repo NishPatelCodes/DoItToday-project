@@ -12,6 +12,14 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const [isShared, setIsShared] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState([]);
 
+  // Debug: Log friends when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('TaskModal opened. Friends:', friends);
+      console.log('Friends count:', friends?.length || 0);
+    }
+  }, [isOpen, friends]);
+
   useEffect(() => {
     if (task) {
       setTitle(task.title || '');
@@ -68,7 +76,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="card p-6 w-full max-w-md"
+            className="card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
@@ -227,47 +235,69 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  Share with Friends
+              <div className="border-t border-[var(--border-color)] pt-4 mt-4">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Share with Friends
+                  </span>
                 </label>
-                {friends.length === 0 ? (
-                  <p className="text-sm text-[var(--text-secondary)] mb-2">
-                    No friends added yet. Add friends to share tasks with them.
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-40 overflow-y-auto border border-[var(--border-color)] rounded-lg p-3">
-                    {friends.map((friend) => {
-                      const friendId = friend._id || friend.id;
-                      const isSelected = selectedFriends.includes(friendId);
-                      return (
-                        <label
-                          key={friendId}
-                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-tertiary)] cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleFriend(friendId)}
-                            className="w-4 h-4 text-[var(--accent-primary)] rounded focus:ring-[var(--accent-primary)]"
-                          />
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                              {(friend.name || 'F')[0].toUpperCase()}
-                            </div>
-                            <span className="text-sm text-[var(--text-primary)]">
-                              {friend.name || friend.email}
-                            </span>
-                          </div>
-                        </label>
-                      );
-                    })}
+                {!friends || friends.length === 0 ? (
+                  <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-4 text-center">
+                    <p className="text-sm text-[var(--text-secondary)] mb-2">
+                      No friends added yet
+                    </p>
+                    <p className="text-xs text-[var(--text-tertiary)]">
+                      Add friends from the Team page to share tasks with them
+                    </p>
                   </div>
-                )}
-                {selectedFriends.length > 0 && (
-                  <p className="text-xs text-[var(--text-secondary)] mt-2">
-                    {selectedFriends.length} friend{selectedFriends.length > 1 ? 's' : ''} selected
-                  </p>
+                ) : (
+                  <>
+                    <div className="space-y-2 max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-lg p-3 bg-[var(--bg-secondary)]">
+                      {friends.map((friend) => {
+                        const friendId = friend._id || friend.id;
+                        if (!friendId) {
+                          console.warn('Friend missing ID:', friend);
+                          return null;
+                        }
+                        const isSelected = selectedFriends.includes(friendId);
+                        return (
+                          <label
+                            key={friendId}
+                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                              isSelected 
+                                ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30' 
+                                : 'hover:bg-[var(--bg-tertiary)] border border-transparent'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleFriend(friendId)}
+                              className="w-5 h-5 text-[var(--accent-primary)] rounded focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer"
+                            />
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                                {(friend.name || friend.email || 'F')[0].toUpperCase()}
+                              </div>
+                              <span className="text-sm font-medium text-[var(--text-primary)]">
+                                {friend.name || friend.email || 'Friend'}
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {selectedFriends.length > 0 && (
+                      <div className="mt-3 p-2 bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 rounded-lg">
+                        <p className="text-xs font-medium text-[var(--accent-primary)] text-center">
+                          ✓ {selectedFriends.length} friend{selectedFriends.length > 1 ? 's' : ''} selected
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
