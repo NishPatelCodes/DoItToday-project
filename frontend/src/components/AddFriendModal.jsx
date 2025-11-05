@@ -47,8 +47,8 @@ const AddFriendModal = ({ isOpen, onClose, onAdd }) => {
             className="card p-4 md:p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-[var(--text-primary)]">Add Friend</h2>
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">Add Friend</h2>
               <button
                 onClick={onClose}
                 className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
@@ -57,7 +57,7 @@ const AddFriendModal = ({ isOpen, onClose, onAdd }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   {error}
