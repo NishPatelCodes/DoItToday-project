@@ -506,6 +506,8 @@ const Dashboard = () => {
               <DashboardAnalytics
                 analytics={analytics}
                 user={user}
+                tasks={tasks}
+                goals={goals}
               />
             }
           />

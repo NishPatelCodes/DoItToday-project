@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine } from 'react-icons/fa';
 import TaskCard from '../components/TaskCard';
@@ -348,30 +349,285 @@ export const DashboardGoals = ({
 };
 
 // Analytics View
-export const DashboardAnalytics = ({ analytics, user }) => {
+export const DashboardAnalytics = ({ analytics, user, tasks = [], goals = [] }) => {
+  const [timeFilter, setTimeFilter] = useState('7d'); // 7d, 30d, all
+  
+  // Calculate additional stats from tasks and goals
+  const stats = useMemo(() => {
+    const allTasks = tasks || [];
+    const completedTasks = allTasks.filter(t => t.status === 'completed');
+    const pendingTasks = allTasks.filter(t => t.status === 'pending');
+    const highPriorityTasks = allTasks.filter(t => t.priority === 'high');
+    const overdueTasks = allTasks.filter(t => {
+      if (!t.dueDate) return false;
+      return new Date(t.dueDate) < new Date() && t.status !== 'completed';
+    });
+    
+    const allGoals = goals || [];
+    const completedGoals = allGoals.filter(g => g.progress === 100);
+    const inProgressGoals = allGoals.filter(g => g.progress > 0 && g.progress < 100);
+    const avgGoalProgress = allGoals.length > 0
+      ? Math.round(allGoals.reduce((sum, g) => sum + (g.progress || 0), 0) / allGoals.length)
+      : 0;
+    
+    const completionRate = allTasks.length > 0
+      ? Math.round((completedTasks.length / allTasks.length) * 100)
+      : 0;
+    
+    return {
+      totalTasks: allTasks.length,
+      completedTasks: completedTasks.length,
+      pendingTasks: pendingTasks.length,
+      completionRate,
+      highPriorityTasks: highPriorityTasks.length,
+      overdueTasks: overdueTasks.length,
+      totalGoals: allGoals.length,
+      completedGoals: completedGoals.length,
+      inProgressGoals: inProgressGoals.length,
+      avgGoalProgress,
+    };
+  }, [tasks, goals]);
+  
+  // Filter analytics data based on time filter
+  const filteredAnalytics = useMemo(() => {
+    if (!analytics) return null;
+    
+    const now = new Date();
+    let cutoffDate = new Date();
+    
+    switch (timeFilter) {
+      case '7d':
+        cutoffDate.setDate(now.getDate() - 7);
+        break;
+      case '30d':
+        cutoffDate.setDate(now.getDate() - 30);
+        break;
+      case 'all':
+      default:
+        cutoffDate = new Date(0); // Beginning of time
+        break;
+    }
+    
+    // Filter daily productivity
+    const filteredDaily = analytics.dailyProductivity
+      ? analytics.dailyProductivity.filter(item => {
+          const itemDate = new Date(item.date);
+          return itemDate >= cutoffDate;
+        })
+      : [];
+    
+    return {
+      ...analytics,
+      dailyProductivity: filteredDaily,
+      weeklyCompletion: analytics.weeklyCompletion || [],
+    };
+  }, [analytics, timeFilter]);
+  
+  // Calculate trends
+  const trends = useMemo(() => {
+    if (!filteredAnalytics?.dailyProductivity || filteredAnalytics.dailyProductivity.length < 2) {
+      return null;
+    }
+    
+    const recent = filteredAnalytics.dailyProductivity.slice(-3);
+    const previous = filteredAnalytics.dailyProductivity.slice(-6, -3);
+    
+    const recentAvg = recent.reduce((sum, item) => sum + (item.productivity || 0), 0) / recent.length;
+    const previousAvg = previous.length > 0
+      ? previous.reduce((sum, item) => sum + (item.productivity || 0), 0) / previous.length
+      : recentAvg;
+    
+    const productivityTrend = recentAvg - previousAvg;
+    const completionTrend = recent.reduce((sum, item) => sum + (item.completed || 0), 0) -
+      (previous.reduce((sum, item) => sum + (item.completed || 0), 0) || 0);
+    
+    return {
+      productivityTrend: Math.round(productivityTrend),
+      completionTrend,
+      isImproving: productivityTrend > 0,
+    };
+  }, [filteredAnalytics]);
+  
   return (
     <div className="p-8">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
-        <p className="text-[var(--text-secondary)]">Your productivity insights and trends</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
+            <p className="text-[var(--text-secondary)]">Your productivity insights and trends</p>
+          </div>
+          
+          {/* Time Filter */}
+          <div className="flex items-center gap-2 bg-[var(--bg-secondary)] p-1 rounded-lg border border-[var(--border-color)]">
+            {['7d', '30d', 'all'].map((period) => (
+              <button
+                key={period}
+                onClick={() => setTimeFilter(period)}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  timeFilter === period
+                    ? 'bg-[var(--accent-primary)] text-white shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                {period === '7d' ? '7 Days' : period === '30d' ? '30 Days' : 'All Time'}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {analytics && (
+      {/* Stats Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card p-6"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-[var(--text-secondary)]">Completion Rate</p>
+            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+              <FaChartLine className="text-indigo-600 text-lg" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
+            {stats.completionRate}%
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            {stats.completedTasks} of {stats.totalTasks} tasks
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card p-6"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-[var(--text-secondary)]">Pending Tasks</p>
+            <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <FaTasks className="text-orange-600 text-lg" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
+            {stats.pendingTasks}
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            {stats.overdueTasks > 0 && `${stats.overdueTasks} overdue`}
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card p-6"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-[var(--text-secondary)]">Goals Progress</p>
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <FaBullseye className="text-green-600 text-lg" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
+            {stats.avgGoalProgress}%
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            {stats.completedGoals} of {stats.totalGoals} completed
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="card p-6"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-[var(--text-secondary)]">Streak</p>
+            <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <FaFire className="text-red-600 text-lg" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
+            {user?.streak || 0}
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)]">days in a row</p>
+        </motion.div>
+      </div>
+
+      {/* Trends Section */}
+      {trends && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card p-6 mb-6"
+        >
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Trends</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] rounded-lg">
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                trends.isImproving ? 'bg-green-500/10' : 'bg-red-500/10'
+              }`}>
+                <FaChartLine className={`text-lg ${
+                  trends.isImproving ? 'text-green-600' : 'text-red-600'
+                }`} />
+              </div>
+              <div>
+                <p className="text-sm text-[var(--text-secondary)]">Productivity Trend</p>
+                <p className={`text-xl font-bold ${
+                  trends.isImproving ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {trends.isImproving ? '+' : ''}{trends.productivityTrend}%
+                </p>
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  {trends.isImproving ? 'Improving' : 'Declining'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] rounded-lg">
+              <div className="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                <FaTasks className="text-indigo-600 text-lg" />
+              </div>
+              <div>
+                <p className="text-sm text-[var(--text-secondary)]">Completion Trend</p>
+                <p className="text-xl font-bold text-[var(--text-primary)]">
+                  {trends.completionTrend > 0 ? '+' : ''}{trends.completionTrend}
+                </p>
+                <p className="text-xs text-[var(--text-tertiary)]">tasks completed</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Charts */}
+      {filteredAnalytics ? (
         <div className="space-y-6">
-          {analytics.dailyProductivity && analytics.dailyProductivity.length > 0 && (
+          {filteredAnalytics.dailyProductivity && filteredAnalytics.dailyProductivity.length > 0 && (
             <GraphCard
-              title="Daily Productivity (Last 7 Days)"
-              data={analytics.dailyProductivity}
+              title={`Daily Productivity (${timeFilter === '7d' ? 'Last 7 Days' : timeFilter === '30d' ? 'Last 30 Days' : 'All Time'})`}
+              data={filteredAnalytics.dailyProductivity}
               type="line"
             />
           )}
-          {analytics.weeklyCompletion && analytics.weeklyCompletion.length > 0 && (
+          {filteredAnalytics.weeklyCompletion && filteredAnalytics.weeklyCompletion.length > 0 && (
             <GraphCard
-              title="Weekly Task Completion (Last 4 Weeks)"
-              data={analytics.weeklyCompletion}
+              title="Weekly Task Completion"
+              data={filteredAnalytics.weeklyCompletion}
               type="bar"
             />
           )}
+        </div>
+      ) : (
+        <div className="card p-12 text-center">
+          <FaChartLine className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+          <p className="text-[var(--text-secondary)] mb-2">No analytics data available</p>
+          <p className="text-sm text-[var(--text-tertiary)]">
+            Complete some tasks to see your productivity insights
+          </p>
         </div>
       )}
     </div>
