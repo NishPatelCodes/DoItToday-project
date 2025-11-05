@@ -431,17 +431,23 @@ const Dashboard = () => {
               />
             }
           />
-          <Route
-            path="team"
-            element={
-              <DashboardTeam
-                friends={friends}
-                leaderboard={leaderboard}
-                onAddFriend={() => setIsFriendModalOpen(true)}
-                onRemoveFriend={handleRemoveFriend}
+              <Route
+                path="team"
+                element={
+                  <DashboardTeam
+                    friends={friends}
+                    leaderboard={leaderboard}
+                    tasks={tasks}
+                    onAddFriend={() => setIsFriendModalOpen(true)}
+                    onRemoveFriend={handleRemoveFriend}
+                    onToggleTask={handleToggleTask}
+                    onDeleteTask={handleDeleteTask}
+                    onEditTask={handleEditTask}
+                    setIsTaskModalOpen={setIsTaskModalOpen}
+                    setEditingTask={setEditingTask}
+                  />
+                }
               />
-            }
-          />
         </Routes>
 
         {/* Modals */}

@@ -1,9 +1,15 @@
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaCircle, FaTrash, FaEdit, FaClock } from 'react-icons/fa';
+import { FaCheckCircle, FaCircle, FaTrash, FaEdit, FaClock, FaUserFriends } from 'react-icons/fa';
 import { format } from 'date-fns';
+import { useAuthStore } from '../store/authStore';
 
 const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
+  const { user } = useAuthStore();
   const isCompleted = task.status === 'completed';
+  const isOwnTask = task.userId?._id === user?.id || task.userId === user?.id;
+  const isSharedTask = task.sharedWith && task.sharedWith.length > 0;
+  const sharedWithNames = task.sharedWith?.map(f => f.name || f.email || 'Friend').join(', ') || '';
+  
   const priorityColors = {
     low: 'bg-green-100 text-green-700 border border-green-200',
     medium: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
@@ -64,15 +70,24 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
             <p className="text-sm text-[var(--text-secondary)] mb-2">{task.description}</p>
           )}
 
-          <div className="flex items-center gap-4 text-xs text-[var(--text-tertiary)]">
+          <div className="flex items-center gap-4 text-xs text-[var(--text-tertiary)] flex-wrap">
             {task.dueDate && (
               <div className="flex items-center gap-1">
                 <FaClock className="text-xs" />
                 <span>{format(new Date(task.dueDate), 'MMM dd, yyyy')}</span>
               </div>
             )}
-            {task.isShared && (
-              <span className="text-[var(--accent-primary)] font-medium">Shared</span>
+            {!isOwnTask && task.userId && (
+              <div className="flex items-center gap-1 text-[var(--accent-primary)]">
+                <FaUserFriends className="text-xs" />
+                <span>By {task.userId.name || task.userId.email || 'Friend'}</span>
+              </div>
+            )}
+            {isSharedTask && (
+              <div className="flex items-center gap-1 text-[var(--accent-primary)]">
+                <FaUserFriends className="text-xs" />
+                <span title={sharedWithNames}>Shared with {task.sharedWith.length} friend{task.sharedWith.length > 1 ? 's' : ''}</span>
+              </div>
             )}
           </div>
         </div>

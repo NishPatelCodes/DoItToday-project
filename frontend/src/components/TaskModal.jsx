@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
+import { useDataStore } from '../store/dataStore';
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
+  const { friends } = useDataStore();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('medium');
   const [dueDate, setDueDate] = useState('');
   const [isShared, setIsShared] = useState(false);
+  const [selectedFriends, setSelectedFriends] = useState([]);
 
   useEffect(() => {
     if (task) {
@@ -16,12 +19,14 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setPriority(task.priority || 'medium');
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
       setIsShared(task.isShared || false);
+      setSelectedFriends(task.sharedWith?.map(f => f._id || f.id || f) || []);
     } else {
       setTitle('');
       setDescription('');
       setPriority('medium');
       setDueDate('');
       setIsShared(false);
+      setSelectedFriends([]);
     }
   }, [task, isOpen]);
 
@@ -32,9 +37,21 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       description,
       priority,
       dueDate: dueDate || null,
-      isShared,
+      isShared: isShared || selectedFriends.length > 0,
+      sharedWith: selectedFriends,
     });
     onClose();
+  };
+
+  const toggleFriend = (friendId) => {
+    setSelectedFriends(prev => 
+      prev.includes(friendId)
+        ? prev.filter(id => id !== friendId)
+        : [...prev, friendId]
+    );
+    if (!selectedFriends.includes(friendId)) {
+      setIsShared(true);
+    }
   };
 
   return (
@@ -210,17 +227,48 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isShared"
-                  checked={isShared}
-                  onChange={(e) => setIsShared(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="isShared" className="text-sm text-[var(--text-primary)]">
-                  Share with friends
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                  Share with Friends
                 </label>
+                {friends.length === 0 ? (
+                  <p className="text-sm text-[var(--text-secondary)] mb-2">
+                    No friends added yet. Add friends to share tasks with them.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto border border-[var(--border-color)] rounded-lg p-3">
+                    {friends.map((friend) => {
+                      const friendId = friend._id || friend.id;
+                      const isSelected = selectedFriends.includes(friendId);
+                      return (
+                        <label
+                          key={friendId}
+                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-tertiary)] cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleFriend(friendId)}
+                            className="w-4 h-4 text-[var(--accent-primary)] rounded focus:ring-[var(--accent-primary)]"
+                          />
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                              {(friend.name || 'F')[0].toUpperCase()}
+                            </div>
+                            <span className="text-sm text-[var(--text-primary)]">
+                              {friend.name || friend.email}
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                {selectedFriends.length > 0 && (
+                  <p className="text-xs text-[var(--text-secondary)] mt-2">
+                    {selectedFriends.length} friend{selectedFriends.length > 1 ? 's' : ''} selected
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-3 pt-4">
