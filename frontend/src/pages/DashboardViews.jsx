@@ -450,10 +450,102 @@ export const DashboardTeam = ({
         </button>
       </div>
 
+      {/* Friend Requests Section */}
+      {(friendRequests.length > 0 || sentFriendRequests.length > 0) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card p-6 mb-6"
+        >
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+            <FaUserFriends />
+            Friend Requests
+          </h2>
+          
+          {/* Incoming Requests */}
+          {friendRequests.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Incoming Requests</h3>
+              <div className="space-y-2">
+                {friendRequests.map((request) => (
+                  <div
+                    key={request._id || request.id}
+                    className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                        {(request.name || request.email || 'U')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-[var(--text-primary)]">
+                          {request.name || request.email}
+                        </p>
+                        <p className="text-xs text-[var(--text-secondary)]">
+                          Wants to be friends
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onAcceptFriendRequest(request._id || request.id)}
+                        className="px-3 py-1.5 text-sm font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => onDeclineFriendRequest(request._id || request.id)}
+                        className="px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sent Requests */}
+          {sentFriendRequests.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Sent Requests</h3>
+              <div className="space-y-2">
+                {sentFriendRequests.map((request) => (
+                  <div
+                    key={request._id || request.id}
+                    className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                        {(request.name || request.email || 'U')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-[var(--text-primary)]">
+                          {request.name || request.email}
+                        </p>
+                        <p className="text-xs text-[var(--text-secondary)]">
+                          Request pending
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onCancelFriendRequest(request._id || request.id)}
+                      className="px-3 py-1.5 text-sm font-medium bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Friends List */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends</h2>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends ({friends.length})</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {friends.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-8 text-sm">

@@ -41,12 +41,16 @@ const Dashboard = () => {
     goals,
     habits,
     friends,
+    friendRequests,
+    sentFriendRequests,
     analytics,
     leaderboard,
     setTasks,
     setGoals,
     setHabits,
     setFriends,
+    setFriendRequests,
+    setSentFriendRequests,
     setAnalytics,
     setLeaderboard,
   } = useDataStore();
@@ -122,16 +126,18 @@ const Dashboard = () => {
         // Handle new response format (with friendRequests) or old format (array)
         if (Array.isArray(friendsData)) {
           setFriends(friendsData);
+          setFriendRequests([]);
+          setSentFriendRequests([]);
         } else {
           setFriends(friendsData.friends || []);
-          // Store friend requests if needed in future
-          if (friendsData.friendRequests) {
-            console.log('Friend requests:', friendsData.friendRequests);
-          }
+          setFriendRequests(friendsData.friendRequests || []);
+          setSentFriendRequests(friendsData.sentFriendRequests || []);
         }
       } else {
         console.error('Error loading friends:', friendsRes.reason);
         setFriends([]);
+        setFriendRequests([]);
+        setSentFriendRequests([]);
       }
 
       if (analyticsRes.status === 'fulfilled') {
@@ -308,14 +314,48 @@ const Dashboard = () => {
       const friendsData = friendsRes.data || {};
       if (Array.isArray(friendsData)) {
         setFriends(friendsData);
+        setFriendRequests([]);
+        setSentFriendRequests([]);
       } else {
         setFriends(friendsData.friends || []);
+        setFriendRequests(friendsData.friendRequests || []);
+        setSentFriendRequests(friendsData.sentFriendRequests || []);
       }
       loadData(); // Reload leaderboard
       return response;
     } catch (error) {
       console.error('Error adding friend:', error);
       throw error;
+    }
+  };
+
+  const handleAcceptFriendRequest = async (friendId) => {
+    try {
+      await friendsAPI.accept(friendId);
+      loadData(); // Reload friends
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      alert('Failed to accept friend request. Please try again.');
+    }
+  };
+
+  const handleDeclineFriendRequest = async (friendId) => {
+    try {
+      await friendsAPI.decline(friendId);
+      loadData(); // Reload friends
+    } catch (error) {
+      console.error('Error declining friend request:', error);
+      alert('Failed to decline friend request. Please try again.');
+    }
+  };
+
+  const handleCancelFriendRequest = async (friendId) => {
+    try {
+      await friendsAPI.cancel(friendId);
+      loadData(); // Reload friends
+    } catch (error) {
+      console.error('Error cancelling friend request:', error);
+      alert('Failed to cancel friend request. Please try again.');
     }
   };
 
@@ -474,10 +514,15 @@ const Dashboard = () => {
                 element={
                   <DashboardTeam
                     friends={friends}
+                    friendRequests={friendRequests}
+                    sentFriendRequests={sentFriendRequests}
                     leaderboard={leaderboard}
                     tasks={tasks}
                     onAddFriend={() => setIsFriendModalOpen(true)}
                     onRemoveFriend={handleRemoveFriend}
+                    onAcceptFriendRequest={handleAcceptFriendRequest}
+                    onDeclineFriendRequest={handleDeclineFriendRequest}
+                    onCancelFriendRequest={handleCancelFriendRequest}
                     onToggleTask={handleToggleTask}
                     onDeleteTask={handleDeleteTask}
                     onEditTask={handleEditTask}
