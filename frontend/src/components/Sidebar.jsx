@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   FaHome,
@@ -9,18 +10,44 @@ import {
   FaCog,
   FaMoon,
   FaSun,
+  FaBars,
+  FaTimes,
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
-import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { logout } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isOpen && window.innerWidth < 768) {
+        const sidebar = document.querySelector('.sidebar-mobile');
+        if (sidebar && !sidebar.contains(e.target)) {
+          onClose();
+        }
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'hidden'; // Prevent body scroll when sidebar is open
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, onClose]);
 
   const navItems = [
     { icon: FaHome, label: 'Dashboard', path: '/dashboard' },
@@ -31,40 +58,57 @@ const Sidebar = () => {
     { icon: FaUserFriends, label: 'Team', path: '/dashboard/team' },
   ];
 
-  return (
-    <aside className="w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-30">
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="p-6 border-b border-[var(--border-color)]">
-        <h1 className="text-xl font-bold gradient-text">DoItToday</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Task Manager</p>
+      <div className="p-4 md:p-6 border-b border-[var(--border-color)]">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg md:text-xl font-bold gradient-text">DoItToday</h1>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">Task Manager</p>
+          </div>
+          {/* Close button for mobile */}
+          <button
+            onClick={onClose}
+            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <FaTimes className="text-lg" />
+          </button>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto p-3 md:p-4 space-y-1">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            onClick={() => {
+              // Close sidebar on mobile when navigating
+              if (window.innerWidth < 768) {
+                onClose();
+              }
+            }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+              `flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 ${
                 isActive
                   ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
               }`
             }
           >
-            <item.icon className="text-base" />
-            <span className="text-sm font-medium">{item.label}</span>
+            <item.icon className="text-base md:text-base" />
+            <span className="text-sm md:text-sm font-medium">{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-4 border-t border-[var(--border-color)] space-y-2">
+      <div className="p-3 md:p-4 border-t border-[var(--border-color)] space-y-2">
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
+          className="w-full flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
         >
           {theme === 'light' ? (
             <>
@@ -82,8 +126,13 @@ const Sidebar = () => {
         {/* Settings */}
         <NavLink
           to="/dashboard/settings"
+          onClick={() => {
+            if (window.innerWidth < 768) {
+              onClose();
+            }
+          }}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+            `flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 ${
               isActive
                 ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
                 : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
@@ -94,7 +143,35 @@ const Sidebar = () => {
           <span className="text-sm font-medium">Settings</span>
         </NavLink>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <aside className={`
+        sidebar-mobile
+        w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
+        transform transition-transform duration-300 ease-in-out
+        md:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
 

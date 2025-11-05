@@ -36,31 +36,31 @@ export const DashboardHome = ({
   setEditingGoal,
 }) => {
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">
           Welcome back, {user?.name || 'User'}!
         </h1>
-        <p className="text-[var(--text-secondary)]">
+        <p className="text-sm md:text-base text-[var(--text-secondary)]">
           Here's your productivity overview for today
         </p>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-4"
+          className="card p-3 md:p-4"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-              <FaTasks className="text-indigo-600 text-lg" />
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+              <FaTasks className="text-indigo-600 text-base md:text-lg" />
             </div>
             <div>
               <p className="text-xs text-[var(--text-secondary)]">Pending</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">{pendingTasks.length}</p>
+              <p className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">{pendingTasks.length}</p>
             </div>
           </div>
         </motion.div>
@@ -117,18 +117,18 @@ export const DashboardHome = ({
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
           {/* Smart Planner */}
           <SmartPlanner />
 
           {/* Quick Actions */}
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Quick Actions</h2>
+          <div className="card p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Quick Actions</h2>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               <button
                 onClick={() => {
                   setEditingTask(null);
@@ -153,9 +153,9 @@ export const DashboardHome = ({
           </div>
 
           {/* Recent Tasks */}
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Tasks</h2>
+          <div className="card p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Recent Tasks</h2>
             </div>
             <div className="space-y-2">
               {pendingTasks.slice(0, 5).map((task) => (
@@ -177,14 +177,14 @@ export const DashboardHome = ({
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* XP Level */}
           <XPLevel xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
 
           {/* Active Goals */}
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Goals</h2>
+          <div className="card p-4 md:p-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Goals</h2>
             </div>
             <div className="space-y-3">
               {goals.slice(0, 3).map((goal) => (
@@ -328,7 +328,7 @@ export const DashboardGoals = ({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {goals.map((goal) => (
           <GoalTracker
             key={goal._id}
@@ -449,13 +449,13 @@ export const DashboardAnalytics = ({ analytics, user, tasks = [], goals = [] }) 
   }, [filteredAnalytics]);
   
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
-            <p className="text-[var(--text-secondary)]">Your productivity insights and trends</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
+            <p className="text-sm md:text-base text-[var(--text-secondary)]">Your productivity insights and trends</p>
           </div>
           
           {/* Time Filter */}
@@ -464,7 +464,7 @@ export const DashboardAnalytics = ({ analytics, user, tasks = [], goals = [] }) 
               <button
                 key={period}
                 onClick={() => setTimeFilter(period)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-md transition-all ${
                   timeFilter === period
                     ? 'bg-[var(--accent-primary)] text-white shadow-sm'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -478,19 +478,19 @@ export const DashboardAnalytics = ({ analytics, user, tasks = [], goals = [] }) 
       </div>
 
       {/* Stats Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-6"
+          className="card p-4 md:p-6"
         >
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-[var(--text-secondary)]">Completion Rate</p>
-            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-              <FaChartLine className="text-indigo-600 text-lg" />
+            <p className="text-xs md:text-sm text-[var(--text-secondary)]">Completion Rate</p>
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+              <FaChartLine className="text-indigo-600 text-base md:text-lg" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
+          <p className="text-xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
             {stats.completionRate}%
           </p>
           <p className="text-xs text-[var(--text-tertiary)]">
@@ -708,13 +708,13 @@ export const DashboardTeam = ({
   });
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Team</h1>
-          <p className="text-[var(--text-secondary)]">Connect with friends and track progress together</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Team</h1>
+          <p className="text-sm md:text-base text-[var(--text-secondary)]">Connect with friends and track progress together</p>
         </div>
-        <button onClick={onAddFriend} className="btn-primary flex items-center gap-2">
+        <button onClick={onAddFriend} className="btn-primary flex items-center justify-center gap-2 w-full md:w-auto">
           <FaPlus />
           <span>Add Friend</span>
         </button>
@@ -919,10 +919,10 @@ export const DashboardTeam = ({
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
         {/* Friends List */}
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends ({safeFriends.length})</h2>
+        <div className="card p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">Friends ({safeFriends.length})</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {safeFriends.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
@@ -945,8 +945,8 @@ export const DashboardTeam = ({
         </div>
 
         {/* Leaderboard */}
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
+        <div className="card p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">Leaderboard</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {safeLeaderboard.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-4 text-sm">

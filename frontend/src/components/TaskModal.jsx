@@ -76,11 +76,11 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="card p-4 md:p-6 w-full max-w-md max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">
                 {task ? 'Edit Task' : 'New Task'}
               </h2>
               <button
@@ -91,7 +91,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                   Title *

@@ -8,6 +8,7 @@ import {
   FaBullseye,
   FaUserFriends,
   FaChartLine,
+  FaBars,
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useDataStore } from '../store/dataStore';
@@ -63,6 +64,7 @@ const Dashboard = () => {
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [editingGoal, setEditingGoal] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -406,11 +408,19 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-primary)]">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-[var(--text-primary)] shadow-lg"
+      >
+        <FaBars className="text-lg" />
+      </button>
+
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main className="flex-1 ml-64">
+      <main className="flex-1 w-full md:ml-64 pt-14 md:pt-0">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">

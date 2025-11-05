@@ -44,7 +44,7 @@ const AddFriendModal = ({ isOpen, onClose, onAdd }) => {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="card p-6 w-full max-w-md"
+            className="card p-4 md:p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
