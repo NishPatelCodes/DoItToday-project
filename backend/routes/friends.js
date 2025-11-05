@@ -289,26 +289,40 @@ router.get('/leaderboard', authenticate, async (req, res) => {
 router.get('/:id/activity', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
+    const friendId = req.params.id;
+    
+    // Allow viewing own profile or friend's profile
+    const isOwnProfile = friendId.toString() === req.user._id.toString();
     const isFriend = user.friends.some(
-      (friendId) => friendId.toString() === req.params.id
+      (fId) => fId.toString() === friendId.toString()
     );
 
-    if (!isFriend) {
-      return res.status(403).json({ message: 'Not a friend' });
+    if (!isOwnProfile && !isFriend) {
+      return res.status(403).json({ message: 'Not a friend or not your profile' });
+    }
+
+    // Get friend user info
+    const friendUser = await User.findById(friendId)
+      .select('name email avatar streak totalTasksCompleted lastActiveDate xp level createdAt')
+      .lean();
+
+    if (!friendUser) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const [tasks, goals] = await Promise.all([
-      Task.find({ userId: req.params.id, isShared: true })
+      Task.find({ userId: friendId, isShared: true })
+        .populate('goalId', 'title progress')
         .sort({ createdAt: -1 })
-        .limit(10)
+        .limit(20)
         .exec(),
-      Goal.find({ userId: req.params.id, isShared: true })
+      Goal.find({ userId: friendId, isShared: true })
         .sort({ createdAt: -1 })
-        .limit(10)
+        .limit(20)
         .exec(),
     ]);
 
-    res.json({ tasks, goals });
+    res.json({ user: friendUser, tasks, goals });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

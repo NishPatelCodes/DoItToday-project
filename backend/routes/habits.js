@@ -116,6 +116,19 @@ router.post('/:id/complete', authenticate, async (req, res) => {
     habit.totalCompletions += 1;
     await habit.save();
 
+    // Award XP for completing habit (5 XP per habit completion)
+    const User = (await import('../models/User.js')).default;
+    const user = await User.findById(req.user._id);
+    user.xp += 5;
+    
+    // Level up if XP threshold reached
+    const xpNeededForNextLevel = user.level * 100;
+    if (user.xp >= xpNeededForNextLevel) {
+      user.level += 1;
+    }
+    
+    await user.save();
+
     res.json(habit);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

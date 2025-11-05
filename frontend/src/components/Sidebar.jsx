@@ -7,6 +7,7 @@ import {
   FaCalendarAlt,
   FaChartLine,
   FaUserFriends,
+  FaUser,
   FaCog,
   FaMoon,
   FaSun,
@@ -56,6 +57,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { icon: FaCalendarAlt, label: 'Calendar', path: '/dashboard/calendar' },
     { icon: FaChartLine, label: 'Analytics', path: '/dashboard/analytics' },
     { icon: FaUserFriends, label: 'Team', path: '/dashboard/team' },
+    { icon: FaUser, label: 'Profile', path: '/dashboard/profile' },
   ];
 
   const sidebarContent = (
@@ -103,46 +105,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         ))}
       </nav>
 
-      {/* Bottom Section */}
-      <div className="p-3 md:p-4 border-t border-[var(--border-color)] space-y-2">
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="w-full flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
-        >
-          {theme === 'light' ? (
-            <>
-              <FaMoon className="text-base" />
-              <span className="text-sm font-medium">Dark Mode</span>
-            </>
-          ) : (
-            <>
-              <FaSun className="text-base" />
-              <span className="text-sm font-medium">Light Mode</span>
-            </>
-          )}
-        </button>
-
-        {/* Settings */}
-        <NavLink
-          to="/dashboard/settings"
-          onClick={() => {
-            if (window.innerWidth < 768) {
-              onClose();
-            }
-          }}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 ${
-              isActive
-                ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
-                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
-            }`
-          }
-        >
-          <FaCog className="text-base" />
-          <span className="text-sm font-medium">Settings</span>
-        </NavLink>
-      </div>
+      {/* Bottom Section - Removed, settings moved to Profile */}
     </>
   );
 

@@ -33,6 +33,7 @@ import {
   DashboardAnalytics,
   DashboardTeam,
 } from './DashboardViews';
+import Profile from '../components/Profile';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -184,6 +185,16 @@ const Dashboard = () => {
       const { updateTask } = useDataStore.getState();
       updateTask(id, response.data);
       
+      // Refresh user data to get updated XP (XP is awarded on task completion)
+      try {
+        const userRes = await authAPI.getMe();
+        const { updateUser } = useAuthStore.getState();
+        updateUser(userRes.data);
+        setUser(userRes.data);
+      } catch (e) {
+        // Silently handle user reload failure
+      }
+      
       // Reload only analytics to update stats
       try {
         const analyticsRes = await analyticsAPI.getDashboard();
@@ -262,8 +273,18 @@ const Dashboard = () => {
 
   const handleUpdateGoalProgress = async (id, progress) => {
     try {
-      await goalsAPI.update(id, { progress });
-      loadData(); // Reload to update analytics
+      const response = await goalsAPI.update(id, { progress });
+      // Update goal locally without reloading all data
+      setGoals((prevGoals) =>
+        prevGoals.map((g) => (g._id === id ? { ...g, progress } : g))
+      );
+      // Only reload analytics, not all data
+      try {
+        const analyticsRes = await analyticsAPI.getDashboard();
+        setAnalytics(analyticsRes.data || {});
+      } catch (e) {
+        // Silently handle analytics reload failure
+      }
     } catch (error) {
       // Silently handle error
     }
@@ -359,7 +380,22 @@ const Dashboard = () => {
   const handleCompleteHabit = async (id) => {
     try {
       await habitsAPI.complete(id);
-      loadData(); // Reload to update XP
+      // Refresh user data to get updated XP (XP is awarded on habit completion)
+      try {
+        const userRes = await authAPI.getMe();
+        const { updateUser } = useAuthStore.getState();
+        updateUser(userRes.data);
+        setUser(userRes.data);
+      } catch (e) {
+        // Silently handle user reload failure
+      }
+      // Reload habits to update streak
+      try {
+        const habitsRes = await habitsAPI.getAll();
+        setHabits(habitsRes.data || []);
+      } catch (e) {
+        // Silently handle habits reload failure
+      }
     } catch (error) {
       // Silently handle error
     }
@@ -530,6 +566,26 @@ const Dashboard = () => {
                     setIsTaskModalOpen={setIsTaskModalOpen}
                     setEditingTask={setEditingTask}
                     currentUser={user}
+                  />
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  <Profile
+                    currentUser={user}
+                    tasks={tasks}
+                    goals={goals}
+                  />
+                }
+              />
+              <Route
+                path="profile/:userId"
+                element={
+                  <Profile
+                    currentUser={user}
+                    tasks={tasks}
+                    goals={goals}
                   />
                 }
               />

@@ -1,7 +1,10 @@
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaUser, FaTrash, FaTrophy, FaFire } from 'react-icons/fa';
+import { FaUser, FaTrash, FaTrophy, FaFire, FaEye } from 'react-icons/fa';
 
 const FriendStatus = ({ friend, onRemove, rank }) => {
+  const navigate = useNavigate();
+  const friendId = friend._id || friend.id;
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -33,15 +36,24 @@ const FriendStatus = ({ friend, onRemove, rank }) => {
           </div>
         </div>
 
-        {onRemove && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => onRemove(friend._id || friend.id)}
-            className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
-            title="Remove friend"
+            onClick={() => navigate(`/dashboard/profile/${friendId}`)}
+            className="p-2 text-[var(--text-tertiary)] hover:text-blue-600 transition-colors"
+            title="View profile"
           >
-            <FaTrash />
+            <FaEye />
           </button>
-        )}
+          {onRemove && (
+            <button
+              onClick={() => onRemove(friend._id || friend.id)}
+              className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+              title="Remove friend"
+            >
+              <FaTrash />
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );

@@ -185,6 +185,17 @@ router.put('/:id', authenticate, async (req, res) => {
         task.completedAt = null;
         const completingUser = await User.findById(req.user._id);
         completingUser.totalTasksCompleted = Math.max(0, completingUser.totalTasksCompleted - 1);
+        
+        // Deduct XP when task is uncompleted (based on priority)
+        const xpToDeduct = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
+        completingUser.xp = Math.max(0, completingUser.xp - xpToDeduct);
+        
+        // Check if level needs to be reduced (if XP falls below previous level threshold)
+        const previousLevelThreshold = (completingUser.level - 1) * 100;
+        if (completingUser.xp < previousLevelThreshold && completingUser.level > 1) {
+          completingUser.level -= 1;
+        }
+        
         await completingUser.save();
       }
     }

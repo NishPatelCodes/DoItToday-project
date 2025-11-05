@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaTrash, FaEdit, FaChartLine } from 'react-icons/fa';
 import { format, isPast, differenceInDays } from 'date-fns';
@@ -7,6 +8,8 @@ const GoalTracker = ({ goal, onUpdate, onDelete, onEdit, onViewAnalytics }) => {
   const deadline = new Date(goal.deadline);
   const isOverdue = isPast(deadline) && progress < 100;
   const daysRemaining = differenceInDays(deadline, new Date());
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customProgress, setCustomProgress] = useState('');
 
   const progressColor =
     progress >= 100
@@ -16,6 +19,15 @@ const GoalTracker = ({ goal, onUpdate, onDelete, onEdit, onViewAnalytics }) => {
       : progress >= 50
       ? 'bg-yellow-500'
       : 'bg-red-500';
+
+  const handleCustomProgress = () => {
+    const value = parseInt(customProgress);
+    if (!isNaN(value) && value >= 0 && value <= 100) {
+      onUpdate(goal._id, value);
+      setCustomProgress('');
+      setShowCustomInput(false);
+    }
+  };
 
   return (
     <motion.div
@@ -90,19 +102,60 @@ const GoalTracker = ({ goal, onUpdate, onDelete, onEdit, onViewAnalytics }) => {
       </div>
 
       {onUpdate && (
-        <div className="mt-4 flex gap-2">
-          <button
-            onClick={() => onUpdate(goal._id, Math.max(0, progress - 10))}
-            className="px-3 py-1 text-sm bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] rounded transition-colors text-[var(--text-primary)]"
-          >
-            -10%
-          </button>
-          <button
-            onClick={() => onUpdate(goal._id, Math.min(100, progress + 10))}
-            className="px-3 py-1 text-sm bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] rounded transition-colors text-[var(--text-primary)]"
-          >
-            +10%
-          </button>
+        <div className="mt-4 space-y-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => onUpdate(goal._id, Math.max(0, progress - 10))}
+              className="px-3 py-1 text-sm bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] rounded transition-colors text-[var(--text-primary)]"
+            >
+              -10%
+            </button>
+            <button
+              onClick={() => onUpdate(goal._id, Math.min(100, progress + 10))}
+              className="px-3 py-1 text-sm bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] rounded transition-colors text-[var(--text-primary)]"
+            >
+              +10%
+            </button>
+            <button
+              onClick={() => setShowCustomInput(!showCustomInput)}
+              className="px-3 py-1 text-sm bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] rounded transition-colors text-[var(--text-primary)]"
+            >
+              Custom
+            </button>
+          </div>
+          {showCustomInput && (
+            <div className="flex gap-2 items-center">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={customProgress}
+                onChange={(e) => setCustomProgress(e.target.value)}
+                placeholder="Enter % (0-100)"
+                className="flex-1 px-3 py-1 text-sm input-field"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCustomProgress();
+                  }
+                }}
+              />
+              <button
+                onClick={handleCustomProgress}
+                className="px-3 py-1 text-sm btn-primary"
+              >
+                Set
+              </button>
+              <button
+                onClick={() => {
+                  setShowCustomInput(false);
+                  setCustomProgress('');
+                }}
+                className="px-3 py-1 text-sm bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] rounded transition-colors text-[var(--text-primary)]"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       )}
     </motion.div>
