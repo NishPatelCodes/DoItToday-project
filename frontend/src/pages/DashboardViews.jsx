@@ -398,12 +398,19 @@ export const DashboardTeam = ({
 }) => {
   const { user } = useAuthStore();
   
+  // Safety check: ensure all required props have defaults
+  const safeFriends = friends || [];
+  const safeFriendRequests = friendRequests || [];
+  const safeSentFriendRequests = sentFriendRequests || [];
+  const safeLeaderboard = leaderboard || [];
+  const safeTasks = tasks || [];
+  
   // Debug logging (commented out for production)
-  // console.log('🔍 Filtering shared tasks. Total tasks:', tasks.length);
+  // console.log('🔍 Filtering shared tasks. Total tasks:', safeTasks.length);
   // console.log('🔍 Current user ID:', user?.id || user?._id);
   
   // Get shared tasks (tasks shared with you or tasks you shared)
-  const sharedTasks = (tasks || []).filter(task => {
+  const sharedTasks = safeTasks.filter(task => {
     if (!task) return false;
     
     const taskUserId = task.userId?._id || task.userId || task.userId;
@@ -456,7 +463,7 @@ export const DashboardTeam = ({
       </div>
 
       {/* Friend Requests Section */}
-      {((friendRequests && friendRequests.length > 0) || (sentFriendRequests && sentFriendRequests.length > 0)) && (
+      {((safeFriendRequests && safeFriendRequests.length > 0) || (safeSentFriendRequests && safeSentFriendRequests.length > 0)) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -468,24 +475,72 @@ export const DashboardTeam = ({
           </h2>
           
           {/* Incoming Requests */}
-          {friendRequests && friendRequests.length > 0 && (
+          {safeFriendRequests && safeFriendRequests.length > 0 && (
             <div className="mb-4">
               <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Incoming Requests</h3>
               <div className="space-y-2">
-                {friendRequests.map((request) => {
+                {safeFriendRequests.map((request) => {
                   if (!request) return null;
+                  // Handle case where request might be just an ID string
+                  if (typeof request === 'string') {
+                    return (
+                      <div
+                        key={request}
+                        className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                            U
+                          </div>
+                          <div>
+                            <p className="font-medium text-[var(--text-primary)]">
+                              Loading...
+                            </p>
+                            <p className="text-xs text-[var(--text-secondary)]">
+                              Wants to be friends
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              if (onAcceptFriendRequest) {
+                                onAcceptFriendRequest(request);
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (onDeclineFriendRequest) {
+                                onDeclineFriendRequest(request);
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  const requestId = request._id || request.id || request;
+                  const requestName = request?.name || request?.email || 'Unknown';
+                  const requestEmail = request?.email || '';
                   return (
                   <div
-                    key={request._id || request.id}
+                    key={requestId}
                     className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                        {(request.name || request.email || 'U')[0].toUpperCase()}
+                        {(requestName || 'U')[0].toUpperCase()}
                       </div>
                       <div>
                         <p className="font-medium text-[var(--text-primary)]">
-                          {request.name || request.email}
+                          {requestName}
                         </p>
                         <p className="text-xs text-[var(--text-secondary)]">
                           Wants to be friends
@@ -496,7 +551,7 @@ export const DashboardTeam = ({
                       <button
                         onClick={() => {
                           if (onAcceptFriendRequest) {
-                            onAcceptFriendRequest(request._id || request.id);
+                            onAcceptFriendRequest(requestId);
                           } else {
                             console.error('onAcceptFriendRequest handler not provided');
                           }
@@ -508,7 +563,7 @@ export const DashboardTeam = ({
                       <button
                         onClick={() => {
                           if (onDeclineFriendRequest) {
-                            onDeclineFriendRequest(request._id || request.id);
+                            onDeclineFriendRequest(requestId);
                           } else {
                             console.error('onDeclineFriendRequest handler not provided');
                           }
@@ -526,24 +581,59 @@ export const DashboardTeam = ({
           )}
 
           {/* Sent Requests */}
-          {sentFriendRequests && sentFriendRequests.length > 0 && (
+          {safeSentFriendRequests && safeSentFriendRequests.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Sent Requests</h3>
               <div className="space-y-2">
-                {sentFriendRequests.map((request) => {
+                {safeSentFriendRequests.map((request) => {
                   if (!request) return null;
+                  // Handle case where request might be just an ID string
+                  if (typeof request === 'string') {
+                    return (
+                      <div
+                        key={request}
+                        className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                            U
+                          </div>
+                          <div>
+                            <p className="font-medium text-[var(--text-primary)]">
+                              Loading...
+                            </p>
+                            <p className="text-xs text-[var(--text-secondary)]">
+                              Request pending
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (onCancelFriendRequest) {
+                              onCancelFriendRequest(request);
+                            }
+                          }}
+                          className="px-3 py-1.5 text-sm font-medium bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    );
+                  }
+                  const requestId = request._id || request.id || request;
+                  const requestName = request?.name || request?.email || 'Unknown';
                   return (
                   <div
-                    key={request._id || request.id}
+                    key={requestId}
                     className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                        {(request.name || request.email || 'U')[0].toUpperCase()}
+                        {(requestName || 'U')[0].toUpperCase()}
                       </div>
                       <div>
                         <p className="font-medium text-[var(--text-primary)]">
-                          {request.name || request.email}
+                          {requestName}
                         </p>
                         <p className="text-xs text-[var(--text-secondary)]">
                           Request pending
@@ -553,7 +643,7 @@ export const DashboardTeam = ({
                     <button
                       onClick={() => {
                         if (onCancelFriendRequest) {
-                          onCancelFriendRequest(request._id || request.id);
+                          onCancelFriendRequest(requestId);
                         } else {
                           console.error('onCancelFriendRequest handler not provided');
                         }
@@ -574,14 +664,14 @@ export const DashboardTeam = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Friends List */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends ({(friends || []).length})</h2>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Friends ({safeFriends.length})</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {!friends || friends.length === 0 ? (
+            {safeFriends.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
                 No friends yet. Add friends to see their progress!
               </p>
             ) : (
-              friends.map((friend, index) => {
+              safeFriends.map((friend, index) => {
                 if (!friend) return null;
                 return (
                   <FriendStatus
@@ -600,12 +690,12 @@ export const DashboardTeam = ({
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {!leaderboard || leaderboard.length === 0 ? (
+            {safeLeaderboard.length === 0 ? (
               <p className="text-center text-[var(--text-secondary)] py-4 text-sm">
                 No leaderboard data yet
               </p>
             ) : (
-              leaderboard.map((user, index) => {
+              safeLeaderboard.map((user, index) => {
                 if (!user) return null;
                 return (
                   <div
