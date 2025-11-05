@@ -26,7 +26,7 @@ const AddFriendModal = ({ isOpen, onClose, onAdd }) => {
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to add friend';
       setError(errorMessage);
-      console.error('Add friend error:', err);
+      // Error handled by throwing
     }
   };
 

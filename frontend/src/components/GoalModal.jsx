@@ -10,18 +10,21 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
   const [isShared, setIsShared] = useState(false);
 
   useEffect(() => {
-    if (goal) {
-      setTitle(goal.title || '');
-      setDescription(goal.description || '');
-      setDeadline(goal.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : '');
-      setCategory(goal.category || 'general');
-      setIsShared(goal.isShared || false);
-    } else {
-      setTitle('');
-      setDescription('');
-      setDeadline('');
-      setCategory('general');
-      setIsShared(false);
+    if (isOpen) {
+      if (goal) {
+        setTitle(goal.title || '');
+        setDescription(goal.description || '');
+        setDeadline(goal.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : '');
+        setCategory(goal.category || 'general');
+        setIsShared(goal.isShared || false);
+      } else {
+        // Reset form for new goal
+        setTitle('');
+        setDescription('');
+        setDeadline('');
+        setCategory('general');
+        setIsShared(false);
+      }
     }
   }, [goal, isOpen]);
 
@@ -102,8 +105,66 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
                   className="input-field"
+                  min={goal ? undefined : new Date().toISOString().split('T')[0]}
                   required
                 />
+                {/* Quick Date Selection Buttons */}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      setDeadline(today.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      setDeadline(tomorrow.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                  >
+                    Tomorrow
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date();
+                      date.setDate(date.getDate() + 7);
+                      setDeadline(date.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                  >
+                    In 1 week
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date();
+                      date.setDate(date.getDate() + 30);
+                      setDeadline(date.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                  >
+                    In 1 month
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const date = new Date();
+                      date.setDate(date.getDate() + 90);
+                      setDeadline(date.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                  >
+                    In 3 months
+                  </button>
+                </div>
               </div>
 
               <div>

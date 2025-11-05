@@ -1,31 +1,148 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const isDev = import.meta.env.DEV;
+
+// Detect if we're using Render (production) - Render has slow cold starts
+const isProduction = API_URL.includes('render.com') || 
+                     API_URL.includes('onrender.com') || 
+                     (API_URL.includes('https://') && !API_URL.includes('localhost'));
+const defaultTimeout = isProduction ? 30000 : 8000; // 30s for Render, 8s for local
+
+// Log for debugging (only in dev)
+if (isDev) {
+  console.log('API Configuration:', { API_URL, isProduction, defaultTimeout });
+}
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: defaultTimeout,
 });
+
+// Health check helper
+let isServerReady = false;
+let healthCheckPromise = null;
+
+const checkServerHealth = async () => {
+  if (isServerReady) return true;
+  
+  if (healthCheckPromise) return healthCheckPromise;
+  
+  healthCheckPromise = (async () => {
+    const maxRetries = isProduction ? 5 : 3;
+    const retryDelay = isProduction ? 2000 : 500;
+    const healthTimeout = isProduction ? 10000 : 2000;
+    
+    // Get base URL (remove /api if present)
+    const baseURL = API_URL.replace('/api', '');
+    
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const response = await axios.get(`${baseURL}/api/health`, {
+          timeout: healthTimeout,
+        });
+        if (response.status === 200) {
+          isServerReady = true;
+          return true;
+        }
+      } catch (error) {
+        // Only retry if it's a network error, not if server is responding
+        if (i < maxRetries - 1 && (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK')) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay * (i + 1)));
+        } else {
+          // Server is responding (even if error), consider it ready
+          isServerReady = true;
+          return true;
+        }
+      }
+    }
+    return false;
+  })();
+  
+  return healthCheckPromise;
+};
+
+// Retry logic for failed requests (especially for Render cold starts)
+const retryRequest = async (config, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      // Exponential backoff: 1s, 2s, 4s
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i - 1) * 1000));
+      }
+      // Use the same axios instance with proper timeout
+      return await api.request(config);
+    } catch (error) {
+      // Only retry on timeout or network errors
+      const isRetryableError = error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout');
+      if (i === retries - 1 || !isRetryableError) {
+        throw error;
+      }
+    }
+  }
+};
 
 // Add response interceptor for better error handling
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Log error for debugging
-    console.error('API Error:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      url: error.config?.url,
-      baseURL: error.config?.baseURL,
-    });
+  async (error) => {
+    // Only log unexpected errors in development
+    const status = error.response?.status;
+    const isExpectedError = status === 401 || status === 404 || status === 403 || status === 422;
+    const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
+    
+    // For timeout errors, always retry (especially important for POST/PUT/PATCH/DELETE)
+    const isMutationRequest = ['post', 'put', 'patch', 'delete'].includes(error.config?.method?.toLowerCase());
+    
+    if (isTimeout && error.config && !error.config._retry) {
+      error.config._retry = true;
+      // More retries for mutation requests (create/update/delete) - these are critical
+      const maxRetries = isMutationRequest ? 3 : 2;
+      try {
+        return await retryRequest(error.config, maxRetries);
+      } catch (retryError) {
+        // If retry also fails, continue with original error
+        error = retryError;
+      }
+    }
+    
+    // Don't log timeout errors (they're expected on Render)
+    if (!isExpectedError && !isTimeout && isDev) {
+      // Only log unexpected errors in dev mode (excluding timeouts)
+      console.error('API Error:', {
+        message: error.message,
+        status,
+        url: error.config?.url,
+      });
+    }
     
     // Return error to be handled by component
     return Promise.reject(error);
   }
+);
+
+// Add request interceptor to wait for server health (non-blocking)
+api.interceptors.request.use(
+  async (config) => {
+    // Skip health check for health endpoint itself
+    if (config.url?.includes('/health')) {
+      return config;
+    }
+    
+    // Check server health in background (don't block if already checking)
+    if (!isServerReady && !healthCheckPromise) {
+      // Start health check but don't wait for it
+      checkServerHealth().catch(() => {
+        // Silently handle health check failures
+      });
+    }
+    
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 // Add token to requests
@@ -84,6 +201,7 @@ export const friendsAPI = {
 // Analytics API
 export const analyticsAPI = {
   getDashboard: () => api.get('/analytics/dashboard'),
+  getGoalAnalytics: (goalId) => api.get(`/analytics/goal/${goalId}`),
 };
 
 // Habits API
@@ -112,6 +230,11 @@ export const reactionsAPI = {
 // Smart Planner API
 export const smartPlannerAPI = {
   suggest: () => api.get('/smart-planner/suggest'),
+};
+
+// Health check API
+export const healthAPI = {
+  check: () => checkServerHealth(),
 };
 
 export default api;

@@ -17,7 +17,7 @@ const SmartPlanner = () => {
       const response = await smartPlannerAPI.suggest();
       setSuggestions(response.data);
     } catch (error) {
-      console.error('Error loading suggestions:', error);
+      // Error handled silently
     } finally {
       setLoading(false);
     }

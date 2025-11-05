@@ -4,21 +4,30 @@ import { FaTimes } from 'react-icons/fa';
 import { useDataStore } from '../store/dataStore';
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
-  const { friends } = useDataStore();
+  const { friends, goals } = useDataStore();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('medium');
   const [dueDate, setDueDate] = useState('');
   const [isShared, setIsShared] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState([]);
+  const [selectedGoalId, setSelectedGoalId] = useState('');
 
-  // Debug: Log friends when modal opens
+  // Filter active goals (not 100% complete)
+  const activeGoals = goals ? goals.filter(g => (g.progress || 0) < 100) : [];
+
+  // Reset form when modal opens/closes
   useEffect(() => {
-    if (isOpen) {
-      console.log('TaskModal opened. Friends:', friends);
-      console.log('Friends count:', friends?.length || 0);
+    if (!isOpen) {
+      setTitle('');
+      setDescription('');
+      setPriority('medium');
+      setDueDate('');
+      setIsShared(false);
+      setSelectedFriends([]);
+      setSelectedGoalId('');
     }
-  }, [isOpen, friends]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (task) {
@@ -28,6 +37,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
       setIsShared(task.isShared || false);
       setSelectedFriends(task.sharedWith?.map(f => f._id || f.id || f) || []);
+      setSelectedGoalId(task.goalId?._id || task.goalId || '');
     } else {
       setTitle('');
       setDescription('');
@@ -35,6 +45,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setDueDate('');
       setIsShared(false);
       setSelectedFriends([]);
+      setSelectedGoalId('');
     }
   }, [task, isOpen]);
 
@@ -47,6 +58,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       dueDate: dueDate || null,
       isShared: isShared || selectedFriends.length > 0,
       sharedWith: selectedFriends,
+      goalId: selectedGoalId || null,
     });
     onClose();
   };
@@ -236,6 +248,63 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </div>
 
               <div className="border-t border-[var(--border-color)] pt-4 mt-4">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                  Associate with Goal (Optional)
+                </label>
+                {activeGoals.length === 0 ? (
+                  <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-3 text-center">
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {!goals || goals.length === 0
+                        ? 'No goals yet. Create a goal first to associate tasks with it.'
+                        : 'All goals are completed. Create a new goal to associate tasks with it.'}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <select
+                        value={selectedGoalId}
+                        onChange={(e) => setSelectedGoalId(e.target.value)}
+                        className="input-field w-full pr-10"
+                        style={{ 
+                          cursor: 'pointer',
+                          paddingRight: '2.5rem',
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'right 0.75rem center',
+                          backgroundSize: '12px',
+                          appearance: 'none',
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none'
+                        }}
+                      >
+                        <option value="">No goal</option>
+                        {activeGoals.map((goal) => {
+                          const goalId = goal._id || goal.id;
+                          const goalTitle = goal.title || 'Untitled Goal';
+                          return (
+                            <option key={goalId} value={goalId}>
+                              {goalTitle}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                    {selectedGoalId && (
+                      <p className="mt-2 text-xs text-[var(--text-secondary)]">
+                        ✓ This task will help you achieve your goal
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="border-t border-[var(--border-color)] pt-4 mt-4">
                 <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">
                   <span className="flex items-center gap-2">
                     <svg className="w-4 h-4 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,8 +328,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       {friends.map((friend) => {
                         const friendId = friend._id || friend.id;
                         if (!friendId) {
-                          console.warn('Friend missing ID:', friend);
-                          return null;
+                          return null; // Skip friends without ID
                         }
                         const isSelected = selectedFriends.includes(friendId);
                         return (

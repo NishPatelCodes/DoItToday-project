@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine } from 'react-icons/fa';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
+import GoalAnalytics from '../components/GoalAnalytics';
 import HabitCard from '../components/HabitCard';
 import SmartPlanner from '../components/SmartPlanner';
 import FocusMode from '../components/FocusMode';
@@ -308,7 +309,9 @@ export const DashboardGoals = ({
   onEditGoal,
   setIsGoalModalOpen,
   setEditingGoal,
+  tasks = [],
 }) => {
+  const [selectedGoalForAnalytics, setSelectedGoalForAnalytics] = useState(null);
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -336,6 +339,7 @@ export const DashboardGoals = ({
             onUpdate={onUpdateGoalProgress}
             onDelete={onDeleteGoal}
             onEdit={onEditGoal}
+            onViewAnalytics={(goal) => setSelectedGoalForAnalytics(goal)}
           />
         ))}
         {goals.length === 0 && (
@@ -344,6 +348,15 @@ export const DashboardGoals = ({
           </div>
         )}
       </div>
+      
+      {/* Goal Analytics Modal */}
+      {selectedGoalForAnalytics && (
+        <GoalAnalytics
+          goal={selectedGoalForAnalytics}
+          tasks={tasks}
+          onClose={() => setSelectedGoalForAnalytics(null)}
+        />
+      )}
     </div>
   );
 };
@@ -689,20 +702,7 @@ export const DashboardTeam = ({
     
     const result = isSharedWithMe || isMySharedTask || (isMarkedShared && !isOwnTask);
     
-    // Debug logging (always log for now to help debug)
-    if (result) {
-      console.log('✅ Shared task found:', {
-        taskId: task._id,
-        title: task.title,
-        isOwnTask,
-        isSharedWithMe,
-        isMySharedTask,
-        sharedWith: task.sharedWith,
-        sharedWithLength: task.sharedWith?.length || 0,
-        userId: taskUserId,
-        currentUserId
-      });
-    }
+    // Debug logging disabled for production
     
     return result;
   });
@@ -810,8 +810,6 @@ export const DashboardTeam = ({
                         onClick={() => {
                           if (onAcceptFriendRequest) {
                             onAcceptFriendRequest(requestId);
-                          } else {
-                            console.error('onAcceptFriendRequest handler not provided');
                           }
                         }}
                         className="px-3 py-1.5 text-sm font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
@@ -822,8 +820,6 @@ export const DashboardTeam = ({
                         onClick={() => {
                           if (onDeclineFriendRequest) {
                             onDeclineFriendRequest(requestId);
-                          } else {
-                            console.error('onDeclineFriendRequest handler not provided');
                           }
                         }}
                         className="px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
@@ -902,8 +898,6 @@ export const DashboardTeam = ({
                       onClick={() => {
                         if (onCancelFriendRequest) {
                           onCancelFriendRequest(requestId);
-                        } else {
-                          console.error('onCancelFriendRequest handler not provided');
                         }
                       }}
                       className="px-3 py-1.5 text-sm font-medium bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg transition-colors"

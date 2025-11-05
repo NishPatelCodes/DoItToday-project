@@ -23,8 +23,6 @@ const Register = () => {
       login(response.data.user, response.data.token);
       navigate('/dashboard');
     } catch (err) {
-      console.error('Registration error:', err);
-      
       // Handle validation errors
       if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
         const errorMessages = err.response.data.errors.map((e) => e.msg || e.message).join(', ');

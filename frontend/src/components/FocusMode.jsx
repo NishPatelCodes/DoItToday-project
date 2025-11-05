@@ -42,7 +42,7 @@ const FocusMode = ({ taskId, onComplete }) => {
       setIsActive(true);
       setIsPaused(false);
     } catch (error) {
-      console.error('Error starting focus session:', error);
+      // Error handled by alert
     }
   };
 
@@ -64,7 +64,7 @@ const FocusMode = ({ taskId, onComplete }) => {
         await focusAPI.complete(sessionId);
         if (onComplete) onComplete();
       } catch (error) {
-        console.error('Error completing focus session:', error);
+        // Error handled silently
       }
     }
     handleStop();

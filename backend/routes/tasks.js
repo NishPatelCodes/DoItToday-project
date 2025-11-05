@@ -14,6 +14,7 @@ router.get('/', authenticate, async (req, res) => {
     const ownTasks = await Task.find({ userId: req.user._id })
       .populate('sharedWith', 'name email avatar')
       .populate('createdBy', 'name email avatar')
+      .populate('goalId', 'title progress')
       .sort({ createdAt: -1 })
       .exec();
 
@@ -25,6 +26,7 @@ router.get('/', authenticate, async (req, res) => {
       .populate('userId', 'name email avatar')
       .populate('createdBy', 'name email avatar')
       .populate('sharedWith', 'name email avatar')
+      .populate('goalId', 'title progress')
       .sort({ createdAt: -1 })
       .exec();
 
@@ -43,7 +45,7 @@ router.get('/', authenticate, async (req, res) => {
 // @desc    Create a new task
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { title, description, priority, dueDate, isShared, sharedWith } = req.body;
+    const { title, description, priority, dueDate, isShared, sharedWith, goalId } = req.body;
 
     // Validate sharedWith if provided
     let sharedWithIds = [];
@@ -57,6 +59,16 @@ router.post('/', authenticate, async (req, res) => {
         .filter(id => friendIds.includes(id.toString()));
     }
 
+    // Validate goalId if provided
+    let goalIdValue = null;
+    if (goalId && mongoose.Types.ObjectId.isValid(goalId)) {
+      const Goal = (await import('../models/Goal.js')).default;
+      const goal = await Goal.findOne({ _id: goalId, userId: req.user._id });
+      if (goal) {
+        goalIdValue = goalId;
+      }
+    }
+
     const task = new Task({
       userId: req.user._id,
       createdBy: req.user._id,
@@ -66,6 +78,7 @@ router.post('/', authenticate, async (req, res) => {
       dueDate: dueDate || null,
       isShared: isShared || sharedWithIds.length > 0,
       sharedWith: sharedWithIds,
+      goalId: goalIdValue,
     });
 
     await task.save();
@@ -73,6 +86,9 @@ router.post('/', authenticate, async (req, res) => {
     // Populate user info for response
     await task.populate('userId', 'name email avatar');
     await task.populate('createdBy', 'name email avatar');
+    if (task.goalId) {
+      await task.populate('goalId', 'title progress');
+    }
     if (task.sharedWith.length > 0) {
       await task.populate('sharedWith', 'name email avatar');
     }
@@ -87,7 +103,7 @@ router.post('/', authenticate, async (req, res) => {
 // @desc    Update a task (can be updated by owner or someone it's shared with)
 router.put('/:id', authenticate, async (req, res) => {
   try {
-    const { title, description, status, priority, dueDate, isShared, sharedWith } = req.body;
+    const { title, description, status, priority, dueDate, isShared, sharedWith, goalId } = req.body;
 
     // Find task - user must be owner or task must be shared with them
     const task = await Task.findOne({
@@ -106,13 +122,28 @@ router.put('/:id', authenticate, async (req, res) => {
     const isOwner = task.userId.toString() === req.user._id.toString();
     const canEdit = isOwner || task.sharedWith.some(id => id.toString() === req.user._id.toString());
     
-    // Only owner can modify title, description, priority, dueDate, sharedWith
+    // Only owner can modify title, description, priority, dueDate, sharedWith, goalId
     if (isOwner) {
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
       if (priority !== undefined) task.priority = priority;
       if (dueDate !== undefined) task.dueDate = dueDate;
       if (isShared !== undefined) task.isShared = isShared;
+      
+      // Update goalId if provided
+      if (goalId !== undefined) {
+        if (goalId === null || goalId === '') {
+          task.goalId = null;
+        } else if (mongoose.Types.ObjectId.isValid(goalId)) {
+          const Goal = (await import('../models/Goal.js')).default;
+          const goal = await Goal.findOne({ _id: goalId, userId: req.user._id });
+          if (goal) {
+            task.goalId = goalId;
+          } else {
+            task.goalId = null;
+          }
+        }
+      }
       
       // Update sharedWith if provided
       if (sharedWith !== undefined && Array.isArray(sharedWith)) {
@@ -163,6 +194,9 @@ router.put('/:id', authenticate, async (req, res) => {
     // Populate user info for response
     await task.populate('userId', 'name email avatar');
     await task.populate('createdBy', 'name email avatar');
+    if (task.goalId) {
+      await task.populate('goalId', 'title progress');
+    }
     if (task.sharedWith && task.sharedWith.length > 0) {
       await task.populate('sharedWith', 'name email avatar');
     }

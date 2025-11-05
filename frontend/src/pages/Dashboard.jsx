@@ -81,46 +81,35 @@ const Dashboard = () => {
         const tasksRes = await tasksAPI.getAll();
         const tasksData = tasksRes.data || [];
         setTasks(tasksData);
-        console.log('Tasks loaded:', tasksData.length);
-        
-        // Debug: Check for shared tasks
-        const sharedCount = tasksData.filter(t => {
-          const hasSharedWith = t.sharedWith && Array.isArray(t.sharedWith) && t.sharedWith.length > 0;
-          const isShared = t.isShared === true;
-          return hasSharedWith || isShared;
-        }).length;
-        console.log('Shared tasks found:', sharedCount);
-        if (sharedCount > 0) {
-          console.log('Shared tasks details:', tasksData.filter(t => {
-            const hasSharedWith = t.sharedWith && Array.isArray(t.sharedWith) && t.sharedWith.length > 0;
-            const isShared = t.isShared === true;
-            return hasSharedWith || isShared;
-          }));
-        }
       } catch (error) {
-        console.error('Error loading tasks:', error);
-        setError('Failed to load tasks. Please refresh the page.');
+        // Only show error if it's not a network timeout (likely server cold start)
+        const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout');
+        if (!isTimeout) {
+          setError('Failed to load tasks. Please refresh the page.');
+        }
         setTasks([]);
       } finally {
         setLoadingTasks(false);
       }
 
       // Load other data in parallel (non-critical)
+      // Stagger requests slightly to avoid overwhelming server on cold start
+      const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
       const [goalsRes, friendsRes, analyticsRes, leaderboardRes, habitsRes, authRes] =
         await Promise.allSettled([
           goalsAPI.getAll(),
-          friendsAPI.getAll(),
-          analyticsAPI.getDashboard(),
-          friendsAPI.getLeaderboard(),
-          habitsAPI.getAll(),
-          authAPI.getMe(),
+          delay(100).then(() => friendsAPI.getAll()),
+          delay(200).then(() => analyticsAPI.getDashboard()),
+          delay(300).then(() => friendsAPI.getLeaderboard()),
+          delay(400).then(() => habitsAPI.getAll()),
+          delay(500).then(() => authAPI.getMe()),
         ]);
 
-      // Handle results with error handling
+      // Handle results with error handling (silently handle failures)
       if (goalsRes.status === 'fulfilled') {
         setGoals(goalsRes.value.data || []);
       } else {
-        console.error('Error loading goals:', goalsRes.reason);
+        setGoals([]);
       }
 
       if (friendsRes.status === 'fulfilled') {
@@ -136,7 +125,6 @@ const Dashboard = () => {
           setSentFriendRequests(friendsData.sentFriendRequests || []);
         }
       } else {
-        console.error('Error loading friends:', friendsRes.reason);
         setFriends([]);
         setFriendRequests([]);
         setSentFriendRequests([]);
@@ -145,21 +133,18 @@ const Dashboard = () => {
       if (analyticsRes.status === 'fulfilled') {
         setAnalytics(analyticsRes.value.data || {});
       } else {
-        console.error('Error loading analytics:', analyticsRes.reason);
         setAnalytics({});
       }
 
       if (leaderboardRes.status === 'fulfilled') {
         setLeaderboard(leaderboardRes.value.data || []);
       } else {
-        console.error('Error loading leaderboard:', leaderboardRes.reason);
         setLeaderboard([]);
       }
 
       if (habitsRes.status === 'fulfilled') {
         setHabits(habitsRes.value.data || []);
       } else {
-        console.error('Error loading habits:', habitsRes.reason);
         setHabits([]);
       }
 
@@ -173,12 +158,14 @@ const Dashboard = () => {
         });
       }
     } catch (error) {
-      console.error('Error loading data:', error);
       if (error.response?.status === 401) {
         logout();
         navigate('/login');
       } else {
-        setError('Failed to load some data. Please refresh the page.');
+        const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout');
+        if (!isTimeout) {
+          setError('Failed to load some data. Please refresh the page.');
+        }
       }
     } finally {
       setLoading(false);
@@ -202,10 +189,9 @@ const Dashboard = () => {
         const analyticsRes = await analyticsAPI.getDashboard();
         setAnalytics(analyticsRes.data || {});
       } catch (e) {
-        console.error('Error reloading analytics:', e);
+        // Silently handle analytics reload failure
       }
     } catch (error) {
-      console.error('Error toggling task:', error);
       alert('Failed to update task. Please try again.');
     }
   };
@@ -223,10 +209,9 @@ const Dashboard = () => {
         const analyticsRes = await analyticsAPI.getDashboard();
         setAnalytics(analyticsRes.data || {});
       } catch (e) {
-        console.error('Error reloading analytics:', e);
+        // Silently handle analytics reload failure
       }
     } catch (error) {
-      console.error('Error deleting task:', error);
       alert('Failed to delete task. Please try again.');
     }
   };
@@ -238,19 +223,16 @@ const Dashboard = () => {
 
   const handleCreateTask = async (taskData) => {
     try {
-      console.log('Creating task with data:', taskData);
       let newTask;
       if (editingTask) {
         const response = await tasksAPI.update(editingTask._id, taskData);
         newTask = response.data;
-        console.log('Task updated:', newTask);
         // Update task in store
         const { updateTask } = useDataStore.getState();
         updateTask(editingTask._id, newTask);
       } else {
         const response = await tasksAPI.create(taskData);
         newTask = response.data;
-        console.log('Task created:', newTask);
         // Reload all tasks to get properly populated sharedWith
         await loadData();
       }
@@ -261,11 +243,19 @@ const Dashboard = () => {
         const analyticsRes = await analyticsAPI.getDashboard();
         setAnalytics(analyticsRes.data || {});
       } catch (e) {
-        console.error('Error reloading analytics:', e);
+        // Silently handle analytics reload failure
       }
     } catch (error) {
-      console.error('Error saving task:', error);
-      alert('Failed to save task. Please try again.');
+      // Check if it's a timeout error (will be retried automatically)
+      const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout');
+      
+      // Only show error if it's not a timeout (timeouts are handled by retry logic)
+      if (!isTimeout) {
+        alert('Failed to save task. Please try again.');
+      } else {
+        // For timeout, show a more helpful message
+        alert('Server is taking longer than usual to respond. The task may have been saved - please check your tasks list.');
+      }
       throw error;
     }
   };
@@ -275,7 +265,7 @@ const Dashboard = () => {
       await goalsAPI.update(id, { progress });
       loadData(); // Reload to update analytics
     } catch (error) {
-      console.error('Error updating goal:', error);
+      // Silently handle error
     }
   };
 
@@ -284,7 +274,7 @@ const Dashboard = () => {
       await goalsAPI.delete(id);
       loadData();
     } catch (error) {
-      console.error('Error deleting goal:', error);
+      // Silently handle error
     }
   };
 
@@ -304,7 +294,7 @@ const Dashboard = () => {
       setIsGoalModalOpen(false);
       setEditingGoal(null);
     } catch (error) {
-      console.error('Error saving goal:', error);
+      // Silently handle error
     }
   };
 
@@ -326,7 +316,6 @@ const Dashboard = () => {
       loadData(); // Reload leaderboard
       return response;
     } catch (error) {
-      console.error('Error adding friend:', error);
       throw error;
     }
   };
@@ -336,7 +325,6 @@ const Dashboard = () => {
       await friendsAPI.accept(friendId);
       loadData(); // Reload friends
     } catch (error) {
-      console.error('Error accepting friend request:', error);
       alert('Failed to accept friend request. Please try again.');
     }
   };
@@ -346,7 +334,6 @@ const Dashboard = () => {
       await friendsAPI.decline(friendId);
       loadData(); // Reload friends
     } catch (error) {
-      console.error('Error declining friend request:', error);
       alert('Failed to decline friend request. Please try again.');
     }
   };
@@ -356,7 +343,6 @@ const Dashboard = () => {
       await friendsAPI.cancel(friendId);
       loadData(); // Reload friends
     } catch (error) {
-      console.error('Error cancelling friend request:', error);
       alert('Failed to cancel friend request. Please try again.');
     }
   };
@@ -366,7 +352,7 @@ const Dashboard = () => {
       await friendsAPI.remove(id);
       loadData(); // Reload leaderboard
     } catch (error) {
-      console.error('Error removing friend:', error);
+      // Silently handle error
     }
   };
 
@@ -375,7 +361,7 @@ const Dashboard = () => {
       await habitsAPI.complete(id);
       loadData(); // Reload to update XP
     } catch (error) {
-      console.error('Error completing habit:', error);
+      // Silently handle error
     }
   };
 
@@ -384,7 +370,7 @@ const Dashboard = () => {
       await habitsAPI.delete(id);
       loadData();
     } catch (error) {
-      console.error('Error deleting habit:', error);
+      // Silently handle error
     }
   };
 
@@ -474,7 +460,9 @@ const Dashboard = () => {
               <DashboardCalendar
                 tasks={tasks}
                 goals={goals}
-                onDateClick={(date) => console.log('Date clicked:', date)}
+                onDateClick={(date) => {
+                  // Date clicked - could add functionality here
+                }}
                 onCreateTask={() => {
                   setEditingTask(null);
                   setIsTaskModalOpen(true);
@@ -502,6 +490,7 @@ const Dashboard = () => {
             element={
               <DashboardGoals
                 goals={goals}
+                tasks={tasks}
                 onUpdateGoalProgress={handleUpdateGoalProgress}
                 onDeleteGoal={handleDeleteGoal}
                 onEditGoal={handleEditGoal}

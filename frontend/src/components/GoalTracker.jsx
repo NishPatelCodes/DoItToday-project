@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { FaTrash, FaEdit } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaChartLine } from 'react-icons/fa';
 import { format, isPast, differenceInDays } from 'date-fns';
 
-const GoalTracker = ({ goal, onUpdate, onDelete, onEdit }) => {
+const GoalTracker = ({ goal, onUpdate, onDelete, onEdit, onViewAnalytics }) => {
   const progress = goal.progress || 0;
   const deadline = new Date(goal.deadline);
   const isOverdue = isPast(deadline) && progress < 100;
@@ -48,6 +48,15 @@ const GoalTracker = ({ goal, onUpdate, onDelete, onEdit }) => {
         </div>
 
         <div className="flex items-center gap-2">
+          {onViewAnalytics && (
+            <button
+              onClick={() => onViewAnalytics(goal)}
+              className="p-2 text-[var(--text-tertiary)] hover:text-blue-600 transition-colors"
+              title="View Analytics"
+            >
+              <FaChartLine />
+            </button>
+          )}
           {onEdit && (
             <button
               onClick={() => onEdit(goal)}
