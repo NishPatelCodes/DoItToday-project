@@ -52,6 +52,8 @@ const Dashboard = () => {
   } = useDataStore();
 
   const [loading, setLoading] = useState(true);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [error, setError] = useState(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
@@ -65,9 +67,25 @@ const Dashboard = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [tasksRes, goalsRes, friendsRes, analyticsRes, leaderboardRes, habitsRes, authRes] =
-        await Promise.all([
-          tasksAPI.getAll(),
+      setError(null);
+      
+      // Load critical data first (tasks)
+      setLoadingTasks(true);
+      try {
+        const tasksRes = await tasksAPI.getAll();
+        setTasks(tasksRes.data || []);
+        console.log('Tasks loaded:', tasksRes.data?.length || 0);
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        setError('Failed to load tasks. Please refresh the page.');
+        setTasks([]);
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      // Load other data in parallel (non-critical)
+      const [goalsRes, friendsRes, analyticsRes, leaderboardRes, habitsRes, authRes] =
+        await Promise.allSettled([
           goalsAPI.getAll(),
           friendsAPI.getAll(),
           analyticsAPI.getDashboard(),
@@ -76,20 +94,47 @@ const Dashboard = () => {
           authAPI.getMe(),
         ]);
 
-      setTasks(tasksRes.data);
-      setGoals(goalsRes.data);
-      setFriends(friendsRes.data);
-      setAnalytics(analyticsRes.data);
-      setLeaderboard(leaderboardRes.data);
-      setHabits(habitsRes.data);
+      // Handle results with error handling
+      if (goalsRes.status === 'fulfilled') {
+        setGoals(goalsRes.value.data || []);
+      } else {
+        console.error('Error loading goals:', goalsRes.reason);
+      }
 
-      if (authRes?.data?.user) {
+      if (friendsRes.status === 'fulfilled') {
+        setFriends(friendsRes.value.data || []);
+      } else {
+        console.error('Error loading friends:', friendsRes.reason);
+      }
+
+      if (analyticsRes.status === 'fulfilled') {
+        setAnalytics(analyticsRes.value.data || {});
+      } else {
+        console.error('Error loading analytics:', analyticsRes.reason);
+        setAnalytics({});
+      }
+
+      if (leaderboardRes.status === 'fulfilled') {
+        setLeaderboard(leaderboardRes.value.data || []);
+      } else {
+        console.error('Error loading leaderboard:', leaderboardRes.reason);
+        setLeaderboard([]);
+      }
+
+      if (habitsRes.status === 'fulfilled') {
+        setHabits(habitsRes.value.data || []);
+      } else {
+        console.error('Error loading habits:', habitsRes.reason);
+        setHabits([]);
+      }
+
+      if (authRes.status === 'fulfilled' && authRes.value?.data?.user) {
         const { updateUser } = useAuthStore.getState();
         updateUser({
           ...user,
-          xp: authRes.data.user.xp || 0,
-          level: authRes.data.user.level || 1,
-          streak: authRes.data.user.streak || 0,
+          xp: authRes.value.data.user.xp || 0,
+          level: authRes.value.data.user.level || 1,
+          streak: authRes.value.data.user.streak || 0,
         });
       }
     } catch (error) {
@@ -97,6 +142,8 @@ const Dashboard = () => {
       if (error.response?.status === 401) {
         logout();
         navigate('/login');
+      } else {
+        setError('Failed to load some data. Please refresh the page.');
       }
     } finally {
       setLoading(false);
@@ -109,19 +156,43 @@ const Dashboard = () => {
       if (!task) return;
 
       const newStatus = task.status === 'completed' ? 'pending' : 'completed';
-      await tasksAPI.update(id, { status: newStatus });
-      loadData(); // Reload to update analytics
+      const response = await tasksAPI.update(id, { status: newStatus });
+      
+      // Update task in store immediately
+      const { updateTask } = useDataStore.getState();
+      updateTask(id, response.data);
+      
+      // Reload only analytics to update stats
+      try {
+        const analyticsRes = await analyticsAPI.getDashboard();
+        setAnalytics(analyticsRes.data || {});
+      } catch (e) {
+        console.error('Error reloading analytics:', e);
+      }
     } catch (error) {
       console.error('Error toggling task:', error);
+      alert('Failed to update task. Please try again.');
     }
   };
 
   const handleDeleteTask = async (id) => {
     try {
       await tasksAPI.delete(id);
-      loadData(); // Reload to update analytics
+      
+      // Remove task from store immediately
+      const { deleteTask } = useDataStore.getState();
+      deleteTask(id);
+      
+      // Reload only analytics to update stats
+      try {
+        const analyticsRes = await analyticsAPI.getDashboard();
+        setAnalytics(analyticsRes.data || {});
+      } catch (e) {
+        console.error('Error reloading analytics:', e);
+      }
     } catch (error) {
       console.error('Error deleting task:', error);
+      alert('Failed to delete task. Please try again.');
     }
   };
 
@@ -132,16 +203,33 @@ const Dashboard = () => {
 
   const handleCreateTask = async (taskData) => {
     try {
+      let newTask;
       if (editingTask) {
-        await tasksAPI.update(editingTask._id, taskData);
+        const response = await tasksAPI.update(editingTask._id, taskData);
+        newTask = response.data;
+        // Update task in store
+        const { updateTask } = useDataStore.getState();
+        updateTask(editingTask._id, newTask);
       } else {
-        await tasksAPI.create(taskData);
+        const response = await tasksAPI.create(taskData);
+        newTask = response.data;
+        // Add task to store
+        const { addTask } = useDataStore.getState();
+        addTask(newTask);
       }
-      loadData();
       setIsTaskModalOpen(false);
       setEditingTask(null);
+      // Reload only analytics to update stats
+      try {
+        const analyticsRes = await analyticsAPI.getDashboard();
+        setAnalytics(analyticsRes.data || {});
+      } catch (e) {
+        console.error('Error reloading analytics:', e);
+      }
     } catch (error) {
       console.error('Error saving task:', error);
+      alert('Failed to save task. Please try again.');
+      throw error;
     }
   };
 
@@ -224,12 +312,15 @@ const Dashboard = () => {
   const completedTasks = tasks.filter((t) => t.status === 'completed');
   const activeGoals = goals.filter((g) => (g.progress || 0) < 100);
 
-  if (loading) {
+  if (loading && tasks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent mb-4"></div>
           <p className="text-[var(--text-secondary)]">Loading dashboard...</p>
+          {loadingTasks && (
+            <p className="text-sm text-[var(--text-tertiary)] mt-2">Loading your tasks...</p>
+          )}
         </div>
       </div>
     );
@@ -242,6 +333,22 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 ml-64">
+        {error && (
+          <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
+            <div className="flex items-center justify-between">
+              <p className="flex-1">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  loadData();
+                }}
+                className="ml-4 px-3 py-1 text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
         <Routes>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route
