@@ -403,7 +403,7 @@ export const DashboardTeam = ({
   // console.log('🔍 Current user ID:', user?.id || user?._id);
   
   // Get shared tasks (tasks shared with you or tasks you shared)
-  const sharedTasks = tasks.filter(task => {
+  const sharedTasks = (tasks || []).filter(task => {
     if (!task) return false;
     
     const taskUserId = task.userId?._id || task.userId || task.userId;
@@ -456,7 +456,7 @@ export const DashboardTeam = ({
       </div>
 
       {/* Friend Requests Section */}
-      {(friendRequests.length > 0 || sentFriendRequests.length > 0) && (
+      {((friendRequests && friendRequests.length > 0) || (sentFriendRequests && sentFriendRequests.length > 0)) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -468,11 +468,13 @@ export const DashboardTeam = ({
           </h2>
           
           {/* Incoming Requests */}
-          {friendRequests.length > 0 && (
+          {friendRequests && friendRequests.length > 0 && (
             <div className="mb-4">
               <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Incoming Requests</h3>
               <div className="space-y-2">
-                {friendRequests.map((request) => (
+                {friendRequests.map((request) => {
+                  if (!request) return null;
+                  return (
                   <div
                     key={request._id || request.id}
                     className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
@@ -492,30 +494,45 @@ export const DashboardTeam = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => onAcceptFriendRequest(request._id || request.id)}
+                        onClick={() => {
+                          if (onAcceptFriendRequest) {
+                            onAcceptFriendRequest(request._id || request.id);
+                          } else {
+                            console.error('onAcceptFriendRequest handler not provided');
+                          }
+                        }}
                         className="px-3 py-1.5 text-sm font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
                       >
                         Accept
                       </button>
                       <button
-                        onClick={() => onDeclineFriendRequest(request._id || request.id)}
+                        onClick={() => {
+                          if (onDeclineFriendRequest) {
+                            onDeclineFriendRequest(request._id || request.id);
+                          } else {
+                            console.error('onDeclineFriendRequest handler not provided');
+                          }
+                        }}
                         className="px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                       >
                         Decline
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Sent Requests */}
-          {sentFriendRequests.length > 0 && (
+          {sentFriendRequests && sentFriendRequests.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Sent Requests</h3>
               <div className="space-y-2">
-                {sentFriendRequests.map((request) => (
+                {sentFriendRequests.map((request) => {
+                  if (!request) return null;
+                  return (
                   <div
                     key={request._id || request.id}
                     className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
@@ -534,13 +551,20 @@ export const DashboardTeam = ({
                       </div>
                     </div>
                     <button
-                      onClick={() => onCancelFriendRequest(request._id || request.id)}
+                      onClick={() => {
+                        if (onCancelFriendRequest) {
+                          onCancelFriendRequest(request._id || request.id);
+                        } else {
+                          console.error('onCancelFriendRequest handler not provided');
+                        }
+                      }}
                       className="px-3 py-1.5 text-sm font-medium bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg transition-colors"
                     >
                       Cancel
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
