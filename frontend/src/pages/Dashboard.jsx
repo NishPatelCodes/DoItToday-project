@@ -274,14 +274,25 @@ const Dashboard = () => {
   const handleUpdateGoalProgress = async (id, progress) => {
     try {
       const response = await goalsAPI.update(id, { progress });
-      // Update goal locally without reloading all data
-      setGoals((prevGoals) => {
-        // Ensure prevGoals is an array
-        if (!Array.isArray(prevGoals)) {
-          return prevGoals || [];
-        }
-        return prevGoals.map((g) => (g._id === id || g.id === id ? { ...g, progress } : g));
-      });
+      // Get current goals from store
+      const currentGoals = useDataStore.getState().goals;
+      
+      // Ensure we have an array and update the specific goal
+      if (Array.isArray(currentGoals)) {
+        const updatedGoals = currentGoals.map((g) => {
+          const goalId = g._id || g.id;
+          const targetId = id._id || id;
+          if (goalId === targetId || goalId === id) {
+            return { ...g, progress: Math.max(0, Math.min(100, progress)) };
+          }
+          return g;
+        });
+        setGoals(updatedGoals);
+      } else {
+        // If goals is not an array, set it to empty array to prevent errors
+        setGoals([]);
+      }
+      
       // Only reload analytics, not all data
       try {
         const analyticsRes = await analyticsAPI.getDashboard();
@@ -290,6 +301,7 @@ const Dashboard = () => {
         // Silently handle analytics reload failure
       }
     } catch (error) {
+      console.error('Error updating goal progress:', error);
       // Silently handle error
     }
   };
