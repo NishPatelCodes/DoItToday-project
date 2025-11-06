@@ -10,6 +10,7 @@ import {
   FaChartLine,
   FaBars,
 } from 'react-icons/fa';
+import GratitudeJournal from '../components/GratitudeJournal';
 import { useAuthStore } from '../store/authStore';
 import { useDataStore } from '../store/dataStore';
 import {
@@ -584,6 +585,10 @@ const Dashboard = () => {
                     currentUser={user}
                   />
                 }
+              />
+              <Route
+                path="gratitude"
+                element={<GratitudeJournal />}
               />
               <Route
                 path="profile"

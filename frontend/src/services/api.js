@@ -242,6 +242,17 @@ export const smartPlannerAPI = {
   suggest: () => api.get('/smart-planner/suggest'),
 };
 
+// Gratitude API
+export const gratitudeAPI = {
+  getAll: (params) => api.get('/gratitude', { params }),
+  getToday: () => api.get('/gratitude/today'),
+  getByDate: (date) => api.get(`/gratitude/${date}`),
+  getStreak: () => api.get('/gratitude/streak'),
+  create: (data) => api.post('/gratitude', data),
+  update: (id, data) => api.put(`/gratitude/${id}`, data),
+  delete: (id) => api.delete(`/gratitude/${id}`),
+};
+
 // Health check API
 export const healthAPI = {
   check: () => checkServerHealth(),

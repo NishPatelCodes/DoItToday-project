@@ -13,6 +13,7 @@ import focusRoutes from './routes/focus.js';
 import reactionRoutes from './routes/reactions.js';
 import smartPlannerRoutes from './routes/smartPlanner.js';
 import oauthRoutes from './routes/oauth.js';
+import gratitudeRoutes from './routes/gratitude.js';
 
 dotenv.config();
 
@@ -72,6 +73,7 @@ app.use('/api/habits', habitRoutes);
 app.use('/api/focus', focusRoutes);
 app.use('/api/reactions', reactionRoutes);
 app.use('/api/smart-planner', smartPlannerRoutes);
+app.use('/api/gratitude', gratitudeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
