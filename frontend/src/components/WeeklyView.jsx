@@ -167,8 +167,8 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
       </div>
       
       {/* Weekly Timetable */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[70vh] rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-inner" ref={timetableRef}>
-        <div className="min-w-[800px]">
+      <div className="overflow-x-auto overflow-y-auto max-h-[70vh] rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-inner" ref={timetableRef} style={{ maxWidth: '100%' }}>
+        <div className="min-w-[800px] max-w-full">
           {/* Day Headers */}
           <div className="grid grid-cols-8 gap-2 mb-2 sticky top-0 bg-gradient-to-b from-[var(--bg-primary)] to-[var(--bg-secondary)] z-10 p-3 border-b-2 border-[var(--border-color)] shadow-sm backdrop-blur-sm">
             <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-primary)] p-2">

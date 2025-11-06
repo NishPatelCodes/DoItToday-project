@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import { useDataStore } from '../store/dataStore';
+import ConfirmationModal from './ConfirmationModal';
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const { friends, goals } = useDataStore();
@@ -13,6 +14,8 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const [isShared, setIsShared] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [selectedGoalId, setSelectedGoalId] = useState('');
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const initialValuesRef = useRef(null);
 
   // Filter active goals (not 100% complete)
   const activeGoals = goals ? goals.filter(g => (g.progress || 0) < 100) : [];
@@ -33,23 +36,42 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title || '');
-      setDescription(task.description || '');
-      setPriority(task.priority || 'medium');
+      const taskTitle = task.title || '';
+      const taskDescription = task.description || '';
+      const taskPriority = task.priority || 'medium';
+      let taskDueDate = '';
+      let taskDueTime = '';
       if (task.dueDate) {
         const date = new Date(task.dueDate);
-        setDueDate(date.toISOString().split('T')[0]);
-        // Extract time in HH:MM format
+        taskDueDate = date.toISOString().split('T')[0];
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
-        setDueTime(`${hours}:${minutes}`);
-      } else {
-        setDueDate('');
-        setDueTime('');
+        taskDueTime = `${hours}:${minutes}`;
       }
-      setIsShared(task.isShared || false);
-      setSelectedFriends(task.sharedWith?.map(f => f._id || f.id || f) || []);
-      setSelectedGoalId(task.goalId?._id || task.goalId || '');
+      const taskIsShared = task.isShared || false;
+      const taskSelectedFriends = task.sharedWith?.map(f => f._id || f.id || f) || [];
+      const taskSelectedGoalId = task.goalId?._id || task.goalId || '';
+      
+      setTitle(taskTitle);
+      setDescription(taskDescription);
+      setPriority(taskPriority);
+      setDueDate(taskDueDate);
+      setDueTime(taskDueTime);
+      setIsShared(taskIsShared);
+      setSelectedFriends(taskSelectedFriends);
+      setSelectedGoalId(taskSelectedGoalId);
+      
+      // Store initial values for comparison
+      initialValuesRef.current = {
+        title: taskTitle,
+        description: taskDescription,
+        priority: taskPriority,
+        dueDate: taskDueDate,
+        dueTime: taskDueTime,
+        isShared: taskIsShared,
+        selectedFriends: taskSelectedFriends,
+        selectedGoalId: taskSelectedGoalId,
+      };
     } else {
       setTitle('');
       setDescription('');
@@ -59,8 +81,46 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setIsShared(false);
       setSelectedFriends([]);
       setSelectedGoalId('');
+      initialValuesRef.current = {
+        title: '',
+        description: '',
+        priority: 'medium',
+        dueDate: '',
+        dueTime: '',
+        isShared: false,
+        selectedFriends: [],
+        selectedGoalId: '',
+      };
     }
   }, [task, isOpen]);
+
+  // Check if form has unsaved changes
+  const hasUnsavedChanges = () => {
+    if (!initialValuesRef.current) return false;
+    const current = {
+      title,
+      description,
+      priority,
+      dueDate,
+      dueTime,
+      isShared,
+      selectedFriends: selectedFriends.sort(),
+      selectedGoalId,
+    };
+    const initial = {
+      ...initialValuesRef.current,
+      selectedFriends: initialValuesRef.current.selectedFriends.sort(),
+    };
+    return JSON.stringify(current) !== JSON.stringify(initial);
+  };
+
+  const handleClose = () => {
+    if (hasUnsavedChanges()) {
+      setShowCloseConfirm(true);
+    } else {
+      onClose();
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -109,8 +169,8 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={onClose}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-x-hidden"
+            onClick={handleClose}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
@@ -124,12 +184,26 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 {task ? 'Edit Task' : 'New Task'}
               </h2>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
               >
                 <FaTimes />
               </button>
             </div>
+
+            <ConfirmationModal
+              isOpen={showCloseConfirm}
+              onClose={() => setShowCloseConfirm(false)}
+              onConfirm={() => {
+                setShowCloseConfirm(false);
+                onClose();
+              }}
+              title="Discard Changes?"
+              message="You have unsaved changes. Are you sure you want to close without saving?"
+              confirmText="Discard"
+              cancelText="Keep Editing"
+              type="warning"
+            />
 
             <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div>

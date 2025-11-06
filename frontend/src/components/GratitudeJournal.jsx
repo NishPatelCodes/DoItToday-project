@@ -208,9 +208,9 @@ const GratitudeJournal = () => {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">

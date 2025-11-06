@@ -67,7 +67,7 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6 bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]"
+      className="card p-4 md:p-6 bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] overflow-x-hidden"
     >
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border-color)]">

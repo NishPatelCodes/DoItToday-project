@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaCheckCircle, FaCircle, FaTrash, FaEdit, FaClock, FaUserFriends } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { useAuthStore } from '../store/authStore';
+import ConfirmationModal from './ConfirmationModal';
 
 const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { user } = useAuthStore();
   const isCompleted = task.status === 'completed';
   const isOwnTask = task.userId?._id === user?.id || task.userId === user?.id;
@@ -28,15 +31,18 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
       <div className="flex items-start gap-3">
         <button
           onClick={() => onToggle(task._id)}
-          className={`mt-0.5 flex-shrink-0 w-6 h-6 rounded-lg border-2 transition-all duration-300 flex items-center justify-center ${
+          className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
             isCompleted
-              ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-600 shadow-lg shadow-green-500/30'
-              : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5'
+              ? 'bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/40 scale-100'
+              : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 hover:scale-105'
           }`}
           aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
         >
           {isCompleted && (
-            <svg
+            <motion.svg
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
               className="w-4 h-4 text-white"
               fill="none"
               strokeLinecap="round"
@@ -45,8 +51,13 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path d="M5 13l4 4L19 7" />
-            </svg>
+              <motion.path
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                d="M5 13l4 4L19 7"
+              />
+            </motion.svg>
           )}
         </button>
 
@@ -114,13 +125,24 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
             </button>
           )}
           <button
-            onClick={() => onDelete(task._id)}
+            onClick={() => setShowDeleteConfirm(true)}
             className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
           >
             <FaTrash />
           </button>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={() => onDelete(task._id)}
+        title="Delete Task"
+        message={`Are you sure you want to delete "${task.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </motion.div>
   );
 };
