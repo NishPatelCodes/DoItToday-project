@@ -65,7 +65,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
           <div className="flex items-center gap-2 mb-1">
             <h3
               className={`font-medium text-[var(--text-primary)] ${
-                isCompleted ? 'line-through text-[var(--text-secondary)]' : ''
+                isCompleted ? 'text-[var(--text-secondary)]' : ''
               }`}
             >
               {task.title}
