@@ -214,7 +214,7 @@ const GratitudeJournal = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">
-              <FaHeart className="text-red-500" />
+              <FaHeart className="text-[var(--accent-primary)]" />
               Gratitude Journal
             </h1>
             <p className="text-[var(--text-secondary)]">
@@ -412,7 +412,7 @@ const GratitudeJournal = () => {
                   </>
                 ) : (
                   <>
-                    <FaHeart className="text-red-500" />
+                    <FaHeart className="text-[var(--accent-primary)]" />
                     {todayEntry ? 'Update Gratitude' : 'Save Gratitude'}
                   </>
                 )}
