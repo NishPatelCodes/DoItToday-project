@@ -35,10 +35,13 @@ import {
   DashboardTeam,
 } from './DashboardViews';
 import Profile from '../components/Profile';
+import { useToast } from '../hooks/useToast';
+import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const toast = useToast();
   const {
     tasks,
     goals,
@@ -203,8 +206,10 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      
+      toast.success(newStatus === 'completed' ? 'Task completed! 🎉' : 'Task marked as pending');
     } catch (error) {
-      alert('Failed to update task. Please try again.');
+      toast.error('Failed to update task. Please try again.');
     }
   };
 
@@ -223,8 +228,9 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      toast.success('Task deleted successfully');
     } catch (error) {
-      alert('Failed to delete task. Please try again.');
+      toast.error('Failed to delete task. Please try again.');
     }
   };
 
@@ -257,16 +263,17 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      toast.success(editingTask ? 'Task updated successfully!' : 'Task created successfully!');
     } catch (error) {
       // Check if it's a timeout error (will be retried automatically)
       const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout');
       
       // Only show error if it's not a timeout (timeouts are handled by retry logic)
       if (!isTimeout) {
-        alert('Failed to save task. Please try again.');
+        toast.error('Failed to save task. Please try again.');
       } else {
         // For timeout, show a more helpful message
-        alert('Server is taking longer than usual to respond. The task may have been saved - please check your tasks list.');
+        toast.error('Server is taking longer than usual to respond. The task may have been saved - please check your tasks list.');
       }
       throw error;
     }
@@ -362,8 +369,9 @@ const Dashboard = () => {
     try {
       await friendsAPI.accept(friendId);
       loadData(); // Reload friends
+      toast.success('Friend request accepted!');
     } catch (error) {
-      alert('Failed to accept friend request. Please try again.');
+      toast.error('Failed to accept friend request. Please try again.');
     }
   };
 
@@ -371,8 +379,9 @@ const Dashboard = () => {
     try {
       await friendsAPI.decline(friendId);
       loadData(); // Reload friends
+      toast.success('Friend request declined');
     } catch (error) {
-      alert('Failed to decline friend request. Please try again.');
+      toast.error('Failed to decline friend request. Please try again.');
     }
   };
 
@@ -380,8 +389,9 @@ const Dashboard = () => {
     try {
       await friendsAPI.cancel(friendId);
       loadData(); // Reload friends
+      toast.success('Friend request cancelled');
     } catch (error) {
-      alert('Failed to cancel friend request. Please try again.');
+      toast.error('Failed to cancel friend request. Please try again.');
     }
   };
 
@@ -433,14 +443,66 @@ const Dashboard = () => {
 
   if (loading && tasks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading dashboard...</p>
-          {loadingTasks && (
-            <p className="text-sm text-[var(--text-tertiary)] mt-2">Loading your tasks...</p>
-          )}
-        </div>
+      <div className="flex min-h-screen bg-[var(--bg-primary)]">
+        <Sidebar isOpen={false} onClose={() => {}} />
+        <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0 p-4 md:p-8" tabIndex="-1">
+          <div className="mb-6 md:mb-8">
+            <Skeleton width="40%" height={32} className="mb-2" />
+            <Skeleton width="60%" height={20} />
+          </div>
+          
+          {/* Stats Skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card p-3 md:p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton width={40} height={40} rounded="lg" />
+                  <div className="space-y-2">
+                    <Skeleton width={60} height={14} />
+                    <Skeleton width={40} height={20} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
+              {/* Smart Planner Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="30%" height={24} className="mb-4" />
+                <Skeleton width="100%" height={100} />
+              </div>
+              
+              {/* Tasks Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="25%" height={24} className="mb-4" />
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <TaskCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4 md:space-y-6">
+              {/* XP Level Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="100%" height={150} />
+              </div>
+              
+              {/* Goals Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="30%" height={24} className="mb-4" />
+                <div className="space-y-3">
+                  {[1, 2].map((i) => (
+                    <GoalCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -451,6 +513,8 @@ const Dashboard = () => {
       <button
         onClick={() => setIsSidebarOpen(true)}
         className="fixed top-4 left-4 z-50 md:hidden p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-[var(--text-primary)] shadow-lg"
+        aria-label="Open navigation menu"
+        aria-expanded={isSidebarOpen}
       >
         <FaBars className="text-lg" />
       </button>
@@ -459,7 +523,7 @@ const Dashboard = () => {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:ml-64 pt-14 md:pt-0">
+      <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0" tabIndex="-1">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
@@ -470,6 +534,7 @@ const Dashboard = () => {
                   loadData();
                 }}
                 className="ml-4 px-3 py-1 text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded transition-colors"
+                aria-label="Retry loading data"
               >
                 Retry
               </button>

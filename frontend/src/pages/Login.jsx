@@ -3,42 +3,77 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import { authAPI } from '../services/api';
+import { useToast } from '../hooks/useToast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const toast = useToast();
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Email validation
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    // Password validation
+    if (!password) {
+      newErrors.password = 'Password is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setErrors({});
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
 
     try {
-      const response = await authAPI.login({ email, password });
+      const response = await authAPI.login({ email: email.trim(), password });
       login(response.data.user, response.data.token);
+      toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (err) {
       // Handle validation errors
       if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
         const errorMessages = err.response.data.errors.map((e) => e.msg || e.message).join(', ');
         setError(errorMessages);
+        toast.error(errorMessages);
       } 
       // Handle single message errors
       else if (err.response?.data?.message) {
         setError(err.response.data.message);
+        toast.error(err.response.data.message);
       }
       // Handle network errors
       else if (err.message === 'Network Error' || err.code === 'ERR_NETWORK' || !err.response) {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        setError(`Cannot connect to server at ${apiUrl}. Please check your connection and try again.`);
+        const errorMsg = `Cannot connect to server at ${apiUrl}. Please check your connection and try again.`;
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
       // Generic error
       else {
-        setError(err.response?.data?.error || err.message || 'Login failed. Please try again.');
+        const errorMsg = err.response?.data?.error || err.message || 'Login failed. Please try again.';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } finally {
       setLoading(false);
@@ -70,31 +105,61 @@ const Login = () => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="login-email" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
               Email
             </label>
             <input
+              id="login-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) {
+                  setErrors({ ...errors, email: '' });
+                }
+                setError('');
+              }}
+              className={`input-field ${errors.email ? 'border-red-500' : ''}`}
               placeholder="your@email.com"
               required
+              autoComplete="email"
+              aria-invalid={errors.email ? 'true' : 'false'}
+              aria-describedby={errors.email ? 'email-error' : undefined}
             />
+            {errors.email && (
+              <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="login-password" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
               Password
             </label>
             <input
+              id="login-password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) {
+                  setErrors({ ...errors, password: '' });
+                }
+                setError('');
+              }}
+              className={`input-field ${errors.password ? 'border-red-500' : ''}`}
               placeholder="••••••••"
               required
+              autoComplete="current-password"
+              aria-invalid={errors.password ? 'true' : 'false'}
+              aria-describedby={errors.password ? 'password-error' : undefined}
             />
+            {errors.password && (
+              <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
+                {errors.password}
+              </p>
+            )}
           </div>
 
           <button

@@ -215,5 +215,38 @@
       transform: translateY(0);
     }
   }
+
+  /* Accessibility: Focus visible styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-offset-2;
+    ring-color: var(--accent-primary);
+    ring-offset-color: var(--bg-primary);
+  }
+
+  /* Skip to main content link */
+  .skip-to-main {
+    position: absolute;
+    left: -9999px;
+    z-index: 999;
+  }
+  
+  .skip-to-main:focus {
+    left: 1rem;
+    top: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+  }
+
+  /* Improved button focus styles */
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
 }
 

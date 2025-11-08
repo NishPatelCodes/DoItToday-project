@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import { useDataStore } from '../store/dataStore';
 import ConfirmationModal from './ConfirmationModal';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const { friends, goals } = useDataStore();
@@ -15,7 +16,9 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [selectedGoalId, setSelectedGoalId] = useState('');
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [errors, setErrors] = useState({});
   const initialValuesRef = useRef(null);
+  const modalRef = useFocusTrap(isOpen);
 
   // Filter active goals (not 100% complete)
   const activeGoals = goals ? goals.filter(g => (g.progress || 0) < 100) : [];
@@ -81,6 +84,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       setIsShared(false);
       setSelectedFriends([]);
       setSelectedGoalId('');
+      setErrors({});
       initialValuesRef.current = {
         title: '',
         description: '',
@@ -122,8 +126,43 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!title.trim()) {
+      newErrors.title = 'Task title is required';
+    } else if (title.trim().length < 3) {
+      newErrors.title = 'Task title must be at least 3 characters';
+    } else if (title.trim().length > 200) {
+      newErrors.title = 'Task title must be less than 200 characters';
+    }
+    
+    if (description && description.length > 1000) {
+      newErrors.description = 'Description must be less than 1000 characters';
+    }
+    
+    if (dueDate) {
+      const dateObj = new Date(dueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      dateObj.setHours(0, 0, 0, 0);
+      
+      // Allow today and future dates, but warn about past dates
+      if (dateObj < today) {
+        newErrors.dueDate = 'Due date cannot be in the past';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
     
     // Combine date and time into a single Date object
     let dueDateTimeValue = null;
@@ -140,15 +179,22 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
     }
     
     onSave({
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       priority,
       dueDate: dueDateTimeValue,
       isShared: isShared || selectedFriends.length > 0,
       sharedWith: selectedFriends,
       goalId: selectedGoalId || null,
     });
+    setErrors({});
     onClose();
+  };
+
+  const handleEscape = (e) => {
+    if (e.key === 'Escape' && !showCloseConfirm) {
+      handleClose();
+    }
   };
 
   const toggleFriend = (friendId) => {
@@ -178,14 +224,20 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             exit={{ scale: 0.95, opacity: 0 }}
             className="card p-4 md:p-6 w-full max-w-md max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={handleEscape}
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="task-modal-title"
           >
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">
+              <h2 id="task-modal-title" className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">
                 {task ? 'Edit Task' : 'New Task'}
               </h2>
               <button
                 onClick={handleClose}
                 className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+                aria-label="Close modal"
               >
                 <FaTimes />
               </button>
@@ -207,39 +259,72 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
 
             <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label htmlFor="task-title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                   Title *
                 </label>
                 <input
+                  id="task-title"
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="input-field"
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    if (errors.title) {
+                      setErrors({ ...errors, title: '' });
+                    }
+                  }}
+                  className={`input-field ${errors.title ? 'border-red-500' : ''}`}
                   required
                   placeholder="Task title"
+                  aria-invalid={errors.title ? 'true' : 'false'}
+                  aria-describedby={errors.title ? 'title-error' : undefined}
                 />
+                {errors.title && (
+                  <p id="title-error" className="mt-1 text-sm text-red-600" role="alert">
+                    {errors.title}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label htmlFor="task-description" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                   Description
                 </label>
                 <textarea
+                  id="task-description"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="input-field min-h-[100px]"
+                  onChange={(e) => {
+                    setDescription(e.target.value);
+                    if (errors.description) {
+                      setErrors({ ...errors, description: '' });
+                    }
+                  }}
+                  className={`input-field min-h-[100px] ${errors.description ? 'border-red-500' : ''}`}
                   placeholder="Task description (optional)"
+                  aria-invalid={errors.description ? 'true' : 'false'}
+                  aria-describedby={errors.description ? 'description-error' : undefined}
                 />
+                <div className="flex justify-between items-center mt-1">
+                  {errors.description && (
+                    <p id="description-error" className="text-sm text-red-600" role="alert">
+                      {errors.description}
+                    </p>
+                  )}
+                  <p className={`text-xs ml-auto ${description.length > 1000 ? 'text-red-600' : 'text-[var(--text-tertiary)]'}`}>
+                    {description.length}/1000
+                  </p>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label htmlFor="task-priority" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                   Priority
                 </label>
                 <select
+                  id="task-priority"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                   className="input-field"
+                  aria-label="Task priority"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -253,20 +338,35 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id="task-due-date"
                     type="date"
                     value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="input-field flex-1"
+                    onChange={(e) => {
+                      setDueDate(e.target.value);
+                      if (errors.dueDate) {
+                        setErrors({ ...errors, dueDate: '' });
+                      }
+                    }}
+                    className={`input-field flex-1 ${errors.dueDate ? 'border-red-500' : ''}`}
+                    aria-invalid={errors.dueDate ? 'true' : 'false'}
+                    aria-describedby={errors.dueDate ? 'due-date-error' : undefined}
                   />
                   <input
+                    id="task-due-time"
                     type="time"
                     value={dueTime}
                     onChange={(e) => setDueTime(e.target.value)}
                     className="input-field w-32"
                     placeholder="Optional"
+                    aria-label="Due time (optional)"
                   />
                 </div>
-                {dueDate && !dueTime && (
+                {errors.dueDate && (
+                  <p id="due-date-error" className="mt-1 text-sm text-red-600" role="alert">
+                    {errors.dueDate}
+                  </p>
+                )}
+                {dueDate && !dueTime && !errors.dueDate && (
                   <p className="mt-1 text-xs text-[var(--text-secondary)]">
                     No time specified - will default to 11:59 PM
                   </p>

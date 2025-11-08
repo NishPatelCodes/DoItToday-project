@@ -75,6 +75,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <button
             onClick={onClose}
             className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Close navigation menu"
           >
             <FaTimes className="text-lg" />
           </button>
