@@ -11,6 +11,7 @@ import {
   FaBars,
 } from 'react-icons/fa';
 import GratitudeJournal from '../components/GratitudeJournal';
+import NotesView from '../components/NotesView';
 import { useAuthStore } from '../store/authStore';
 import { useDataStore } from '../store/dataStore';
 import {
@@ -741,6 +742,10 @@ const Dashboard = () => {
               <Route
                 path="gratitude"
                 element={<GratitudeJournal />}
+              />
+              <Route
+                path="notes"
+                element={<NotesView />}
               />
               <Route
                 path="profile"

@@ -14,6 +14,7 @@ import {
   FaBars,
   FaTimes,
   FaHeart,
+  FaStickyNote,
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
@@ -56,6 +57,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { icon: FaTasks, label: 'Tasks', path: '/dashboard/tasks' },
     { icon: FaBullseye, label: 'Goals', path: '/dashboard/goals' },
     { icon: FaCalendarAlt, label: 'Calendar', path: '/dashboard/calendar' },
+    { icon: FaStickyNote, label: 'Notes', path: '/dashboard/notes' },
     { icon: FaHeart, label: 'Gratitude', path: '/dashboard/gratitude' },
     { icon: FaChartLine, label: 'Analytics', path: '/dashboard/analytics' },
     { icon: FaUserFriends, label: 'Team', path: '/dashboard/team' },

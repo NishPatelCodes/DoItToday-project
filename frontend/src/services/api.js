@@ -264,5 +264,15 @@ export const adminAPI = {
   recalculateAllLevels: () => api.post('/admin/recalculate-levels'),
 };
 
+// Notes API
+export const notesAPI = {
+  getAll: (params) => api.get('/notes', { params }),
+  getById: (id) => api.get(`/notes/${id}`),
+  create: (data) => api.post('/notes', data),
+  update: (id, data) => api.put(`/notes/${id}`, data),
+  delete: (id) => api.delete(`/notes/${id}`),
+  getAllTags: () => api.get('/notes/tags/all'),
+};
+
 export default api;
 
