@@ -269,13 +269,30 @@ const NotesView = () => {
           {/* Search and Filters */}
           <div className="mb-4 space-y-3 flex-shrink-0">
             <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]/60 text-sm" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notes..."
-                className="w-full pl-10 pr-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent-primary)] transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)]/50 rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)]/50 transition-all duration-200"
+                style={{
+                  outline: 'none',
+                  boxShadow: 'none',
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                }}
+                onFocus={(e) => {
+                  e.target.style.outline = 'none';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.borderColor = 'var(--border-color)';
+                  e.target.style.backgroundColor = 'var(--bg-tertiary)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.outline = 'none';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.backgroundColor = 'var(--bg-secondary)';
+                }}
               />
             </div>
 

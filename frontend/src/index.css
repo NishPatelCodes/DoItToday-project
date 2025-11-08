@@ -248,5 +248,46 @@
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
   }
+
+  /* Apple-like input styles - no blue boxes */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+  }
+
+  input[type="text"]:focus-visible,
+  input[type="email"]:focus-visible,
+  input[type="password"]:focus-visible,
+  textarea:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Notes editor specific styles */
+  .note-editor input,
+  .note-editor textarea {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .note-editor input:focus,
+  .note-editor textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
 }
 

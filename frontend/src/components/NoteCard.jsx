@@ -35,10 +35,15 @@ const NoteCard = memo(({ note, onSelect, onDelete, onPin, onArchive, isSelected 
         `}
         style={{
           backgroundColor: note.color || 'var(--bg-secondary)',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '12px',
+          borderRadius: '10px',
+          padding: '18px',
+          marginBottom: '10px',
           border: '1px solid var(--border-color)',
+          borderColor: 'var(--border-color)',
+          boxShadow: isSelected 
+            ? '0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03)' 
+            : '0 1px 2px rgba(0, 0, 0, 0.02)',
+          transition: 'all 0.2s ease',
         }}
       >
         {note.isPinned && (

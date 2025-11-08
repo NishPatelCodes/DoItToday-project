@@ -130,54 +130,77 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="w-full h-full flex flex-col"
+      className="w-full h-full flex flex-col note-editor"
       style={{
         backgroundColor: color,
-        borderRadius: '16px',
+        borderRadius: '12px',
         border: '1px solid var(--border-color)',
+        borderColor: 'var(--border-color)',
         overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
+        transition: 'all 0.2s ease',
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/50">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border-color)]/30 bg-transparent">
         <div className="flex items-center gap-3 flex-1">
           <input
             ref={titleRef}
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Note title..."
-            className="flex-1 bg-transparent border-none outline-none text-lg font-semibold text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
+            placeholder="Title"
+            className="flex-1 bg-transparent border-none outline-none text-2xl font-semibold text-[var(--text-primary)] placeholder-[var(--text-tertiary)]/50 transition-all duration-200"
+            style={{
+              outline: 'none',
+              boxShadow: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+            }}
+            onFocus={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.boxShadow = 'none';
+            }}
+            onBlur={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={handlePin}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2.5 rounded-full transition-all duration-200 ${
               isPinned
                 ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)]'
+                : 'text-[var(--text-tertiary)]/70 hover:bg-[var(--bg-tertiary)]/50 hover:text-[var(--text-secondary)]'
             }`}
             aria-label={isPinned ? 'Unpin note' : 'Pin note'}
+            style={{ outline: 'none' }}
+            onFocus={(e) => e.target.style.outline = 'none'}
           >
             <FaThumbtack className="text-sm" />
           </button>
           <button
             onClick={handleArchive}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2.5 rounded-full transition-all duration-200 ${
               isArchived
                 ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)]'
+                : 'text-[var(--text-tertiary)]/70 hover:bg-[var(--bg-tertiary)]/50 hover:text-[var(--text-secondary)]'
             }`}
             aria-label={isArchived ? 'Unarchive note' : 'Archive note'}
+            style={{ outline: 'none' }}
+            onFocus={(e) => e.target.style.outline = 'none'}
           >
             <FaArchive className="text-sm" />
           </button>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+              className="p-2.5 rounded-full text-[var(--text-tertiary)]/70 hover:bg-[var(--bg-tertiary)]/50 hover:text-[var(--text-secondary)] transition-all duration-200"
               aria-label="Close editor"
+              style={{ outline: 'none' }}
+              onFocus={(e) => e.target.style.outline = 'none'}
             >
               <FaTimes className="text-sm" />
             </button>
@@ -186,36 +209,51 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-6 overflow-hidden" style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div className="flex-1 px-6 py-5 overflow-hidden" style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         <textarea
           ref={contentRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Start writing..."
-          className="w-full flex-1 bg-transparent border-none outline-none resize-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)] leading-relaxed overflow-y-auto"
+          className="w-full flex-1 bg-transparent border-none outline-none resize-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)]/50 leading-relaxed overflow-y-auto transition-all duration-200"
           style={{
             fontFamily: 'inherit',
-            fontSize: '15px',
-            lineHeight: '1.7',
+            fontSize: '16px',
+            lineHeight: '1.8',
             minHeight: '300px',
+            outline: 'none',
+            boxShadow: 'none',
+            WebkitAppearance: 'none',
+            MozAppearance: 'none',
+            letterSpacing: '0.01em',
+          }}
+          onFocus={(e) => {
+            e.target.style.outline = 'none';
+            e.target.style.boxShadow = 'none';
+          }}
+          onBlur={(e) => {
+            e.target.style.outline = 'none';
+            e.target.style.boxShadow = 'none';
           }}
         />
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/50 space-y-3">
+      <div className="px-6 py-4 border-t border-[var(--border-color)]/30 bg-transparent space-y-4">
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-2">
           {tags.map((tag, index) => (
             <span
               key={index}
-              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-full bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border border-[var(--border-color)]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full bg-[var(--bg-tertiary)]/60 text-[var(--text-secondary)] border border-[var(--border-color)]/30 transition-all duration-200 hover:bg-[var(--bg-tertiary)]/80"
             >
               {tag}
               <button
                 onClick={() => handleTagRemove(tag)}
-                className="hover:text-[var(--text-primary)] transition-colors"
+                className="hover:text-[var(--text-primary)] transition-colors rounded-full p-0.5 hover:bg-[var(--bg-tertiary)]"
                 aria-label={`Remove tag ${tag}`}
+                style={{ outline: 'none' }}
+                onFocus={(e) => e.target.style.outline = 'none'}
               >
                 <FaTimes className="text-xs" />
               </button>
@@ -227,27 +265,47 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagAdd}
             placeholder="Add tag..."
-            className="px-3 py-1 text-xs bg-transparent border border-[var(--border-color)] rounded-full text-[var(--text-secondary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent-primary)] transition-colors"
+            className="px-3 py-1.5 text-xs bg-transparent border border-[var(--border-color)]/30 rounded-full text-[var(--text-secondary)] placeholder-[var(--text-tertiary)]/50 transition-all duration-200 hover:border-[var(--border-color)]/50"
             maxLength={20}
+            style={{
+              outline: 'none',
+              boxShadow: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+            }}
+            onFocus={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.boxShadow = 'none';
+              e.target.style.borderColor = 'var(--border-color)';
+            }}
+            onBlur={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
 
         {/* Color Picker and Actions */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[var(--text-secondary)]">Color:</span>
-            <div className="flex gap-1.5">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-[var(--text-secondary)]/70 font-medium">Color</span>
+            <div className="flex gap-2">
               {colors.map((c) => (
                 <button
                   key={c}
                   onClick={() => setColor(c)}
-                  className={`w-6 h-6 rounded-full border-2 transition-all ${
+                  className={`w-7 h-7 rounded-full border-2 transition-all duration-200 ${
                     color === c
-                      ? 'border-[var(--text-primary)] scale-110'
-                      : 'border-[var(--border-color)] hover:scale-105'
+                      ? 'border-[var(--text-primary)]/40 scale-110 ring-2 ring-[var(--border-color)]/30'
+                      : 'border-[var(--border-color)]/20 hover:scale-105 hover:border-[var(--border-color)]/40'
                   }`}
-                  style={{ backgroundColor: c }}
+                  style={{ 
+                    backgroundColor: c,
+                    outline: 'none',
+                    boxShadow: color === c ? '0 0 0 2px rgba(0,0,0,0.05)' : 'none',
+                  }}
                   aria-label={`Select color ${c}`}
+                  onFocus={(e) => e.target.style.outline = 'none'}
                 />
               ))}
             </div>
@@ -257,7 +315,9 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
             {note && onDelete && (
               <button
                 onClick={() => onDelete(note._id)}
-                className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-red-600/80 hover:text-red-600 hover:bg-red-50/50 dark:hover:bg-red-900/10 rounded-lg transition-all duration-200 font-medium"
+                style={{ outline: 'none' }}
+                onFocus={(e) => e.target.style.outline = 'none'}
               >
                 <FaTrash className="inline mr-2" />
                 Delete
@@ -265,7 +325,9 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
             )}
             <button
               onClick={handleSave}
-              className="px-4 py-2 text-sm bg-[var(--accent-primary)] text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+              className="px-5 py-2 text-sm bg-[var(--accent-primary)] text-white rounded-lg hover:opacity-95 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              style={{ outline: 'none' }}
+              onFocus={(e) => e.target.style.outline = 'none'}
             >
               <FaSave className="inline mr-2" />
               Save
@@ -273,8 +335,8 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
           </div>
         </div>
 
-        <div className="text-xs text-[var(--text-tertiary)] text-center">
-          Press Ctrl+S to save, Esc to close
+        <div className="text-xs text-[var(--text-tertiary)]/50 text-center pt-1">
+          Press <kbd className="px-1.5 py-0.5 bg-[var(--bg-tertiary)]/50 rounded text-[10px]">⌘</kbd> + <kbd className="px-1.5 py-0.5 bg-[var(--bg-tertiary)]/50 rounded text-[10px]">S</kbd> to save
         </div>
       </div>
     </motion.div>
