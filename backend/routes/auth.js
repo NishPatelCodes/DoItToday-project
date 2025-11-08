@@ -141,10 +141,13 @@ router.get('/me', async (req, res) => {
     res.json({
       user: {
         id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         streak: user.streak,
         totalTasksCompleted: user.totalTasksCompleted,
+        xp: user.xp || 0,
+        level: user.level || 1,
       },
     });
   } catch (error) {

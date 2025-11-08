@@ -4,7 +4,7 @@ import { FaTrophy, FaStar } from 'react-icons/fa';
 const XPLevel = ({ xp = 0, level = 1, streak = 0 }) => {
   // Calculate XP needed for next level (level * 100)
   const xpNeededForNextLevel = level * 100;
-  const currentLevelXP = xp % 100 || xp;
+  const currentLevelXP = xp % xpNeededForNextLevel || xp;
   const progress = (currentLevelXP / xpNeededForNextLevel) * 100;
 
   return (
@@ -24,10 +24,16 @@ const XPLevel = ({ xp = 0, level = 1, streak = 0 }) => {
               <span className="text-xl font-bold text-[var(--text-primary)]">Level {level}</span>
             </div>
             <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
-              <span className="flex items-center gap-1">
+              <motion.span 
+                className="flex items-center gap-1"
+                key={xp}
+                initial={{ scale: 1.2, color: '#fbbf24' }}
+                animate={{ scale: 1, color: 'inherit' }}
+                transition={{ duration: 0.3 }}
+              >
                 <FaStar className="text-yellow-500" />
                 {xp} XP
-              </span>
+              </motion.span>
               <span className="text-orange-500">{streak} 🔥 streak</span>
             </div>
           </div>

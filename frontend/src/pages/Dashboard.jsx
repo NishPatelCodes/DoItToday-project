@@ -83,6 +83,18 @@ const Dashboard = () => {
         const tasksRes = await tasksAPI.getAll();
         const tasksData = tasksRes.data || [];
         setTasks(tasksData);
+        
+        // After loading tasks, refresh user data to get updated XP (in case overdue tasks deducted XP)
+        try {
+          const userRes = await authAPI.getMe();
+          const { updateUser } = useAuthStore.getState();
+          const updatedUser = userRes.data?.user || userRes.data;
+          if (updatedUser) {
+            updateUser(updatedUser);
+          }
+        } catch (e) {
+          // Silently handle user reload failure
+        }
       } catch (error) {
         // Only show error if it's not a network timeout (likely server cold start)
         const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout');
@@ -186,14 +198,29 @@ const Dashboard = () => {
       const { updateTask } = useDataStore.getState();
       updateTask(id, response.data);
       
-      // Refresh user data to get updated XP (XP is awarded on task completion)
+      // Refresh user data to get updated XP (XP is awarded/deducted on task completion)
       try {
         const userRes = await authAPI.getMe();
         const { updateUser } = useAuthStore.getState();
-        updateUser(userRes.data);
-        setUser(userRes.data);
+        const updatedUser = userRes.data?.user || userRes.data;
+        if (updatedUser) {
+          updateUser(updatedUser);
+          // Force re-render by updating local state if needed
+          const { user: currentUser } = useAuthStore.getState();
+          if (currentUser) {
+            // Update will trigger re-render automatically via Zustand
+          }
+        }
       } catch (e) {
-        // Silently handle user reload failure
+        console.error('Failed to refresh user data:', e);
+      }
+      
+      // Reload tasks to get updated XP values
+      try {
+        const tasksRes = await tasksAPI.getAll();
+        setTasks(tasksRes.data || []);
+      } catch (e) {
+        console.error('Failed to refresh tasks:', e);
       }
       
       // Reload only analytics to update stats
@@ -215,6 +242,18 @@ const Dashboard = () => {
       // Remove task from store immediately
       const { deleteTask } = useDataStore.getState();
       deleteTask(id);
+      
+      // Refresh user data to get updated XP
+      try {
+        const userRes = await authAPI.getMe();
+        const { updateUser } = useAuthStore.getState();
+        const updatedUser = userRes.data?.user || userRes.data;
+        if (updatedUser) {
+          updateUser(updatedUser);
+        }
+      } catch (e) {
+        console.error('Failed to refresh user data:', e);
+      }
       
       // Reload only analytics to update stats
       try {
@@ -401,8 +440,10 @@ const Dashboard = () => {
       try {
         const userRes = await authAPI.getMe();
         const { updateUser } = useAuthStore.getState();
-        updateUser(userRes.data);
-        setUser(userRes.data);
+        const updatedUser = userRes.data?.user || userRes.data;
+        if (updatedUser) {
+          updateUser(updatedUser);
+        }
       } catch (e) {
         // Silently handle user reload failure
       }
