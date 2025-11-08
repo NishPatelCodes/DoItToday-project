@@ -24,6 +24,7 @@ import { authAPI, friendsAPI, analyticsAPI, tasksAPI, goalsAPI } from '../servic
 import XPLevel from './XPLevel';
 import GraphCard from './GraphCard';
 import TaskCard from './TaskCard';
+import RankFrame from './RankFrame';
 
 const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) => {
   const { userId } = useParams();
@@ -38,6 +39,7 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
   const [profileAnalytics, setProfileAnalytics] = useState(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [userRank, setUserRank] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -56,6 +58,21 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
             console.error('Failed to load friend profile:', error);
             setProfileUser(null);
           }
+          
+          // Load leaderboard to determine friend's rank
+          try {
+            const leaderboardRes = await friendsAPI.getLeaderboard();
+            const leaderboard = leaderboardRes.data || [];
+            const friendId = userId;
+            const rankIndex = leaderboard.findIndex(
+              (user) => (user._id || user.id)?.toString() === friendId?.toString()
+            );
+            if (rankIndex !== -1) {
+              setUserRank(rankIndex + 1);
+            }
+          } catch (error) {
+            console.error('Failed to load leaderboard:', error);
+          }
         } else {
           // Loading own profile
           setIsOwnProfile(true);
@@ -69,6 +86,21 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
             setProfileAnalytics(analyticsRes.data || {});
           } catch (error) {
             console.error('Failed to load analytics:', error);
+          }
+          
+          // Load leaderboard to determine rank
+          try {
+            const leaderboardRes = await friendsAPI.getLeaderboard();
+            const leaderboard = leaderboardRes.data || [];
+            const currentUserId = authUser?._id || authUser?.id;
+            const rankIndex = leaderboard.findIndex(
+              (user) => (user._id || user.id)?.toString() === currentUserId?.toString()
+            );
+            if (rankIndex !== -1) {
+              setUserRank(rankIndex + 1);
+            }
+          } catch (error) {
+            console.error('Failed to load leaderboard:', error);
           }
         }
       } catch (error) {
@@ -123,9 +155,11 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
           </button>
         )}
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl md:text-3xl shadow-lg">
-            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-          </div>
+          <RankFrame rank={userRank} size="default">
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl md:text-3xl shadow-lg">
+              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+          </RankFrame>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
               {user?.name || 'User'}

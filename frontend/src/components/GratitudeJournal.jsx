@@ -412,7 +412,6 @@ const GratitudeJournal = () => {
                   </>
                 ) : (
                   <>
-                    <FaHeart className="text-[var(--accent-primary)]" />
                     {todayEntry ? 'Update Gratitude' : 'Save Gratitude'}
                   </>
                 )}
