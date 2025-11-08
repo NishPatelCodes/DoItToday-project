@@ -37,8 +37,16 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
   }, [note]);
 
   useEffect(() => {
-    if (note && titleRef.current) {
-      titleRef.current.focus();
+    if (!note && titleRef.current) {
+      // Focus on new note creation
+      setTimeout(() => {
+        titleRef.current?.focus();
+      }, 100);
+    } else if (note && titleRef.current) {
+      // Focus when editing existing note
+      setTimeout(() => {
+        titleRef.current?.focus();
+      }, 100);
     }
   }, [note]);
 
@@ -92,6 +100,16 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Don't trigger if user is typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        // Only trigger save shortcut in textarea/content area
+        if ((e.ctrlKey || e.metaKey) && e.key === 's' && e.target.tagName === 'TEXTAREA') {
+          e.preventDefault();
+          handleSave();
+        }
+        return;
+      }
+      
       // Save on Ctrl+S or Cmd+S
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -112,7 +130,7 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="h-full flex flex-col"
+      className="w-full h-full flex flex-col"
       style={{
         backgroundColor: color,
         borderRadius: '16px',
@@ -168,18 +186,18 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 p-6 overflow-hidden" style={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         <textarea
           ref={contentRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Start writing..."
-          className="w-full h-full bg-transparent border-none outline-none resize-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)] leading-relaxed"
+          className="w-full flex-1 bg-transparent border-none outline-none resize-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)] leading-relaxed overflow-y-auto"
           style={{
             fontFamily: 'inherit',
             fontSize: '15px',
             lineHeight: '1.7',
-            minHeight: '400px',
+            minHeight: '300px',
           }}
         />
       </div>

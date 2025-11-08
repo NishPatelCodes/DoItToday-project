@@ -4,6 +4,26 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// @route   GET /api/notes/tags/all
+// @desc    Get all unique tags for the user (must be before /:id route)
+router.get('/tags/all', authenticate, async (req, res) => {
+  try {
+    const notes = await Note.find({
+      userId: req.user._id,
+      isArchived: false,
+    }).select('tags');
+
+    const allTags = notes
+      .flatMap((note) => note.tags)
+      .filter((tag, index, self) => tag && self.indexOf(tag) === index)
+      .sort();
+
+    res.json(allTags);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   GET /api/notes
 // @desc    Get all notes for the authenticated user
 router.get('/', authenticate, async (req, res) => {
@@ -12,10 +32,11 @@ router.get('/', authenticate, async (req, res) => {
     
     let query = { userId: req.user._id };
     
-    // Filter by archived status
-    if (archived === 'true') {
+    // Filter by archived status (handle both string and boolean)
+    if (archived === 'true' || archived === true || archived === 'True') {
       query.isArchived = true;
     } else {
+      // Default: show non-archived (explicitly set to false)
       query.isArchived = false;
     }
     
@@ -129,26 +150,6 @@ router.delete('/:id', authenticate, async (req, res) => {
 
     await Note.findByIdAndDelete(req.params.id);
     res.json({ message: 'Note deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// @route   GET /api/notes/tags/all
-// @desc    Get all unique tags for the user
-router.get('/tags/all', authenticate, async (req, res) => {
-  try {
-    const notes = await Note.find({
-      userId: req.user._id,
-      isArchived: false,
-    }).select('tags');
-
-    const allTags = notes
-      .flatMap((note) => note.tags)
-      .filter((tag, index, self) => tag && self.indexOf(tag) === index)
-      .sort();
-
-    res.json(allTags);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

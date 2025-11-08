@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { motion } from 'framer-motion';
 import { FaTrash, FaEdit, FaThumbtack, FaArchive } from 'react-icons/fa';
 import { format } from 'date-fns';
 import ConfirmationModal from './ConfirmationModal';
 
-const NoteCard = ({ note, onSelect, onDelete, onPin, onArchive, isSelected }) => {
+const NoteCard = memo(({ note, onSelect, onDelete, onPin, onArchive, isSelected }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const getPreview = (content) => {
@@ -14,8 +14,8 @@ const NoteCard = ({ note, onSelect, onDelete, onPin, onArchive, isSelected }) =>
   };
 
   const handleClick = (e) => {
-    // Don't select if clicking on action buttons
-    if (e.target.closest('button')) return;
+    // Don't select if clicking on action buttons or links
+    if (e.target.closest('button') || e.target.closest('a')) return;
     onSelect(note);
   };
 
@@ -57,7 +57,7 @@ const NoteCard = ({ note, onSelect, onDelete, onPin, onArchive, isSelected }) =>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onPin(note._id);
+                  onPin(note._id, !note.isPinned);
                 }}
                 className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
                 aria-label={note.isPinned ? 'Unpin note' : 'Pin note'}
@@ -69,10 +69,10 @@ const NoteCard = ({ note, onSelect, onDelete, onPin, onArchive, isSelected }) =>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onArchive(note._id);
+                  onArchive(note._id, !note.isArchived);
                 }}
                 className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
-                aria-label="Archive note"
+                aria-label={note.isArchived ? 'Unarchive note' : 'Archive note'}
               >
                 <FaArchive className="text-xs" />
               </button>
@@ -92,9 +92,11 @@ const NoteCard = ({ note, onSelect, onDelete, onPin, onArchive, isSelected }) =>
           </div>
         </div>
 
-        <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-3 leading-relaxed">
-          {getPreview(note.content)}
-        </p>
+        {note.content && (
+          <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-3 leading-relaxed">
+            {getPreview(note.content)}
+          </p>
+        )}
 
         {note.tags && note.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -134,7 +136,9 @@ const NoteCard = ({ note, onSelect, onDelete, onPin, onArchive, isSelected }) =>
       />
     </>
   );
-};
+});
+
+NoteCard.displayName = 'NoteCard';
 
 export default NoteCard;
 

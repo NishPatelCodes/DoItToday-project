@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaPlus, FaSearch, FaFilter, FaArchive, FaThumbtack } from 'react-icons/fa';
 import NoteCard from './NoteCard';
@@ -12,42 +12,92 @@ const NotesView = () => {
   const [selectedNote, setSelectedNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [showArchived, setShowArchived] = useState(false);
   const [selectedTag, setSelectedTag] = useState('');
   const [tags, setTags] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const toast = useToast();
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Check mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     loadNotes();
-    loadTags();
-  }, [showArchived, searchQuery, selectedTag]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showArchived, debouncedSearchQuery, selectedTag]);
 
-  const loadNotes = async () => {
+  // Reset selected note when switching views
+  useEffect(() => {
+    if (showArchived && selectedNote && !selectedNote.isArchived) {
+      setSelectedNote(null);
+    }
+  }, [showArchived, selectedNote]);
+
+  useEffect(() => {
+    loadTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadNotes = useCallback(async () => {
     try {
       setLoading(true);
       const params = {
-        archived: showArchived,
-        ...(searchQuery && { search: searchQuery }),
+        archived: showArchived.toString(),
+        ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
         ...(selectedTag && { tag: selectedTag }),
       };
       const response = await notesAPI.getAll(params);
-      setNotes(response.data || []);
+      const loadedNotes = response.data || [];
+      setNotes(loadedNotes);
+      
+      // If selected note exists, refresh it
+      setSelectedNote(prev => {
+        if (prev) {
+          const updatedNote = loadedNotes.find(n => n._id === prev._id);
+          if (updatedNote) {
+            return updatedNote;
+          } else if (!showArchived) {
+            // Note was archived or deleted
+            return null;
+          }
+        }
+        return prev;
+      });
     } catch (error) {
+      console.error('Error loading notes:', error);
       toast.error('Failed to load notes. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showArchived, debouncedSearchQuery, selectedTag, toast]);
 
-  const loadTags = async () => {
+  const loadTags = useCallback(async () => {
     try {
       const response = await notesAPI.getAllTags();
       setTags(response.data || []);
     } catch (error) {
+      console.error('Error loading tags:', error);
       // Silently handle error
     }
-  };
+  }, []);
 
   const handleCreateNote = () => {
     setIsCreating(true);
@@ -61,21 +111,41 @@ const NotesView = () => {
 
   const handleSaveNote = async (id, noteData) => {
     try {
+      let savedNote;
       if (id) {
-        await notesAPI.update(id, noteData);
+        const response = await notesAPI.update(id, noteData);
+        savedNote = response.data;
         toast.success('Note updated successfully');
       } else {
-        await notesAPI.create(noteData);
+        const response = await notesAPI.create(noteData);
+        savedNote = response.data;
         toast.success('Note created successfully');
         setIsCreating(false);
       }
-      await loadNotes();
-      await loadTags();
-      if (!id) {
-        setSelectedNote(null);
+      
+      // Update local state immediately for better UX
+      if (savedNote) {
+        setNotes(prevNotes => {
+          if (id) {
+            // Update existing note
+            return prevNotes.map(note => 
+              note._id === id ? savedNote : note
+            );
+          } else {
+            // Add new note
+            return [savedNote, ...prevNotes];
+          }
+        });
+        setSelectedNote(savedNote);
       }
+      
+      // Refresh notes list and tags in background
+      loadNotes();
+      loadTags();
     } catch (error) {
-      toast.error('Failed to save note. Please try again.');
+      console.error('Error saving note:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to save note. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
@@ -83,37 +153,65 @@ const NotesView = () => {
     try {
       await notesAPI.delete(id);
       toast.success('Note deleted successfully');
+      
+      // Update local state immediately
+      setNotes(prevNotes => prevNotes.filter(note => note._id !== id));
+      
       if (selectedNote && selectedNote._id === id) {
         setSelectedNote(null);
+        setIsCreating(false);
       }
-      await loadNotes();
-      await loadTags();
+      
+      // Refresh tags in background
+      loadTags();
     } catch (error) {
-      toast.error('Failed to delete note. Please try again.');
+      console.error('Error deleting note:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete note. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
   const handlePinNote = async (id, isPinned) => {
     try {
-      await notesAPI.update(id, { isPinned });
-      await loadNotes();
+      const response = await notesAPI.update(id, { isPinned });
+      const updatedNote = response.data;
+      
+      // Update notes list
+      setNotes(prevNotes => 
+        prevNotes.map(note => 
+          note._id === id ? updatedNote : note
+        )
+      );
+      
+      // Update selected note if it's the one being pinned
       if (selectedNote && selectedNote._id === id) {
-        setSelectedNote({ ...selectedNote, isPinned });
+        setSelectedNote(updatedNote);
       }
     } catch (error) {
+      console.error('Error pinning note:', error);
       toast.error('Failed to update note. Please try again.');
     }
   };
 
   const handleArchiveNote = async (id, isArchived) => {
     try {
-      await notesAPI.update(id, { isArchived });
+      const response = await notesAPI.update(id, { isArchived });
+      const updatedNote = response.data;
+      
       toast.success(isArchived ? 'Note archived' : 'Note unarchived');
+      
+      // Refresh notes list
       await loadNotes();
-      if (selectedNote && selectedNote._id === id) {
+      
+      // Close editor if note was archived and we're not viewing archived
+      if (isArchived && !showArchived && selectedNote && selectedNote._id === id) {
         setSelectedNote(null);
+      } else if (!isArchived && selectedNote && selectedNote._id === id) {
+        // If unarchived, update selected note
+        setSelectedNote(updatedNote);
       }
     } catch (error) {
+      console.error('Error archiving note:', error);
       toast.error('Failed to update note. Please try again.');
     }
   };
@@ -123,14 +221,31 @@ const NotesView = () => {
     setIsCreating(false);
   };
 
-  const pinnedNotes = notes.filter(note => note.isPinned && !note.isArchived);
-  const regularNotes = notes.filter(note => !note.isPinned && !note.isArchived);
-  const archivedNotes = notes.filter(note => note.isArchived);
+  // Clear selection when filter changes significantly
+  const handleArchiveToggle = () => {
+    setShowArchived(!showArchived);
+    setSelectedNote(null);
+    setIsCreating(false);
+  };
+
+  const pinnedNotes = useMemo(() => 
+    notes.filter(note => note.isPinned && !note.isArchived),
+    [notes]
+  );
+  const regularNotes = useMemo(() => 
+    notes.filter(note => !note.isPinned && !note.isArchived),
+    [notes]
+  );
+  const archivedNotes = useMemo(() => 
+    notes.filter(note => note.isArchived),
+    [notes]
+  );
 
   return (
-    <div className="min-h-screen flex flex-col p-4 md:p-6 md:p-8">
+    <div className="w-full flex flex-col" style={{ height: '100%', minHeight: 'calc(100vh - 4rem)' }}>
+      <div className="p-4 md:p-6 md:p-8 flex flex-col flex-1 min-h-0">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between flex-shrink-0">
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold text-[var(--text-primary)] mb-1">
             Notes
@@ -150,9 +265,9 @@ const NotesView = () => {
 
       <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 overflow-hidden">
         {/* Sidebar - Notes List */}
-        <div className="w-full md:w-80 lg:w-96 flex flex-col md:border-r md:border-[var(--border-color)] md:pr-6 min-h-0">
+        <div className={`w-full ${!isMobile ? 'md:w-80 lg:w-96 md:border-r md:border-[var(--border-color)] md:pr-6' : ''} flex flex-col ${isMobile && (selectedNote || isCreating) ? 'hidden' : ''}`} style={{ maxHeight: '100%', minHeight: 0 }}>
           {/* Search and Filters */}
-          <div className="mb-4 space-y-3">
+          <div className="mb-4 space-y-3 flex-shrink-0">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
               <input
@@ -166,7 +281,7 @@ const NotesView = () => {
 
             <div className="flex items-center gap-2 flex-wrap">
               <button
-                onClick={() => setShowArchived(!showArchived)}
+                onClick={handleArchiveToggle}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${
                   showArchived
                     ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border-[var(--accent-primary)]/20'
@@ -195,7 +310,7 @@ const NotesView = () => {
           </div>
 
           {/* Notes List */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ minHeight: 0, scrollbarWidth: 'thin' }}>
             {loading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
@@ -281,58 +396,60 @@ const NotesView = () => {
           </div>
         </div>
 
-        {/* Editor Area */}
-        <div className="flex-1 min-w-0 hidden md:flex min-h-0">
-          <AnimatePresence mode="wait">
-            {(selectedNote || isCreating) ? (
-              <NoteEditor
-                key={selectedNote?._id || 'new'}
-                note={selectedNote}
-                onSave={handleSaveNote}
-                onDelete={handleDeleteNote}
-                onClose={handleCloseEditor}
-                onPin={handlePinNote}
-                onArchive={handleArchiveNote}
-              />
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="h-full flex items-center justify-center text-center text-[var(--text-tertiary)] border border-[var(--border-color)] rounded-2xl bg-[var(--bg-secondary)]"
-              >
-                <div>
-                  <p className="text-lg mb-2">Select a note to edit</p>
-                  <p className="text-sm">or create a new one to get started</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Editor Area - Desktop */}
+        {!isMobile && (
+          <div className="flex-1 min-w-0 flex" style={{ minHeight: 0, maxHeight: '100%' }}>
+            <AnimatePresence mode="wait">
+              {(selectedNote || isCreating) ? (
+                <NoteEditor
+                  key={selectedNote?._id || 'new'}
+                  note={selectedNote}
+                  onSave={handleSaveNote}
+                  onDelete={handleDeleteNote}
+                  onClose={handleCloseEditor}
+                  onPin={handlePinNote}
+                  onArchive={handleArchiveNote}
+                />
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="w-full flex items-center justify-center text-center text-[var(--text-tertiary)] border border-[var(--border-color)] rounded-2xl bg-[var(--bg-secondary)]"
+                  style={{ minHeight: '400px', height: '100%' }}
+                >
+                  <div>
+                    <p className="text-lg mb-2 font-medium">Select a note to edit</p>
+                    <p className="text-sm">or create a new one to get started</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Mobile Editor Modal */}
-      {typeof window !== 'undefined' && (
-        <AnimatePresence>
-          {(selectedNote || isCreating) && window.innerWidth < 768 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-[var(--bg-primary)] z-50 p-4"
-            >
-              <NoteEditor
-                note={selectedNote}
-                onSave={handleSaveNote}
-                onDelete={handleDeleteNote}
-                onClose={handleCloseEditor}
-                onPin={handlePinNote}
-                onArchive={handleArchiveNote}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
+      <AnimatePresence>
+        {isMobile && (selectedNote || isCreating) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[var(--bg-primary)] z-50 p-4"
+          >
+            <NoteEditor
+              note={selectedNote}
+              onSave={handleSaveNote}
+              onDelete={handleDeleteNote}
+              onClose={handleCloseEditor}
+              onPin={handlePinNote}
+              onArchive={handleArchiveNote}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </div>
     </div>
   );
 };
