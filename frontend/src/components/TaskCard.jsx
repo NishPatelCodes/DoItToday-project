@@ -7,6 +7,7 @@ import ConfirmationModal from './ConfirmationModal';
 
 const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const { user } = useAuthStore();
   const isCompleted = task.status === 'completed';
   const isOwnTask = task.userId?._id === user?.id || task.userId === user?.id;
@@ -36,7 +37,15 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
     >
       <div className="flex items-start gap-3">
         <button
-          onClick={() => onToggle(task._id)}
+          onClick={() => {
+            if (isCompleted) {
+              // Uncomplete - no confirmation needed
+              onToggle(task._id);
+            } else {
+              // Complete - show confirmation
+              setShowCompleteConfirm(true);
+            }
+          }}
           className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
             isCompleted
               ? 'bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/40 scale-100'
@@ -117,19 +126,19 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
             {/* XP Display */}
             {isOwnTask && (
               <>
-                {task.xpAwarded > 0 && (
-                  <div className="flex items-center gap-1 text-green-500 font-medium">
+                {isCompleted && task.xpAwarded > 0 && (
+                  <div className="flex items-center gap-1 text-green-500 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
                     <FaStar className="text-xs" />
-                    <span>+{task.xpAwarded} XP</span>
+                    <span className="font-semibold">+{task.xpAwarded} XP</span>
                   </div>
                 )}
-                {task.xpDeducted > 0 && (
-                  <div className="flex items-center gap-1 text-red-500 font-medium">
+                {!isCompleted && task.xpDeducted > 0 && (
+                  <div className="flex items-center gap-1 text-red-500 font-medium bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
                     <FaExclamationTriangle className="text-xs" />
-                    <span>-{task.xpDeducted} XP</span>
+                    <span className="font-semibold">-{task.xpDeducted} XP</span>
                   </div>
                 )}
-                {task.isOverdue && !isCompleted && (
+                {task.isOverdue && !isCompleted && task.xpDeducted === 0 && (
                   <div className="flex items-center gap-1 text-red-500 font-medium">
                     <FaExclamationTriangle className="text-xs" />
                     <span>Overdue</span>
@@ -173,12 +182,29 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
       <ConfirmationModal
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={() => onDelete(task._id)}
+        onConfirm={() => {
+          onDelete(task._id);
+          setShowDeleteConfirm(false);
+        }}
         title="Delete Task"
         message={`Are you sure you want to delete "${task.title}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"
+      />
+
+      <ConfirmationModal
+        isOpen={showCompleteConfirm}
+        onClose={() => setShowCompleteConfirm(false)}
+        onConfirm={() => {
+          onToggle(task._id);
+          setShowCompleteConfirm(false);
+        }}
+        title="Complete Task"
+        message={`Are you sure you want to mark "${task.title}" as completed?${task.dueDate && !isOverdue ? ' You will earn +20 XP!' : ''}`}
+        confirmText="Complete"
+        cancelText="Cancel"
+        type="success"
       />
     </motion.div>
   );

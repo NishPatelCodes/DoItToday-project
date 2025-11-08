@@ -41,8 +41,8 @@ const checkOverdueTasks = async (userId) => {
     let tasksUpdated = 0;
 
     for (const task of overdueTasks) {
-      // Calculate XP deduction based on priority
-      const xpToDeduct = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
+      // Fixed XP deduction: -10 XP for overdue tasks
+      const xpToDeduct = 10;
       
       // Deduct XP (ensure it doesn't go below 0)
       const previousXp = user.xp;
@@ -250,10 +250,10 @@ router.put('/:id', authenticate, async (req, res) => {
           isOnTime = now <= dueDate;
         }
         
-        // Award XP based on priority (only if completed on time)
+        // Fixed XP award: +20 XP for completing a task (only if completed on time)
         let xpAward = 0;
         if (isOnTime) {
-          xpAward = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
+          xpAward = 20; // Fixed amount: +20 XP
           completingUser.xp += xpAward;
           task.xpAwarded = xpAward;
         } else {

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import { FaExclamationTriangle, FaTimes, FaCheckCircle } from 'react-icons/fa';
 
 const ConfirmationModal = ({ 
   isOpen, 
@@ -9,7 +9,7 @@ const ConfirmationModal = ({
   message = 'Are you sure you want to proceed?',
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  type = 'danger' // 'danger', 'warning', 'info'
+  type = 'danger' // 'danger', 'warning', 'info', 'success'
 }) => {
   if (!isOpen) return null;
 
@@ -17,18 +17,27 @@ const ConfirmationModal = ({
     danger: {
       icon: 'text-red-500',
       button: 'bg-red-500 hover:bg-red-600 text-white',
+      iconComponent: FaExclamationTriangle,
     },
     warning: {
       icon: 'text-yellow-500',
       button: 'bg-yellow-500 hover:bg-yellow-600 text-white',
+      iconComponent: FaExclamationTriangle,
     },
     info: {
       icon: 'text-blue-500',
       button: 'bg-blue-500 hover:bg-blue-600 text-white',
+      iconComponent: FaExclamationTriangle,
+    },
+    success: {
+      icon: 'text-green-500',
+      button: 'bg-green-500 hover:bg-green-600 text-white',
+      iconComponent: FaCheckCircle,
     },
   };
 
   const styles = typeStyles[type] || typeStyles.danger;
+  const IconComponent = styles.iconComponent || FaExclamationTriangle;
 
   return (
     <AnimatePresence>
@@ -49,7 +58,7 @@ const ConfirmationModal = ({
           >
             <div className="flex items-start gap-4 mb-4">
               <div className={`flex-shrink-0 ${styles.icon}`}>
-                <FaExclamationTriangle className="text-2xl" />
+                <IconComponent className="text-2xl" />
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
