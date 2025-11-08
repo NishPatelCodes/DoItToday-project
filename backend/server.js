@@ -14,6 +14,7 @@ import reactionRoutes from './routes/reactions.js';
 import smartPlannerRoutes from './routes/smartPlanner.js';
 import oauthRoutes from './routes/oauth.js';
 import gratitudeRoutes from './routes/gratitude.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -74,6 +75,7 @@ app.use('/api/focus', focusRoutes);
 app.use('/api/reactions', reactionRoutes);
 app.use('/api/smart-planner', smartPlannerRoutes);
 app.use('/api/gratitude', gratitudeRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

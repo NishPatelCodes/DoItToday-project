@@ -51,7 +51,9 @@ router.post(
           id: user._id,
           name: user.name,
           email: user.email,
-          streak: user.streak,
+          streak: user.streak || 0,
+          xp: user.xp || 0,
+          level: user.level || 1,
         },
       });
     } catch (error) {
@@ -92,16 +94,44 @@ router.post(
       // Update streak and last active date
       const today = new Date().toDateString();
       const lastActive = new Date(user.lastActiveDate).toDateString();
+      let streakBonusAwarded = false;
 
       if (today !== lastActive) {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
+        const oldStreak = user.streak;
+        
         if (lastActive === yesterday.toDateString()) {
           user.streak += 1;
         } else {
           user.streak = 1;
         }
         user.lastActiveDate = new Date();
+        
+        // Award daily login bonus
+        const { awardXP, XP_REWARDS } = await import('../utils/xpSystem.js');
+        await awardXP(user, XP_REWARDS.DAILY_LOGIN, 'Daily login bonus');
+        
+        // Award streak milestone bonuses
+        if (user.streak === 7 && oldStreak < 7) {
+          await awardXP(user, XP_REWARDS.STREAK_7_DAYS, '7-day streak milestone!');
+          streakBonusAwarded = true;
+        } else if (user.streak === 30 && oldStreak < 30) {
+          await awardXP(user, XP_REWARDS.STREAK_30_DAYS, '30-day streak milestone!');
+          streakBonusAwarded = true;
+        } else if (user.streak === 100 && oldStreak < 100) {
+          await awardXP(user, XP_REWARDS.STREAK_100_DAYS, '100-day streak milestone!');
+          streakBonusAwarded = true;
+        }
+        
+        await user.save();
+      }
+      
+      // Ensure level is calculated correctly from XP
+      const { calculateLevelFromXP } = await import('../utils/xpSystem.js');
+      const calculatedLevel = calculateLevelFromXP(user.xp || 0);
+      if (user.level !== calculatedLevel) {
+        user.level = calculatedLevel;
         await user.save();
       }
 
@@ -114,6 +144,8 @@ router.post(
           name: user.name,
           email: user.email,
           streak: user.streak,
+          xp: user.xp || 0,
+          level: user.level || 1,
         },
       });
     } catch (error) {
@@ -138,15 +170,25 @@ router.get('/me', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        streak: user.streak,
-        totalTasksCompleted: user.totalTasksCompleted,
-      },
-    });
+      // Ensure level is calculated correctly from XP
+      const { calculateLevelFromXP } = await import('../utils/xpSystem.js');
+      const calculatedLevel = calculateLevelFromXP(user.xp || 0);
+      if (user.level !== calculatedLevel) {
+        user.level = calculatedLevel;
+        await user.save();
+      }
+      
+      res.json({
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          streak: user.streak,
+          totalTasksCompleted: user.totalTasksCompleted,
+          xp: user.xp || 0,
+          level: user.level || 1,
+        },
+      });
   } catch (error) {
     res.status(401).json({ message: 'Invalid token' });
   }

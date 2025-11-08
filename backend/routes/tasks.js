@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
+import { awardXP, deductXP, XP_REWARDS, calculateXPWithBonus } from '../utils/xpSystem.js';
 
 const router = express.Router();
 
@@ -170,33 +171,66 @@ router.put('/:id', authenticate, async (req, res) => {
         const completingUser = await User.findById(req.user._id);
         completingUser.totalTasksCompleted += 1;
         
-        // Award XP based on priority
-        const xpAward = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
-        completingUser.xp += xpAward;
+        // Award XP based on priority with streak bonus
+        const baseXP = task.priority === 'high' ? XP_REWARDS.TASK_HIGH : 
+                      task.priority === 'medium' ? XP_REWARDS.TASK_MEDIUM : 
+                      XP_REWARDS.TASK_LOW;
+        const xpWithBonus = calculateXPWithBonus(baseXP, completingUser.streak || 0);
         
-        // Level up if XP threshold reached
-        const xpNeededForNextLevel = completingUser.level * 100;
-        if (completingUser.xp >= xpNeededForNextLevel) {
-          completingUser.level += 1;
+        const xpResult = await awardXP(
+          completingUser, 
+          xpWithBonus, 
+          `Completed ${task.priority} priority task`
+        );
+        
+        // Store level up status for response
+        let levelUpMessage = '';
+        if (xpResult.levelUp) {
+          levelUpMessage = ` 🎉 Level up! You're now level ${xpResult.newLevel}!`;
         }
         
-        await completingUser.save();
+        // Check for daily bonuses (only check once to avoid duplicate awards)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const userTasks = await Task.find({ 
+          userId: req.user._id,
+          status: 'completed',
+          completedAt: { $gte: today }
+        });
+        
+        // First task of the day bonus
+        if (userTasks.length === 1) {
+          const firstTaskBonus = await awardXP(completingUser, XP_REWARDS.FIRST_TASK_OF_DAY, 'First task of the day');
+          if (firstTaskBonus.levelUp && !xpResult.levelUp) {
+            levelUpMessage = ` 🎉 Level up! You're now level ${firstTaskBonus.newLevel}!`;
+          }
+        }
+        
+        // Check if all tasks are completed (daily bonus)
+        const allTasks = await Task.find({ userId: req.user._id });
+        const pendingTasks = allTasks.filter(t => t.status === 'pending');
+        if (pendingTasks.length === 0 && allTasks.length > 0) {
+          const allTasksBonus = await awardXP(completingUser, XP_REWARDS.ALL_TASKS_COMPLETE, 'All tasks completed today');
+          if (allTasksBonus.levelUp && !xpResult.levelUp && !levelUpMessage) {
+            levelUpMessage = ` 🎉 Level up! You're now level ${allTasksBonus.newLevel}!`;
+          }
+        }
+        
+        // Add XP info to response for frontend notification
+        res.locals.xpGained = xpResult.xpGained;
+        res.locals.levelUp = xpResult.levelUp;
+        res.locals.levelUpMessage = levelUpMessage;
       } else if (status === 'pending' && wasCompleted) {
         task.completedAt = null;
         const completingUser = await User.findById(req.user._id);
         completingUser.totalTasksCompleted = Math.max(0, completingUser.totalTasksCompleted - 1);
         
-        // Deduct XP when task is uncompleted (based on priority)
-        const xpToDeduct = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
-        completingUser.xp = Math.max(0, completingUser.xp - xpToDeduct);
+        // Deduct XP when task is uncompleted (base XP only, no bonus)
+        const baseXP = task.priority === 'high' ? XP_REWARDS.TASK_HIGH : 
+                      task.priority === 'medium' ? XP_REWARDS.TASK_MEDIUM : 
+                      XP_REWARDS.TASK_LOW;
         
-        // Check if level needs to be reduced (if XP falls below previous level threshold)
-        const previousLevelThreshold = (completingUser.level - 1) * 100;
-        if (completingUser.xp < previousLevelThreshold && completingUser.level > 1) {
-          completingUser.level -= 1;
-        }
-        
-        await completingUser.save();
+        await deductXP(completingUser, baseXP, `Uncompleted ${task.priority} priority task`);
       }
     }
 

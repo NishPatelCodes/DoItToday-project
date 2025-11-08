@@ -1,6 +1,7 @@
 import express from 'express';
 import FocusSession from '../models/FocusSession.js';
 import { authenticate } from '../middleware/auth.js';
+import { awardXP, XP_REWARDS, calculateXPWithBonus } from '../utils/xpSystem.js';
 
 const router = express.Router();
 
@@ -41,8 +42,14 @@ router.put('/:id/complete', authenticate, async (req, res) => {
     // Award XP for completing focus session
     const User = (await import('../models/User.js')).default;
     const user = await User.findById(req.user._id);
-    user.xp += 10; // 10 XP per focus session
-    await user.save();
+    
+    // Calculate XP based on session duration
+    const durationMinutes = session.duration || 0;
+    let xpAmount = durationMinutes >= 25 ? XP_REWARDS.FOCUS_SESSION_LONG : XP_REWARDS.FOCUS_SESSION;
+    
+    // Apply streak multiplier
+    const xpWithBonus = calculateXPWithBonus(xpAmount, user.streak || 0);
+    await awardXP(user, xpWithBonus, `Focus session completed (${durationMinutes} min)`);
 
     res.json(session);
   } catch (error) {

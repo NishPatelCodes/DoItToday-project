@@ -258,5 +258,11 @@ export const healthAPI = {
   check: () => checkServerHealth(),
 };
 
+// Admin API
+export const adminAPI = {
+  recalculateMyLevel: () => api.post('/admin/recalculate-my-level'),
+  recalculateAllLevels: () => api.post('/admin/recalculate-levels'),
+};
+
 export default api;
 

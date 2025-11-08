@@ -2,10 +2,15 @@ import { motion } from 'framer-motion';
 import { FaTrophy, FaStar } from 'react-icons/fa';
 
 const XPLevel = ({ xp = 0, level = 1, streak = 0 }) => {
-  // Calculate XP needed for next level (level * 100)
-  const xpNeededForNextLevel = level * 100;
-  const currentLevelXP = xp % 100 || xp;
-  const progress = (currentLevelXP / xpNeededForNextLevel) * 100;
+  // Calculate XP needed for next level
+  // Level formula: level = floor(xp / 100) + 1
+  // So XP for level N = (N - 1) * 100
+  // XP needed for next level = level * 100
+  const xpForCurrentLevel = (level - 1) * 100;
+  const xpForNextLevel = level * 100;
+  const currentLevelXP = xp - xpForCurrentLevel;
+  const xpNeededForNextLevel = xpForNextLevel - xpForCurrentLevel;
+  const progress = Math.min(100, Math.max(0, (currentLevelXP / xpNeededForNextLevel) * 100));
 
   return (
     <motion.div
@@ -52,7 +57,31 @@ const XPLevel = ({ xp = 0, level = 1, streak = 0 }) => {
 
       {/* Next Level Info */}
       <div className="text-xs text-[var(--text-tertiary)] text-center mt-2">
-        {xpNeededForNextLevel - currentLevelXP} XP until Level {level + 1}
+        {xpNeededForNextLevel - currentLevelXP > 0 ? (
+          <>
+            {xpNeededForNextLevel - currentLevelXP} XP until Level {level + 1}
+          </>
+        ) : (
+          <span className="text-green-600 font-medium">🎉 Ready to level up!</span>
+        )}
+      </div>
+      
+      {/* XP Earning Guide */}
+      <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
+        <p className="text-xs font-medium text-[var(--text-primary)] mb-2">Ways to earn XP:</p>
+        <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-secondary)]">
+          <div>✓ Tasks: 5-20 XP</div>
+          <div>✓ Habits: 5+ XP</div>
+          <div>✓ Goals: 10-50 XP</div>
+          <div>✓ Gratitude: 5+ XP</div>
+          <div>✓ Focus: 10-20 XP</div>
+          <div>✓ Daily login: 5 XP</div>
+        </div>
+        {streak >= 7 && (
+          <div className="mt-2 text-xs text-orange-600 font-medium">
+            🔥 {streak}-day streak: {streak >= 100 ? '50%' : streak >= 30 ? '30%' : '20%'} XP bonus!
+          </div>
+        )}
       </div>
     </motion.div>
   );

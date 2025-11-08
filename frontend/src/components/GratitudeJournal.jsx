@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaHeart, FaCalendar, FaFire, FaCheckCircle, FaEdit, FaTimes, FaSpinner } from 'react-icons/fa';
 import { format, isToday, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
-import { gratitudeAPI } from '../services/api';
+import { gratitudeAPI, authAPI, friendsAPI } from '../services/api';
+import { useAuthStore } from '../store/authStore';
+import { useToast } from '../hooks/useToast';
 
 const GratitudeJournal = () => {
   const [todayEntry, setTodayEntry] = useState(null);
@@ -15,6 +17,8 @@ const GratitudeJournal = () => {
   const [viewMode, setViewMode] = useState('today'); // 'today' or 'calendar'
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const toast = useToast();
+  const { updateUser } = useAuthStore();
 
   // Form state
   const [formEntries, setFormEntries] = useState(['', '', '']);
@@ -135,21 +139,37 @@ const GratitudeJournal = () => {
         result = await gratitudeAPI.create(data);
       }
 
+      const wasNewEntry = !todayEntry;
       setTodayEntry(result.data);
       setShowReminder(false);
       
-      // Reload streak and entries
+      // Reload streak and entries, and refresh XP if new entry
       const [streakRes, entriesRes] = await Promise.all([
         gratitudeAPI.getStreak(),
         gratitudeAPI.getAll(),
       ]);
       setStreak(streakRes.data || { streak: 0, lastEntryDate: null, totalEntries: 0 });
       setEntries(entriesRes.data || []);
-
-      // Show success animation
-      setTimeout(() => {
-        // Success handled by UI update
-      }, 100);
+      
+      // Refresh user XP/level if new entry was created (XP is awarded)
+      if (wasNewEntry) {
+        try {
+          const [userRes, leaderboardRes] = await Promise.all([
+            authAPI.getMe(),
+            friendsAPI.getLeaderboard()
+          ]);
+          updateUser({
+            ...userRes.data.user,
+            xp: userRes.data.user.xp || 0,
+            level: userRes.data.user.level || 1,
+          });
+          toast.success('Gratitude entry saved! ✨ XP earned!');
+        } catch (e) {
+          // Silently handle reload failure
+        }
+      } else {
+        toast.success('Gratitude entry updated!');
+      }
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to save. Please try again.');
       console.error('Error saving:', error);

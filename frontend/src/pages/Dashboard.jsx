@@ -154,12 +154,17 @@ const Dashboard = () => {
       }
 
       if (authRes.status === 'fulfilled' && authRes.value?.data?.user) {
-        const { updateUser } = useAuthStore.getState();
+        const { updateUser, user: currentUser } = useAuthStore.getState();
+        const userData = authRes.value.data.user;
+        const oldLevel = currentUser?.level || 1;
+        const newLevel = userData.level || 1;
+        
         updateUser({
-          ...user,
-          xp: authRes.value.data.user.xp || 0,
-          level: authRes.value.data.user.level || 1,
-          streak: authRes.value.data.user.streak || 0,
+          ...currentUser,
+          xp: userData.xp || 0,
+          level: newLevel,
+          streak: userData.streak || 0,
+          totalTasksCompleted: userData.totalTasksCompleted || 0,
         });
       }
     } catch (error) {
@@ -183,6 +188,11 @@ const Dashboard = () => {
       if (!task) return;
 
       const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+      
+      // Store old user level before update
+      const { user: oldUser } = useAuthStore.getState();
+      const oldLevel = oldUser?.level || 1;
+      
       const response = await tasksAPI.update(id, { status: newStatus });
       
       // Update task in store immediately
@@ -193,10 +203,26 @@ const Dashboard = () => {
       try {
         const userRes = await authAPI.getMe();
         const { updateUser } = useAuthStore.getState();
-        updateUser(userRes.data);
-        setUser(userRes.data);
+        const updatedUser = userRes.data.user;
+        const newLevel = updatedUser.level || 1;
+        
+        updateUser({
+          ...updatedUser,
+          xp: updatedUser.xp || 0,
+          level: newLevel,
+        });
+        
+        // Check for level up and show appropriate message
+        if (newStatus === 'completed' && newLevel > oldLevel) {
+          toast.success(`🎉 Level Up! You're now level ${newLevel}!`, { duration: 5000 });
+        } else if (newStatus === 'completed') {
+          toast.success('Task completed! ✨ XP earned!');
+        } else {
+          toast.success('Task marked as pending');
+        }
       } catch (e) {
         // Silently handle user reload failure
+        toast.success(newStatus === 'completed' ? 'Task completed! 🎉' : 'Task marked as pending');
       }
       
       // Reload only analytics to update stats
@@ -207,7 +233,13 @@ const Dashboard = () => {
         // Silently handle analytics reload failure
       }
       
-      toast.success(newStatus === 'completed' ? 'Task completed! 🎉' : 'Task marked as pending');
+      // Reload leaderboard to show updated rankings
+      try {
+        const leaderboardRes = await friendsAPI.getLeaderboard();
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle leaderboard reload failure
+      }
     } catch (error) {
       toast.error('Failed to update task. Please try again.');
     }
@@ -228,6 +260,24 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      
+      // Refresh user data and leaderboard
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
+      }
+      
       toast.success('Task deleted successfully');
     } catch (error) {
       toast.error('Failed to delete task. Please try again.');
@@ -263,6 +313,24 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      
+      // Always refresh user data and leaderboard to get updated XP/level
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
+      }
+      
       toast.success(editingTask ? 'Task updated successfully!' : 'Task created successfully!');
     } catch (error) {
       // Check if it's a timeout error (will be retried automatically)
@@ -307,6 +375,23 @@ const Dashboard = () => {
         setAnalytics(analyticsRes.data || {});
       } catch (e) {
         // Silently handle analytics reload failure
+      }
+      
+      // Refresh user data and leaderboard to get updated XP/level (goals award XP)
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
       }
     } catch (error) {
       console.error('Error updating goal progress:', error);
@@ -407,21 +492,23 @@ const Dashboard = () => {
   const handleCompleteHabit = async (id) => {
     try {
       await habitsAPI.complete(id);
-      // Refresh user data to get updated XP (XP is awarded on habit completion)
+      // Refresh user data and leaderboard to get updated XP (XP is awarded on habit completion)
       try {
-        const userRes = await authAPI.getMe();
+        const [userRes, leaderboardRes, habitsRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard(),
+          habitsAPI.getAll()
+        ]);
         const { updateUser } = useAuthStore.getState();
-        updateUser(userRes.data);
-        setUser(userRes.data);
-      } catch (e) {
-        // Silently handle user reload failure
-      }
-      // Reload habits to update streak
-      try {
-        const habitsRes = await habitsAPI.getAll();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
         setHabits(habitsRes.data || []);
       } catch (e) {
-        // Silently handle habits reload failure
+        // Silently handle reload failure
       }
     } catch (error) {
       // Silently handle error
