@@ -57,6 +57,23 @@ const taskSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  // XP tracking fields
+  xpAwarded: {
+    type: Number,
+    default: 0,
+  },
+  xpDeducted: {
+    type: Number,
+    default: 0,
+  },
+  isOverdue: {
+    type: Boolean,
+    default: false,
+  },
+  lastXpCheck: {
+    type: Date,
+    default: null,
+  },
 });
 
 export default mongoose.model('Task', taskSchema);

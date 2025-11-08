@@ -6,6 +6,73 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Helper function to check and deduct XP for overdue tasks
+const checkOverdueTasks = async (userId) => {
+  try {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Set to start of day for date comparison
+    
+    // Get all pending tasks with due dates that haven't been marked overdue
+    const tasks = await Task.find({
+      userId: userId,
+      status: 'pending',
+      dueDate: { $exists: true, $ne: null },
+      isOverdue: false, // Only check tasks that haven't been marked overdue yet
+    });
+    
+    // Filter tasks where due date has passed (comparing dates only, not time)
+    const overdueTasks = tasks.filter(task => {
+      if (!task.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      return dueDate < now;
+    });
+
+    if (overdueTasks.length === 0) {
+      return { deducted: 0, tasksChecked: 0 };
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return { deducted: 0, tasksChecked: 0 };
+    }
+
+    let totalXpDeducted = 0;
+    let tasksUpdated = 0;
+
+    for (const task of overdueTasks) {
+      // Calculate XP deduction based on priority
+      const xpToDeduct = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
+      
+      // Deduct XP (ensure it doesn't go below 0)
+      const previousXp = user.xp;
+      user.xp = Math.max(0, user.xp - xpToDeduct);
+      totalXpDeducted += previousXp - user.xp;
+      
+      // Update task
+      task.isOverdue = true;
+      task.xpDeducted = xpToDeduct;
+      task.lastXpCheck = now;
+      await task.save();
+      
+      tasksUpdated++;
+    }
+
+    // Check if level needs to be reduced
+    const previousLevelThreshold = (user.level - 1) * 100;
+    if (user.xp < previousLevelThreshold && user.level > 1) {
+      user.level -= 1;
+    }
+
+    await user.save();
+
+    return { deducted: totalXpDeducted, tasksChecked: tasksUpdated };
+  } catch (error) {
+    console.error('Error checking overdue tasks:', error);
+    return { deducted: 0, tasksChecked: 0 };
+  }
+};
+
 // @route   GET /api/tasks
 // @desc    Get all tasks for the authenticated user (including shared tasks)
 router.get('/', authenticate, async (req, res) => {
@@ -29,6 +96,9 @@ router.get('/', authenticate, async (req, res) => {
       .populate('goalId', 'title progress')
       .sort({ createdAt: -1 })
       .exec();
+
+    // Check for overdue tasks and deduct XP (only for own tasks)
+    await checkOverdueTasks(req.user._id);
 
     // Combine and return
     const allTasks = [...ownTasks, ...sharedTasks].sort((a, b) => 
@@ -170,9 +240,31 @@ router.put('/:id', authenticate, async (req, res) => {
         const completingUser = await User.findById(req.user._id);
         completingUser.totalTasksCompleted += 1;
         
-        // Award XP based on priority
-        const xpAward = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
-        completingUser.xp += xpAward;
+        // Check if task is completed on time (before or on due date)
+        const now = new Date();
+        let isOnTime = true;
+        if (task.dueDate) {
+          const dueDate = new Date(task.dueDate);
+          // Compare dates (ignore time for due date comparison)
+          dueDate.setHours(23, 59, 59, 999); // Set to end of due date
+          isOnTime = now <= dueDate;
+        }
+        
+        // Award XP based on priority (only if completed on time)
+        let xpAward = 0;
+        if (isOnTime) {
+          xpAward = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
+          completingUser.xp += xpAward;
+          task.xpAwarded = xpAward;
+        } else {
+          // Task is overdue - no XP awarded
+          task.xpAwarded = 0;
+        }
+        
+        // If task was overdue but now completed, remove the overdue status
+        if (task.isOverdue) {
+          task.isOverdue = false;
+        }
         
         // Level up if XP threshold reached
         const xpNeededForNextLevel = completingUser.level * 100;
@@ -186,9 +278,11 @@ router.put('/:id', authenticate, async (req, res) => {
         const completingUser = await User.findById(req.user._id);
         completingUser.totalTasksCompleted = Math.max(0, completingUser.totalTasksCompleted - 1);
         
-        // Deduct XP when task is uncompleted (based on priority)
-        const xpToDeduct = task.priority === 'high' ? 20 : task.priority === 'medium' ? 10 : 5;
-        completingUser.xp = Math.max(0, completingUser.xp - xpToDeduct);
+        // Deduct XP that was awarded when task was completed (only if XP was awarded)
+        if (task.xpAwarded > 0) {
+          completingUser.xp = Math.max(0, completingUser.xp - task.xpAwarded);
+          task.xpAwarded = 0;
+        }
         
         // Check if level needs to be reduced (if XP falls below previous level threshold)
         const previousLevelThreshold = (completingUser.level - 1) * 100;
