@@ -3,9 +3,45 @@ import { motion } from 'framer-motion';
 import { FaTrash, FaEdit, FaThumbtack, FaArchive } from 'react-icons/fa';
 import { format } from 'date-fns';
 import ConfirmationModal from './ConfirmationModal';
+import { useThemeStore } from '../hooks/useTheme';
 
 const NoteCard = memo(({ note, onSelect, onDelete, onPin, onArchive, isSelected }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { theme } = useThemeStore();
+
+  // Theme-aware color palettes (same as NoteEditor)
+  const colorPalettes = {
+    default: { light: '#f8f9fa', dark: '#1a1a1a' },
+    orange: { light: '#fff4e6', dark: '#2d1f0f' },
+    green: { light: '#e8f5e9', dark: '#1a2e1a' },
+    blue: { light: '#e3f2fd', dark: '#1a2433' },
+    purple: { light: '#f3e5f5', dark: '#2a1f33' },
+    pink: { light: '#fce4ec', dark: '#331f28' },
+    yellow: { light: '#fff9c4', dark: '#332d1f' },
+    teal: { light: '#e0f2f1', dark: '#1a2e2e' },
+    lime: { light: '#f1f8e9', dark: '#252e1a' },
+    amber: { light: '#fff3e0', dark: '#33261f' }
+  };
+
+  const getNoteBackgroundColor = () => {
+    if (!note.color) {
+      return theme === 'dark' ? colorPalettes.default.dark : colorPalettes.default.light;
+    }
+    
+    // If it's a new color ID system
+    if (colorPalettes[note.color]) {
+      return theme === 'dark' ? colorPalettes[note.color].dark : colorPalettes[note.color].light;
+    }
+    
+    // Legacy hex color - in dark mode, use a darker variant or default
+    if (theme === 'dark') {
+      // For old hex colors in dark mode, use a darker background
+      return 'var(--bg-secondary)';
+    }
+    
+    // In light mode, use the hex color as-is
+    return note.color;
+  };
   
   const getPreview = (content) => {
     if (!content) return 'No content';
@@ -34,15 +70,15 @@ const NoteCard = memo(({ note, onSelect, onDelete, onPin, onArchive, isSelected 
           }
         `}
         style={{
-          backgroundColor: note.color || 'var(--bg-secondary)',
+          backgroundColor: getNoteBackgroundColor(),
           borderRadius: '10px',
           padding: '18px',
           marginBottom: '10px',
           border: '1px solid var(--border-color)',
           borderColor: 'var(--border-color)',
           boxShadow: isSelected 
-            ? '0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03)' 
-            : '0 1px 2px rgba(0, 0, 0, 0.02)',
+            ? 'var(--shadow-md)' 
+            : 'var(--shadow-sm)',
           transition: 'all 0.2s ease',
         }}
       >
@@ -88,7 +124,7 @@ const NoteCard = memo(({ note, onSelect, onDelete, onPin, onArchive, isSelected 
                   e.stopPropagation();
                   setShowDeleteConfirm(true);
                 }}
-                className="p-1.5 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+                className="p-1.5 text-[var(--text-tertiary)] hover:text-red-500 dark:hover:text-red-400 transition-colors"
                 aria-label="Delete note"
               >
                 <FaTrash className="text-xs" />

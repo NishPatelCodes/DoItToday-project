@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaSave, FaTrash, FaThumbtack, FaArchive, FaTimes } from 'react-icons/fa';
+import { useThemeStore } from '../hooks/useTheme';
 
 const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
   const [title, setTitle] = useState('');
@@ -9,14 +10,29 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
   const [tagInput, setTagInput] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [isArchived, setIsArchived] = useState(false);
-  const [color, setColor] = useState('#f8f9fa');
+  const [color, setColor] = useState('default');
   const contentRef = useRef(null);
   const titleRef = useRef(null);
+  const { theme } = useThemeStore();
 
-  const colors = [
-    '#f8f9fa', '#fff4e6', '#e8f5e9', '#e3f2fd', '#f3e5f5', 
-    '#fce4ec', '#fff9c4', '#e0f2f1', '#f1f8e9', '#fff3e0'
+  // Theme-aware color palettes
+  const lightColors = [
+    { id: 'default', light: '#f8f9fa', dark: '#1a1a1a' },
+    { id: 'orange', light: '#fff4e6', dark: '#2d1f0f' },
+    { id: 'green', light: '#e8f5e9', dark: '#1a2e1a' },
+    { id: 'blue', light: '#e3f2fd', dark: '#1a2433' },
+    { id: 'purple', light: '#f3e5f5', dark: '#2a1f33' },
+    { id: 'pink', light: '#fce4ec', dark: '#331f28' },
+    { id: 'yellow', light: '#fff9c4', dark: '#332d1f' },
+    { id: 'teal', light: '#e0f2f1', dark: '#1a2e2e' },
+    { id: 'lime', light: '#f1f8e9', dark: '#252e1a' },
+    { id: 'amber', light: '#fff3e0', dark: '#33261f' }
   ];
+
+  const getColorValue = (colorId) => {
+    const colorObj = lightColors.find(c => c.id === colorId) || lightColors[0];
+    return theme === 'dark' ? colorObj.dark : colorObj.light;
+  };
 
   useEffect(() => {
     if (note) {
@@ -25,14 +41,20 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
       setTags(note.tags || []);
       setIsPinned(note.isPinned || false);
       setIsArchived(note.isArchived || false);
-      setColor(note.color || '#f8f9fa');
+      // If note has old hex color, map to new color system or use default
+      if (note.color && !note.color.match(/^(default|orange|green|blue|purple|pink|yellow|teal|lime|amber)$/)) {
+        // Try to map old hex to new color system, otherwise use default
+        setColor('default');
+      } else {
+        setColor(note.color || 'default');
+      }
     } else {
       setTitle('');
       setContent('');
       setTags([]);
       setIsPinned(false);
       setIsArchived(false);
-      setColor('#f8f9fa');
+      setColor('default');
     }
   }, [note]);
 
@@ -55,7 +77,7 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
       title: title.trim() || 'Untitled Note',
       content: content.trim(),
       tags,
-      color,
+      color: color, // Save color ID instead of hex
       isPinned,
       isArchived,
     };
@@ -132,12 +154,12 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
       exit={{ opacity: 0, x: 20 }}
       className="w-full h-full flex flex-col note-editor"
       style={{
-        backgroundColor: color,
+        backgroundColor: getColorValue(color),
         borderRadius: '12px',
         border: '1px solid var(--border-color)',
         borderColor: 'var(--border-color)',
         overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
+        boxShadow: 'var(--shadow-md)',
         transition: 'all 0.2s ease',
       }}
     >
@@ -290,21 +312,21 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
           <div className="flex items-center gap-3">
             <span className="text-xs text-[var(--text-secondary)]/70 font-medium">Color</span>
             <div className="flex gap-2">
-              {colors.map((c) => (
+              {lightColors.map((colorObj) => (
                 <button
-                  key={c}
-                  onClick={() => setColor(c)}
+                  key={colorObj.id}
+                  onClick={() => setColor(colorObj.id)}
                   className={`w-7 h-7 rounded-full border-2 transition-all duration-200 ${
-                    color === c
+                    color === colorObj.id
                       ? 'border-[var(--text-primary)]/40 scale-110 ring-2 ring-[var(--border-color)]/30'
                       : 'border-[var(--border-color)]/20 hover:scale-105 hover:border-[var(--border-color)]/40'
                   }`}
                   style={{ 
-                    backgroundColor: c,
+                    backgroundColor: theme === 'dark' ? colorObj.dark : colorObj.light,
                     outline: 'none',
-                    boxShadow: color === c ? '0 0 0 2px rgba(0,0,0,0.05)' : 'none',
+                    boxShadow: color === colorObj.id ? 'var(--shadow-sm)' : 'none',
                   }}
-                  aria-label={`Select color ${c}`}
+                  aria-label={`Select color ${colorObj.id}`}
                   onFocus={(e) => e.target.style.outline = 'none'}
                 />
               ))}
@@ -315,7 +337,7 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
             {note && onDelete && (
               <button
                 onClick={() => onDelete(note._id)}
-                className="px-4 py-2 text-sm text-red-600/80 hover:text-red-600 hover:bg-red-50/50 dark:hover:bg-red-900/10 rounded-lg transition-all duration-200 font-medium"
+                className="px-4 py-2 text-sm text-red-500/80 hover:text-red-500 dark:text-red-400/80 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 font-medium"
                 style={{ outline: 'none' }}
                 onFocus={(e) => e.target.style.outline = 'none'}
               >
