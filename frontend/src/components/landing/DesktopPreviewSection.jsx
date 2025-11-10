@@ -74,7 +74,7 @@ function DesktopPreviewSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative py-16 md:py-20 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       {/* Background with gradient and blur effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -105,7 +105,7 @@ function DesktopPreviewSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-10 md:mb-12"
+          className="text-center mb-8 md:mb-10"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-3 md:mb-4 text-[var(--text-primary)] leading-tight">
             Experience it on
@@ -225,7 +225,7 @@ function DesktopPreviewSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="text-center mt-10 md:mt-12"
+          className="text-center mt-8 md:mt-10"
         >
           <motion.button
             onClick={() => navigate('/login')}

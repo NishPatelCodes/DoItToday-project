@@ -38,7 +38,7 @@ function MotivationSection() {
   return (
     <section
       ref={ref}
-      className="py-20 md:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
+      className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
     >
       {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

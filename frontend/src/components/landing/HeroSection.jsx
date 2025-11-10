@@ -44,7 +44,7 @@ function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-16 md:pb-20 overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-12 md:pb-16 overflow-hidden">
       {/* Animated background gradients */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -62,7 +62,7 @@ function HeroSection() {
         <motion.div
           animate={{
             scale: [1.2, 1, 1.2],
-            opacity: [0.3, 0.5, 0.3],
+            opacity: [0.2, 0.3, 0.2],
           }}
           transition={{
             duration: 10,
@@ -70,7 +70,7 @@ function HeroSection() {
             ease: 'easeInOut',
             delay: 1,
           }}
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/8 rounded-full blur-3xl -translate-y-1/4"
         />
       </div>
 
@@ -106,7 +106,7 @@ function HeroSection() {
           {/* CTA Buttons */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 md:mb-14"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 md:mb-10"
           >
             <motion.button
               onClick={() => navigate('/login')}

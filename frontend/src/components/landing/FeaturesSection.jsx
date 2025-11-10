@@ -99,7 +99,7 @@ function FeaturesSection() {
     <section
       id="features"
       ref={ref}
-      className="py-20 md:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
+      className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
     >
       {/* Subtle background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -113,7 +113,7 @@ function FeaturesSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-10 md:mb-12"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-4 md:mb-5 text-[var(--text-primary)] leading-tight">
             Everything You Need to

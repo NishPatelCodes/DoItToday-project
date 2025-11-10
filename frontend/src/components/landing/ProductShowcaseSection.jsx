@@ -96,7 +96,7 @@ function ProductShowcaseSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 md:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[var(--bg-secondary)]"
+      className="relative py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[var(--bg-secondary)]"
     >
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -116,7 +116,7 @@ function ProductShowcaseSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-10 md:mb-12"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-4 md:mb-5 text-[var(--text-primary)] leading-tight">
             Your Day,
