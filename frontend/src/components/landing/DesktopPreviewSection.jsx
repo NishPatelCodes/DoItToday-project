@@ -33,6 +33,10 @@ function DesktopPreviewSection() {
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.95]);
   
+  // Derived opacity values for background blobs (avoid nested transforms)
+  const blobOpacity1 = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0.3, 0.3, 0]);
+  const blobOpacity2 = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0.2, 0.2, 0]);
+  
   // Mouse movement parallax for the mockup
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const mouseX = useMotionValue(0);
@@ -46,14 +50,19 @@ function DesktopPreviewSection() {
     // Disable mouse tilt on mobile/tablet (touch devices)
     if (window.innerWidth < 1024) return;
     if (!mockupRef.current) return;
-    const rect = mockupRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const x = (e.clientX - centerX) / rect.width;
-    const y = (e.clientY - centerY) / rect.height;
-    mouseX.set(x);
-    mouseY.set(y);
-    setMousePosition({ x, y });
+    
+    // Use requestAnimationFrame for smooth performance
+    requestAnimationFrame(() => {
+      if (!mockupRef.current) return;
+      const rect = mockupRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const x = (e.clientX - centerX) / rect.width;
+      const y = (e.clientY - centerY) / rect.height;
+      mouseX.set(x);
+      mouseY.set(y);
+      setMousePosition({ x, y });
+    });
   };
 
   const handleMouseLeave = () => {
@@ -71,20 +80,20 @@ function DesktopPreviewSection() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Animated gradient blobs - Responsive sizes */}
         <motion.div
-          style={{ y, opacity: useTransform(opacity, (o) => o * 0.3) }}
+          style={{ y, opacity: blobOpacity1 }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] lg:w-[800px] lg:h-[800px] bg-gradient-to-br from-primary-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-3xl"
         />
         <motion.div
           style={{ 
             y: useTransform(scrollYProgress, [0, 1], [-50, 50]),
-            opacity: useTransform(opacity, (o) => o * 0.2)
+            opacity: blobOpacity2
           }}
           className="absolute top-1/4 right-1/4 w-[300px] h-[300px] md:w-[450px] md:h-[450px] lg:w-[600px] lg:h-[600px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl"
         />
         <motion.div
           style={{ 
             y: useTransform(scrollYProgress, [0, 1], [50, -50]),
-            opacity: useTransform(opacity, (o) => o * 0.2)
+            opacity: blobOpacity2
           }}
           className="absolute bottom-1/4 left-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl"
         />
