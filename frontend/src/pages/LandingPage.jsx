@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import HeroSection from '../components/landing/HeroSection';
 import FeaturesSection from '../components/landing/FeaturesSection';
 import ProductShowcaseSection from '../components/landing/ProductShowcaseSection';
+import DesktopPreviewSection from '../components/landing/DesktopPreviewSection';
 import MotivationSection from '../components/landing/MotivationSection';
 import Footer from '../components/landing/Footer';
 import ThemeToggle from '../components/landing/ThemeToggle';
@@ -40,6 +41,9 @@ function LandingPage() {
 
         {/* Product Showcase Section */}
         <ProductShowcaseSection />
+
+        {/* Desktop Preview Section */}
+        <DesktopPreviewSection />
 
         {/* Motivation Section */}
         <MotivationSection />

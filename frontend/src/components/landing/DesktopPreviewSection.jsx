@@ -1,0 +1,249 @@
+import { motion, useInView, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FiArrowRight, FiMonitor } from 'react-icons/fi';
+import { DashboardMockup } from './ProductMockup';
+
+/**
+ * Desktop Preview Section Component
+ * 
+ * Large, centered desktop app preview inspired by routine.co
+ * Features smooth animations, parallax effects, and premium styling
+ * 
+ * CUSTOMIZATION:
+ * - Replace the DashboardMockup component with your own desktop screenshot component
+ * - Adjust animation speeds by modifying transition durations
+ * - Change mockup frame style (MacBook vs browser window)
+ * - Modify background gradients and effects
+ */
+
+function DesktopPreviewSection() {
+  const navigate = useNavigate();
+  const sectionRef = useRef(null);
+  const mockupRef = useRef(null);
+  const isInView = useInView(sectionRef, { once: true, margin: '-150px' });
+  
+  // Parallax scroll effects
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
+  
+  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.95]);
+  
+  // Mouse movement parallax for the mockup
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  const springConfig = { damping: 25, stiffness: 200 };
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), springConfig);
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-5, 5]), springConfig);
+
+  const handleMouseMove = (e) => {
+    if (!mockupRef.current) return;
+    const rect = mockupRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const x = (e.clientX - centerX) / rect.width;
+    const y = (e.clientY - centerY) / rect.height;
+    mouseX.set(x);
+    mouseY.set(y);
+    setMousePosition({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+    setMousePosition({ x: 0, y: 0 });
+  };
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden"
+    >
+      {/* Background with gradient and blur effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated gradient blobs */}
+        <motion.div
+          style={{ y, opacity: useTransform(opacity, (o) => o * 0.3) }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-primary-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-3xl"
+        />
+        <motion.div
+          style={{ 
+            y: useTransform(scrollYProgress, [0, 1], [-50, 50]),
+            opacity: useTransform(opacity, (o) => o * 0.2)
+          }}
+          className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl"
+        />
+        <motion.div
+          style={{ 
+            y: useTransform(scrollYProgress, [0, 1], [50, -50]),
+            opacity: useTransform(opacity, (o) => o * 0.2)
+          }}
+          className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl"
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-[var(--text-primary)]">
+            Experience it on
+            <span className="block mt-2 gradient-text">Desktop</span>
+          </h2>
+          <p className="text-xl sm:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto font-light leading-relaxed">
+            Your daily flow — simplified. A beautiful, intuitive interface designed 
+            to help you focus on what matters most.
+          </p>
+        </motion.div>
+
+        {/* Main Desktop Mockup */}
+        <motion.div
+          ref={mockupRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            rotateX,
+            rotateY,
+            scale,
+            opacity,
+          }}
+          initial={{ opacity: 0, y: 50, scale: 0.95 }}
+          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.95 }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mx-auto max-w-6xl perspective-1000"
+        >
+          {/* MacBook-style frame */}
+          <div className="relative">
+            {/* Top bezel with camera */}
+            <div className="relative bg-[var(--bg-secondary)] rounded-t-3xl pt-3 px-8 pb-4 border-t-2 border-x-2 border-[var(--border-color)] shadow-2xl">
+              {/* Camera notch */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-[var(--bg-secondary)] rounded-b-2xl border-x-2 border-b-2 border-[var(--border-color)]" />
+              {/* Screen bezel */}
+              <div className="h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto w-24" />
+            </div>
+
+            {/* Screen area */}
+            <div className="relative bg-[var(--bg-secondary)] border-x-2 border-[var(--border-color)] overflow-hidden">
+              {/* Browser bar */}
+              <div className="bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-6 py-3 flex items-center gap-3">
+                {/* Traffic lights */}
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                </div>
+                
+                {/* URL bar */}
+                <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
+                  <FiMonitor className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0" />
+                  <span className="text-sm text-[var(--text-tertiary)] truncate">
+                    doittoday.com/dashboard
+                  </span>
+                  <div className="ml-auto w-2 h-2 rounded-full bg-green-500" />
+                </div>
+              </div>
+
+              {/* App content - Dashboard mockup */}
+              <div className="relative bg-[var(--bg-primary)] min-h-[600px] max-h-[700px] overflow-hidden">
+                <div className="transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
+                  <DashboardMockup />
+                </div>
+                
+                {/* Subtle gradient overlay for depth */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-primary)]/20 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Bottom bezel */}
+            <div className="relative bg-[var(--bg-secondary)] rounded-b-3xl pt-4 pb-6 border-b-2 border-x-2 border-[var(--border-color)] shadow-2xl">
+              {/* Trackpad area */}
+              <div className="w-32 h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto mb-2" />
+              <div className="w-48 h-8 bg-[var(--bg-tertiary)] rounded-lg mx-auto" />
+            </div>
+
+            {/* Glow effect on hover */}
+            <motion.div
+              className="absolute -inset-8 bg-gradient-to-br from-primary-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-3xl opacity-0 pointer-events-none"
+              animate={{
+                opacity: mousePosition.x !== 0 || mousePosition.y !== 0 ? 0.5 : 0,
+              }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+
+          {/* Floating decorative elements */}
+          <motion.div
+            animate={{
+              y: [0, -10, 0],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-primary-500/20 to-purple-500/20 rounded-2xl blur-xl hidden lg:block"
+          />
+          <motion.div
+            animate={{
+              y: [0, 10, 0],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 1,
+            }}
+            className="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl blur-xl hidden lg:block"
+          />
+        </motion.div>
+
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="text-center mt-16"
+        >
+          <motion.button
+            onClick={() => navigate('/login')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="group relative px-10 py-5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-lg sm:text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center gap-3 mx-auto"
+          >
+            Get Started Free
+            <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl"
+              initial={false}
+            />
+          </motion.button>
+          <p className="mt-4 text-sm text-[var(--text-secondary)]">
+            No credit card required • Start in seconds
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Custom CSS for 3D perspective */}
+      <style jsx>{`
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+      `}</style>
+    </section>
+  );
+}
+
+export default DesktopPreviewSection;
+
