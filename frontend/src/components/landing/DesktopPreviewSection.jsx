@@ -111,6 +111,7 @@ function DesktopPreviewSection() {
             Experience it on
             <span className="block mt-2 gradient-text">Desktop</span>
           </h2>
+          {/* Responsive design: max-w-5xl on desktop, scales down on mobile/tablet */}
           <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl md:max-w-3xl mx-auto font-light leading-relaxed px-4">
             Your daily flow — simplified. A beautiful, intuitive interface designed 
             to help you focus on what matters most.
