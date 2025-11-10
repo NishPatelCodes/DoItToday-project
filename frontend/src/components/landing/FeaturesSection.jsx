@@ -99,7 +99,7 @@ function FeaturesSection() {
     <section
       id="features"
       ref={ref}
-      className="py-24 px-4 sm:px-6 lg:px-8 bg-[var(--bg-secondary)]"
+      className="py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-[var(--bg-secondary)]"
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
@@ -107,23 +107,23 @@ function FeaturesSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12 md:mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-[var(--text-primary)]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-[var(--text-primary)]">
             Everything You Need to
             <span className="block mt-2 gradient-text">Stay Productive</span>
           </h2>
-          <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto px-4">
             Powerful features designed to help you organize, focus, and achieve your goals.
           </p>
         </motion.div>
 
-        {/* Features Grid */}
+        {/* Features Grid - Responsive: 1 col mobile, 2 col tablet, 4 col desktop */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-6"
         >
           {features.map((feature, index) => {
             const Icon = feature.icon;

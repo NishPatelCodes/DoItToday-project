@@ -44,7 +44,7 @@ function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-16 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-12 md:pb-16 overflow-hidden">
       <div className="max-w-7xl mx-auto w-full">
         <motion.div
           variants={containerVariants}
@@ -55,7 +55,7 @@ function HeroSection() {
           {/* Main Headline */}
           <motion.h1
             variants={itemVariants}
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 md:mb-6 leading-tight px-4"
           >
             <span className="block text-[var(--text-primary)]">
               Organize Your Day.
@@ -68,7 +68,7 @@ function HeroSection() {
           {/* Subheadline */}
           <motion.p
             variants={itemVariants}
-            className="text-xl sm:text-2xl md:text-3xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto font-light"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-[var(--text-secondary)] mb-8 md:mb-12 max-w-2xl md:max-w-3xl mx-auto font-light px-4"
           >
             The all-in-one productivity platform that helps you manage tasks, 
             build habits, and stay focused on what matters.

@@ -43,6 +43,8 @@ function DesktopPreviewSection() {
   const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-5, 5]), springConfig);
 
   const handleMouseMove = (e) => {
+    // Disable mouse tilt on mobile/tablet (touch devices)
+    if (window.innerWidth < 1024) return;
     if (!mockupRef.current) return;
     const rect = mockupRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -63,28 +65,28 @@ function DesktopPreviewSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       {/* Background with gradient and blur effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Animated gradient blobs */}
+        {/* Animated gradient blobs - Responsive sizes */}
         <motion.div
           style={{ y, opacity: useTransform(opacity, (o) => o * 0.3) }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-primary-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] lg:w-[800px] lg:h-[800px] bg-gradient-to-br from-primary-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-3xl"
         />
         <motion.div
           style={{ 
             y: useTransform(scrollYProgress, [0, 1], [-50, 50]),
             opacity: useTransform(opacity, (o) => o * 0.2)
           }}
-          className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl"
+          className="absolute top-1/4 right-1/4 w-[300px] h-[300px] md:w-[450px] md:h-[450px] lg:w-[600px] lg:h-[600px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl"
         />
         <motion.div
           style={{ 
             y: useTransform(scrollYProgress, [0, 1], [50, -50]),
             opacity: useTransform(opacity, (o) => o * 0.2)
           }}
-          className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-1/4 left-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl"
         />
       </div>
 
@@ -94,19 +96,19 @@ function DesktopPreviewSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-16"
+          className="text-center mb-12 md:mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-[var(--text-primary)]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-[var(--text-primary)]">
             Experience it on
             <span className="block mt-2 gradient-text">Desktop</span>
           </h2>
-          <p className="text-xl sm:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto font-light leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl md:max-w-3xl mx-auto font-light leading-relaxed px-4">
             Your daily flow — simplified. A beautiful, intuitive interface designed 
             to help you focus on what matters most.
           </p>
         </motion.div>
 
-        {/* Main Desktop Mockup */}
+        {/* Main Desktop Mockup - Reduced size like routine.co */}
         <motion.div
           ref={mockupRef}
           onMouseMove={handleMouseMove}
@@ -120,41 +122,41 @@ function DesktopPreviewSection() {
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.95 }}
           transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mx-auto max-w-6xl perspective-1000"
+          className="relative mx-auto max-w-5xl w-full px-4 sm:px-6 md:px-8 perspective-1000"
         >
           {/* MacBook-style frame */}
           <div className="relative">
             {/* Top bezel with camera */}
-            <div className="relative bg-[var(--bg-secondary)] rounded-t-3xl pt-3 px-8 pb-4 border-t-2 border-x-2 border-[var(--border-color)] shadow-2xl">
+            <div className="relative bg-[var(--bg-secondary)] rounded-t-2xl md:rounded-t-3xl pt-2 md:pt-3 px-4 md:px-8 pb-3 md:pb-4 border-t-2 border-x-2 border-[var(--border-color)] shadow-2xl">
               {/* Camera notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-[var(--bg-secondary)] rounded-b-2xl border-x-2 border-b-2 border-[var(--border-color)]" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 md:w-32 h-4 md:h-6 bg-[var(--bg-secondary)] rounded-b-xl md:rounded-b-2xl border-x-2 border-b-2 border-[var(--border-color)]" />
               {/* Screen bezel */}
-              <div className="h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto w-24" />
+              <div className="h-0.5 md:h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto w-16 md:w-24" />
             </div>
 
             {/* Screen area */}
             <div className="relative bg-[var(--bg-secondary)] border-x-2 border-[var(--border-color)] overflow-hidden">
               {/* Browser bar */}
-              <div className="bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-6 py-3 flex items-center gap-3">
+              <div className="bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-3 md:px-6 py-2 md:py-3 flex items-center gap-2 md:gap-3">
                 {/* Traffic lights */}
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                <div className="flex gap-1.5 md:gap-2">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-500/80" />
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-green-500/80" />
                 </div>
                 
                 {/* URL bar */}
-                <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
-                  <FiMonitor className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0" />
-                  <span className="text-sm text-[var(--text-tertiary)] truncate">
+                <div className="flex-1 flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
+                  <FiMonitor className="w-3 h-3 md:w-4 md:h-4 text-[var(--text-tertiary)] flex-shrink-0" />
+                  <span className="text-xs md:text-sm text-[var(--text-tertiary)] truncate">
                     doittoday.com/dashboard
                   </span>
-                  <div className="ml-auto w-2 h-2 rounded-full bg-green-500" />
+                  <div className="ml-auto w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500" />
                 </div>
               </div>
 
               {/* App content - Dashboard mockup */}
-              <div className="relative bg-[var(--bg-primary)] min-h-[600px] max-h-[700px] overflow-hidden">
+              <div className="relative bg-[var(--bg-primary)] min-h-[400px] md:min-h-[500px] lg:min-h-[600px] max-h-[500px] md:max-h-[600px] lg:max-h-[700px] overflow-hidden">
                 <div className="transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
                   <DashboardMockup />
                 </div>
@@ -165,10 +167,10 @@ function DesktopPreviewSection() {
             </div>
 
             {/* Bottom bezel */}
-            <div className="relative bg-[var(--bg-secondary)] rounded-b-3xl pt-4 pb-6 border-b-2 border-x-2 border-[var(--border-color)] shadow-2xl">
+            <div className="relative bg-[var(--bg-secondary)] rounded-b-2xl md:rounded-b-3xl pt-3 md:pt-4 pb-4 md:pb-6 border-b-2 border-x-2 border-[var(--border-color)] shadow-2xl">
               {/* Trackpad area */}
-              <div className="w-32 h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto mb-2" />
-              <div className="w-48 h-8 bg-[var(--bg-tertiary)] rounded-lg mx-auto" />
+              <div className="w-24 md:w-32 h-0.5 md:h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto mb-1.5 md:mb-2" />
+              <div className="w-36 md:w-48 h-6 md:h-8 bg-[var(--bg-tertiary)] rounded-lg mx-auto" />
             </div>
 
             {/* Glow effect on hover */}
@@ -214,13 +216,13 @@ function DesktopPreviewSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="text-center mt-16"
+          className="text-center mt-12 md:mt-16"
         >
           <motion.button
             onClick={() => navigate('/login')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="group relative px-10 py-5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-lg sm:text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center gap-3 mx-auto"
+            className="group relative px-8 md:px-10 py-4 md:py-5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-base md:text-lg lg:text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center gap-2 md:gap-3 mx-auto"
           >
             Get Started Free
             <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
@@ -229,7 +231,7 @@ function DesktopPreviewSection() {
               initial={false}
             />
           </motion.button>
-          <p className="mt-4 text-sm text-[var(--text-secondary)]">
+          <p className="mt-4 text-xs md:text-sm text-[var(--text-secondary)]">
             No credit card required • Start in seconds
           </p>
         </motion.div>

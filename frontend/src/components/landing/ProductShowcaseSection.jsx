@@ -96,17 +96,17 @@ function ProductShowcaseSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-primary)]"
+      className="relative py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-primary)]"
     >
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           style={{ y, opacity }}
-          className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/4 w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-primary-500/10 rounded-full blur-3xl"
         />
         <motion.div
           style={{ y: useTransform(scrollYProgress, [0, 1], [-30, 30]), opacity }}
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-purple-500/10 rounded-full blur-3xl"
         />
       </div>
 
@@ -116,24 +116,24 @@ function ProductShowcaseSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-12 md:mb-16 lg:mb-20"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-[var(--text-primary)]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-[var(--text-primary)]">
             Your Day,
             <span className="block mt-2 gradient-text">Beautifully Organized</span>
           </h2>
-          <p className="text-xl sm:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto font-light">
+          <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl md:max-w-3xl mx-auto font-light px-4">
             See how DoItToday transforms your productivity with an intuitive, 
             elegant interface designed for clarity and focus.
           </p>
         </motion.div>
 
-        {/* Main Product Showcase */}
+        {/* Main Product Showcase - Responsive grid: 1 col mobile, 2 col tablet, 3 col desktop */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 mb-16 items-start"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-6 mb-12 md:mb-16 items-start"
         >
           {previews.map((preview) => (
             <motion.div
@@ -164,7 +164,7 @@ function ProductShowcaseSection() {
                     </div>
                     
                     {/* Screenshot - Using CSS mockup component */}
-                    <div className="relative overflow-hidden rounded-lg bg-[var(--bg-primary)] flex-1 min-h-[450px] flex flex-col">
+                    <div className="relative overflow-hidden rounded-lg bg-[var(--bg-primary)] flex-1 min-h-[350px] md:min-h-[400px] lg:min-h-[450px] flex flex-col">
                       {preview.component && (
                         <div className="w-full h-full flex flex-col">
                           <preview.component />
@@ -178,14 +178,14 @@ function ProductShowcaseSection() {
 
                 {/* Mobile Mockup */}
                 {preview.type === 'mobile' && (
-                  <div className="relative mx-auto max-w-[280px] w-full">
+                  <div className="relative mx-auto max-w-[240px] sm:max-w-[260px] md:max-w-[280px] w-full">
                     {/* Phone Frame */}
                     <div className="relative bg-[var(--bg-secondary)] rounded-[3rem] p-3 shadow-2xl border-4 border-[var(--border-color)]">
                       {/* Notch */}
                       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-[var(--bg-secondary)] rounded-b-2xl border-x-4 border-b-4 border-[var(--border-color)] z-10" />
                       
                       {/* Screen */}
-                      <div className="relative overflow-hidden rounded-[2.5rem] bg-[var(--bg-primary)] min-h-[600px] flex flex-col">
+                      <div className="relative overflow-hidden rounded-[2.5rem] bg-[var(--bg-primary)] min-h-[500px] md:min-h-[550px] lg:min-h-[600px] flex flex-col">
                         {/* Status Bar */}
                         <div className="absolute top-0 left-0 right-0 h-8 bg-[var(--bg-primary)]/80 backdrop-blur-sm z-20 flex items-center justify-between px-6 text-xs text-[var(--text-secondary)] flex-shrink-0">
                           <span>9:41</span>
@@ -232,12 +232,12 @@ function ProductShowcaseSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: preview.delay + 0.3 }}
-                className="mt-6 text-center flex-shrink-0"
+                className="mt-4 md:mt-6 text-center flex-shrink-0"
               >
-                <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">
+                <h3 className="text-lg md:text-xl font-semibold mb-1.5 md:mb-2 text-[var(--text-primary)]">
                   {preview.title}
                 </h3>
-                <p className="text-[var(--text-secondary)] text-sm">
+                <p className="text-[var(--text-secondary)] text-xs md:text-sm">
                   {preview.description}
                 </p>
               </motion.div>
