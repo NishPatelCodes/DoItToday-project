@@ -2,6 +2,7 @@ import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowRight, FiMonitor, FiSmartphone } from 'react-icons/fi';
+import { DashboardMockup, TaskManagementMockup, MobileDashboardMockup } from './ProductMockup';
 
 /**
  * Product Showcase Section Component
@@ -31,13 +32,13 @@ function ProductShowcaseSection() {
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 1, 0.3]);
 
   // Product previews configuration
-  // Replace these placeholder URLs with your actual product screenshots
+  // Using CSS-based mockups that match the actual app design
   const previews = [
     {
       id: 1,
       title: 'Dashboard Overview',
       description: 'Your complete productivity hub at a glance',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=800&fit=crop', // Replace with dashboard screenshot
+      component: DashboardMockup,
       type: 'desktop',
       delay: 0,
     },
@@ -45,7 +46,7 @@ function ProductShowcaseSection() {
       id: 2,
       title: 'Task Management',
       description: 'Organize and prioritize your daily tasks',
-      image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&h=800&fit=crop', // Replace with task view screenshot
+      component: TaskManagementMockup,
       type: 'desktop',
       delay: 0.1,
     },
@@ -53,7 +54,7 @@ function ProductShowcaseSection() {
       id: 3,
       title: 'Mobile Experience',
       description: 'Stay productive on the go',
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&h=1200&fit=crop', // Replace with mobile screenshot
+      component: MobileDashboardMockup,
       type: 'mobile',
       delay: 0.2,
     },
@@ -162,17 +163,17 @@ function ProductShowcaseSection() {
                       </div>
                     </div>
                     
-                    {/* Screenshot */}
-                    <div className="relative overflow-hidden rounded-lg bg-[var(--bg-primary)]">
-                      <motion.img
-                        src={preview.image}
-                        alt={preview.title}
-                        className="w-full h-auto object-cover"
-                        whileHover={{ scale: 1.05 }}
+                    {/* Screenshot - Using CSS mockup component */}
+                    <div className="relative overflow-hidden rounded-lg bg-[var(--bg-primary)] min-h-[400px]">
+                      <motion.div
+                        className="w-full h-full"
+                        whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.4 }}
-                      />
+                      >
+                        {preview.component && <preview.component />}
+                      </motion.div>
                       {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent-primary)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     </div>
                   </div>
                 )}
@@ -198,16 +199,16 @@ function ProductShowcaseSection() {
                           </div>
                         </div>
                         
-                        {/* Screenshot */}
-                        <motion.img
-                          src={preview.image}
-                          alt={preview.title}
-                          className="w-full h-auto object-cover"
-                          whileHover={{ scale: 1.05 }}
+                        {/* Screenshot - Using CSS mockup component */}
+                        <motion.div
+                          className="w-full h-full min-h-[600px] relative flex flex-col"
+                          whileHover={{ scale: 1.02 }}
                           transition={{ duration: 0.4 }}
-                        />
+                        >
+                          {preview.component && <preview.component />}
+                        </motion.div>
                         {/* Gradient overlay on hover */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent-primary)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                       </div>
                       
                       {/* Home Indicator */}
