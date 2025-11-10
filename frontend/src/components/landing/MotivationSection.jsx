@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { FiQuote } from 'react-icons/fi';
+import { FiMessageSquare } from 'react-icons/fi';
 
 /**
  * Motivation Section Component
@@ -55,7 +55,7 @@ function MotivationSection() {
         >
           {/* Quote Icon */}
           <motion.div variants={itemVariants} className="mb-8">
-            <FiQuote className="w-16 h-16 mx-auto text-[var(--accent-primary)] opacity-20" />
+            <FiMessageSquare className="w-16 h-16 mx-auto text-[var(--accent-primary)] opacity-20" />
           </motion.div>
 
           {/* Main Quote */}

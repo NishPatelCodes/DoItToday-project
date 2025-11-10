@@ -8,8 +8,8 @@ import {
   FiUsers,
   FiZap,
   FiCalendar,
-  FiAward,
-  FiBrain,
+  FiStar,
+  FiBarChart2,
 } from 'react-icons/fi';
 
 /**
@@ -82,13 +82,13 @@ function FeaturesSection() {
       color: 'from-pink-500 to-rose-500',
     },
     {
-      icon: FiAward,
+      icon: FiStar,
       title: 'Gamification',
       description: 'Earn XP, level up, and unlock badges as you complete tasks and goals.',
       color: 'from-yellow-500 to-orange-500',
     },
     {
-      icon: FiBrain,
+      icon: FiBarChart2,
       title: 'Analytics & Insights',
       description: 'Visual reports and AI insights to understand your productivity patterns.',
       color: 'from-teal-500 to-cyan-500',
