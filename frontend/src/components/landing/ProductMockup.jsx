@@ -10,7 +10,7 @@ import { FaTasks, FaBullseye, FaFire, FaChartLine, FaCheckCircle } from 'react-i
 
 export const DashboardMockup = () => {
   return (
-    <div className="w-full h-full bg-[var(--bg-primary)] p-6 overflow-hidden">
+    <div className="w-full h-full bg-[var(--bg-primary)] p-6 overflow-hidden flex flex-col">
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
@@ -118,7 +118,7 @@ export const DashboardMockup = () => {
 
 export const TaskManagementMockup = () => {
   return (
-    <div className="w-full h-full bg-[var(--bg-primary)] p-6 overflow-hidden">
+    <div className="w-full h-full bg-[var(--bg-primary)] p-6 overflow-hidden flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -150,20 +150,20 @@ export const TaskManagementMockup = () => {
       {/* Task List */}
       <div className="space-y-3">
         {[
-          { title: 'Design new landing page', priority: 'High', due: 'Today', color: 'red' },
-          { title: 'Write blog post about productivity', priority: 'Medium', due: 'Tomorrow', color: 'yellow' },
-          { title: 'Team meeting preparation', priority: 'High', due: 'Today', color: 'red' },
-          { title: 'Update project documentation', priority: 'Low', due: 'This week', color: 'blue' },
+          { title: 'Design new landing page', priority: 'High', due: 'Today', borderColor: 'border-red-500', bgColor: 'bg-red-500/10', textColor: 'text-red-600' },
+          { title: 'Write blog post about productivity', priority: 'Medium', due: 'Tomorrow', borderColor: 'border-yellow-500', bgColor: 'bg-yellow-500/10', textColor: 'text-yellow-600' },
+          { title: 'Team meeting preparation', priority: 'High', due: 'Today', borderColor: 'border-red-500', bgColor: 'bg-red-500/10', textColor: 'text-red-600' },
+          { title: 'Update project documentation', priority: 'Low', due: 'This week', borderColor: 'border-blue-500', bgColor: 'bg-blue-500/10', textColor: 'text-blue-600' },
         ].map((task, idx) => (
           <div key={idx} className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)]">
             <div className="flex items-start gap-3">
-              <div className={`w-5 h-5 rounded border-2 border-${task.color}-500 mt-0.5 flex-shrink-0`} />
+              <div className={`w-5 h-5 rounded border-2 ${task.borderColor} mt-0.5 flex-shrink-0`} />
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
                   {task.title}
                 </h3>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs px-2 py-0.5 rounded bg-${task.color}-500/10 text-${task.color}-600`}>
+                  <span className={`text-xs px-2 py-0.5 rounded ${task.bgColor} ${task.textColor}`}>
                     {task.priority}
                   </span>
                   <span className="text-xs text-[var(--text-secondary)]">{task.due}</span>

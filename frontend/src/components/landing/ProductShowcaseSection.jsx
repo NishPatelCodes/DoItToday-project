@@ -133,30 +133,30 @@ function ProductShowcaseSection() {
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6 mb-16 items-start"
         >
           {previews.map((preview) => (
             <motion.div
               key={preview.id}
               variants={itemVariants}
               custom={preview.delay}
-              whileHover={{ y: -10, scale: 1.02 }}
-              className="group relative"
+              whileHover={{ y: -8 }}
+              className="group relative flex flex-col h-full"
             >
               {/* Mockup Frame */}
-              <div className="relative">
+              <div className="relative flex-1 flex flex-col">
                 {/* Desktop Mockup */}
                 {preview.type === 'desktop' && (
-                  <div className="relative bg-[var(--bg-secondary)] rounded-2xl p-4 shadow-2xl border border-[var(--border-color)]">
+                  <div className="relative bg-[var(--bg-secondary)] rounded-2xl p-4 shadow-2xl border border-[var(--border-color)] flex flex-col h-full">
                     {/* Browser Bar */}
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                       <div className="flex gap-1.5">
                         <div className="w-3 h-3 rounded-full bg-red-500/80" />
                         <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                         <div className="w-3 h-3 rounded-full bg-green-500/80" />
                       </div>
                       <div className="flex-1 h-6 bg-[var(--bg-primary)] rounded-md border border-[var(--border-color)] flex items-center px-3">
-                        <FiMonitor className="w-3 h-3 text-[var(--text-tertiary)] mr-2" />
+                        <FiMonitor className="w-3 h-3 text-[var(--text-tertiary)] mr-2 flex-shrink-0" />
                         <span className="text-xs text-[var(--text-tertiary)] truncate">
                           doittoday.com
                         </span>
@@ -164,32 +164,30 @@ function ProductShowcaseSection() {
                     </div>
                     
                     {/* Screenshot - Using CSS mockup component */}
-                    <div className="relative overflow-hidden rounded-lg bg-[var(--bg-primary)] min-h-[400px]">
-                      <motion.div
-                        className="w-full h-full"
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ duration: 0.4 }}
-                      >
-                        {preview.component && <preview.component />}
-                      </motion.div>
-                      {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent-primary)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <div className="relative overflow-hidden rounded-lg bg-[var(--bg-primary)] flex-1 min-h-[450px] flex flex-col">
+                      {preview.component && (
+                        <div className="w-full h-full flex flex-col">
+                          <preview.component />
+                        </div>
+                      )}
+                      {/* Subtle border glow on hover - no white overlay */}
+                      <div className="absolute inset-0 rounded-lg border-2 border-[var(--accent-primary)] opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none" />
                     </div>
                   </div>
                 )}
 
                 {/* Mobile Mockup */}
                 {preview.type === 'mobile' && (
-                  <div className="relative mx-auto max-w-[280px]">
+                  <div className="relative mx-auto max-w-[280px] w-full">
                     {/* Phone Frame */}
                     <div className="relative bg-[var(--bg-secondary)] rounded-[3rem] p-3 shadow-2xl border-4 border-[var(--border-color)]">
                       {/* Notch */}
                       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-[var(--bg-secondary)] rounded-b-2xl border-x-4 border-b-4 border-[var(--border-color)] z-10" />
                       
                       {/* Screen */}
-                      <div className="relative overflow-hidden rounded-[2.5rem] bg-[var(--bg-primary)]">
+                      <div className="relative overflow-hidden rounded-[2.5rem] bg-[var(--bg-primary)] min-h-[600px] flex flex-col">
                         {/* Status Bar */}
-                        <div className="absolute top-0 left-0 right-0 h-8 bg-[var(--bg-primary)]/80 backdrop-blur-sm z-20 flex items-center justify-between px-6 text-xs text-[var(--text-secondary)]">
+                        <div className="absolute top-0 left-0 right-0 h-8 bg-[var(--bg-primary)]/80 backdrop-blur-sm z-20 flex items-center justify-between px-6 text-xs text-[var(--text-secondary)] flex-shrink-0">
                           <span>9:41</span>
                           <div className="flex items-center gap-1">
                             <div className="w-4 h-2 border border-[var(--text-secondary)] rounded-sm">
@@ -200,30 +198,30 @@ function ProductShowcaseSection() {
                         </div>
                         
                         {/* Screenshot - Using CSS mockup component */}
-                        <motion.div
-                          className="w-full h-full min-h-[600px] relative flex flex-col"
-                          whileHover={{ scale: 1.02 }}
-                          transition={{ duration: 0.4 }}
-                        >
-                          {preview.component && <preview.component />}
-                        </motion.div>
-                        {/* Gradient overlay on hover */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--accent-primary)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <div className="w-full flex-1 flex flex-col pt-8">
+                          {preview.component && (
+                            <div className="w-full h-full flex flex-col">
+                              <preview.component />
+                            </div>
+                          )}
+                        </div>
+                        {/* Subtle border glow on hover - no white overlay */}
+                        <div className="absolute inset-0 rounded-[2.5rem] border-2 border-[var(--accent-primary)] opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none" />
                       </div>
                       
                       {/* Home Indicator */}
-                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-[var(--text-tertiary)] rounded-full" />
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-[var(--text-tertiary)] rounded-full z-10" />
                     </div>
                   </div>
                 )}
 
-                {/* Floating glow effect */}
+                {/* Floating glow effect - subtle background glow */}
                 <motion.div
                   animate={floatingAnimation}
-                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${
-                    preview.id === 1 ? 'from-blue-500/20 to-cyan-500/20' :
-                    preview.id === 2 ? 'from-purple-500/20 to-pink-500/20' :
-                    'from-orange-500/20 to-red-500/20'
+                  className={`absolute -inset-4 rounded-3xl bg-gradient-to-br ${
+                    preview.id === 1 ? 'from-blue-500/5 to-cyan-500/5' :
+                    preview.id === 2 ? 'from-purple-500/5 to-pink-500/5' :
+                    'from-orange-500/5 to-red-500/5'
                   } blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10`}
                 />
               </div>
@@ -234,12 +232,12 @@ function ProductShowcaseSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: preview.delay + 0.3 }}
-                className="mt-6 text-center"
+                className="mt-6 text-center flex-shrink-0"
               >
                 <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">
                   {preview.title}
                 </h3>
-                <p className="text-[var(--text-secondary)]">
+                <p className="text-[var(--text-secondary)] text-sm">
                   {preview.description}
                 </p>
               </motion.div>
