@@ -24,15 +24,20 @@ function Footer() {
   ];
 
   return (
-    <footer className="bg-[var(--bg-secondary)] border-t border-[var(--border-color)] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <footer className="bg-[var(--bg-secondary)] border-t border-[var(--border-color)] py-12 md:py-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Subtle background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-primary-500/3 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-8 md:mb-10">
           {/* Brand Section */}
           <div>
-            <h3 className="text-2xl font-bold gradient-text mb-4">
+            <h3 className="text-xl md:text-2xl font-bold gradient-text mb-3 md:mb-4">
               DoItToday
             </h3>
-            <p className="text-[var(--text-secondary)] leading-relaxed">
+            <p className="text-sm md:text-base text-[var(--text-secondary)] leading-relaxed">
               Your all-in-one productivity platform. Organize your day, 
               achieve your goals, and build better habits.
             </p>
@@ -40,7 +45,7 @@ function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+            <h4 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">
               Quick Links
             </h4>
             <ul className="space-y-2">
@@ -48,7 +53,7 @@ function Footer() {
                 <li key={index}>
                   <a
                     href={link.path}
-                    className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors duration-200"
+                    className="text-sm md:text-base text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors duration-200 inline-block"
                   >
                     {link.name}
                   </a>
@@ -59,10 +64,10 @@ function Footer() {
 
           {/* Social Links */}
           <div>
-            <h4 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+            <h4 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">
               Connect
             </h4>
-            <div className="flex gap-4">
+            <div className="flex gap-3 md:gap-4">
               {socialLinks.map((social, index) => {
                 const Icon = social.icon;
                 return (
@@ -85,8 +90,8 @@ function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="pt-8 border-t border-[var(--border-color)] text-center">
-          <p className="text-[var(--text-secondary)]">
+        <div className="pt-6 md:pt-8 border-t border-[var(--border-color)] text-center">
+          <p className="text-xs md:text-sm text-[var(--text-secondary)]">
             © {currentYear} DoItToday. All rights reserved.
           </p>
         </div>

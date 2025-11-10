@@ -10,75 +10,75 @@ import { FaTasks, FaBullseye, FaFire, FaChartLine, FaCheckCircle } from 'react-i
 
 export const DashboardMockup = () => {
   return (
-    <div className="w-full h-full bg-[var(--bg-primary)] p-6 overflow-hidden flex flex-col">
+    <div className="w-full h-full bg-[var(--bg-primary)] p-4 md:p-5 overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
+      <div className="mb-4 md:mb-5">
+        <h2 className="text-lg md:text-xl font-bold text-[var(--text-primary)] mb-1">
           Welcome back, User!
         </h2>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-xs md:text-sm text-[var(--text-secondary)]">
           Here's your productivity overview for today
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-              <FaTasks className="text-indigo-600" />
+      <div className="grid grid-cols-2 gap-2 md:gap-3 mb-4 md:mb-5">
+        <div className="bg-[var(--bg-secondary)] rounded-lg md:rounded-xl p-3 md:p-4 border border-[var(--border-color)]">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+              <FaTasks className="text-indigo-600 text-sm md:text-base" />
             </div>
             <div>
               <p className="text-xs text-[var(--text-secondary)]">Pending</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">5</p>
+              <p className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">5</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <FaBullseye className="text-green-600" />
+        <div className="bg-[var(--bg-secondary)] rounded-lg md:rounded-xl p-3 md:p-4 border border-[var(--border-color)]">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <FaBullseye className="text-green-600 text-sm md:text-base" />
             </div>
             <div>
               <p className="text-xs text-[var(--text-secondary)]">Active Goals</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">3</p>
+              <p className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">3</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-              <FaFire className="text-orange-600" />
+        <div className="bg-[var(--bg-secondary)] rounded-lg md:rounded-xl p-3 md:p-4 border border-[var(--border-color)]">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <FaFire className="text-orange-600 text-sm md:text-base" />
             </div>
             <div>
               <p className="text-xs text-[var(--text-secondary)]">Streak</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">12</p>
+              <p className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">12</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-              <FaChartLine className="text-purple-600" />
+        <div className="bg-[var(--bg-secondary)] rounded-lg md:rounded-xl p-3 md:p-4 border border-[var(--border-color)]">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <FaChartLine className="text-purple-600 text-sm md:text-base" />
             </div>
             <div>
               <p className="text-xs text-[var(--text-secondary)]">Level</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">5</p>
+              <p className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">5</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Task Cards */}
-      <div className="space-y-3">
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)]">
-          <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded border-2 border-indigo-500 mt-0.5 flex-shrink-0" />
+      <div className="space-y-2 md:space-y-3">
+        <div className="bg-[var(--bg-secondary)] rounded-lg md:rounded-xl p-3 md:p-4 border border-[var(--border-color)]">
+          <div className="flex items-start gap-2 md:gap-3">
+            <div className="w-4 h-4 md:w-5 md:h-5 rounded border-2 border-indigo-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
+              <h3 className="text-xs md:text-sm font-medium text-[var(--text-primary)] mb-1">
                 Complete project proposal
               </h3>
               <p className="text-xs text-[var(--text-secondary)]">High Priority • Due today</p>
@@ -86,11 +86,11 @@ export const DashboardMockup = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)]">
-          <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded border-2 border-green-500 mt-0.5 flex-shrink-0" />
+        <div className="bg-[var(--bg-secondary)] rounded-lg md:rounded-xl p-3 md:p-4 border border-[var(--border-color)]">
+          <div className="flex items-start gap-2 md:gap-3">
+            <div className="w-4 h-4 md:w-5 md:h-5 rounded border-2 border-green-500 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
+              <h3 className="text-xs md:text-sm font-medium text-[var(--text-primary)] mb-1">
                 Review team feedback
               </h3>
               <p className="text-xs text-[var(--text-secondary)]">Medium Priority • Tomorrow</p>
@@ -98,13 +98,13 @@ export const DashboardMockup = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] opacity-60">
-          <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded bg-green-500 border-2 border-green-500 mt-0.5 flex-shrink-0 flex items-center justify-center">
+        <div className="bg-[var(--bg-secondary)] rounded-lg md:rounded-xl p-3 md:p-4 border border-[var(--border-color)] opacity-60">
+          <div className="flex items-start gap-2 md:gap-3">
+            <div className="w-4 h-4 md:w-5 md:h-5 rounded bg-green-500 border-2 border-green-500 mt-0.5 flex-shrink-0 flex items-center justify-center">
               <FaCheckCircle className="text-white text-xs" />
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-[var(--text-primary)] line-through mb-1">
+              <h3 className="text-xs md:text-sm font-medium text-[var(--text-primary)] line-through mb-1">
                 Morning workout
               </h3>
               <p className="text-xs text-[var(--text-secondary)]">Completed</p>

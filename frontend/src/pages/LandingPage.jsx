@@ -25,7 +25,7 @@ function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-primary)]">
+    <div className="min-h-screen bg-[var(--bg-primary)]">
       {/* Theme Toggle - Top Right */}
       <div className="fixed top-6 right-6 z-50">
         <ThemeToggle />
@@ -51,12 +51,6 @@ function LandingPage() {
         {/* Footer */}
         <Footer />
       </main>
-
-      {/* Subtle background decoration */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
-      </div>
     </div>
   );
 }

@@ -74,51 +74,50 @@ function DesktopPreviewSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
     >
       {/* Background with gradient and blur effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Animated gradient blobs - Responsive sizes */}
+        {/* Animated gradient blobs - Reduced sizes */}
         <motion.div
           style={{ y, opacity: blobOpacity1 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] lg:w-[800px] lg:h-[800px] bg-gradient-to-br from-primary-500/10 via-purple-500/10 to-pink-500/10 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[450px] md:h-[450px] lg:w-[550px] lg:h-[550px] bg-gradient-to-br from-primary-500/8 via-purple-500/8 to-pink-500/8 rounded-full blur-3xl"
         />
         <motion.div
           style={{ 
             y: useTransform(scrollYProgress, [0, 1], [-50, 50]),
             opacity: blobOpacity2
           }}
-          className="absolute top-1/4 right-1/4 w-[300px] h-[300px] md:w-[450px] md:h-[450px] lg:w-[600px] lg:h-[600px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl"
+          className="absolute top-1/4 right-1/4 w-[250px] h-[250px] md:w-[350px] md:h-[350px] lg:w-[400px] lg:h-[400px] bg-gradient-to-br from-cyan-500/8 to-blue-500/8 rounded-full blur-3xl"
         />
         <motion.div
           style={{ 
             y: useTransform(scrollYProgress, [0, 1], [50, -50]),
             opacity: blobOpacity2
           }}
-          className="absolute bottom-1/4 left-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-1/4 left-1/4 w-[200px] h-[200px] md:w-[300px] md:h-[300px] lg:w-[350px] lg:h-[350px] bg-gradient-to-br from-indigo-500/8 to-purple-500/8 rounded-full blur-3xl"
         />
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-10 md:mb-12"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-[var(--text-primary)]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-3 md:mb-4 text-[var(--text-primary)] leading-tight">
             Experience it on
             <span className="block mt-2 gradient-text">Desktop</span>
           </h2>
-          {/* Responsive design: max-w-5xl on desktop, scales down on mobile/tablet */}
-          <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-2xl md:max-w-3xl mx-auto font-light leading-relaxed px-4">
+          <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto font-light leading-relaxed px-4">
             Your daily flow — simplified. A beautiful, intuitive interface designed 
             to help you focus on what matters most.
           </p>
         </motion.div>
 
-        {/* Main Desktop Mockup - Reduced size like routine.co */}
+        {/* Main Desktop Mockup - Optimized size */}
         <motion.div
           ref={mockupRef}
           onMouseMove={handleMouseMove}
@@ -132,41 +131,41 @@ function DesktopPreviewSection() {
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.95 }}
           transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mx-auto max-w-5xl w-full px-4 sm:px-6 md:px-8 perspective-1000"
+          className="relative mx-auto max-w-4xl w-full px-4 sm:px-6 md:px-8 perspective-1000"
         >
           {/* MacBook-style frame */}
           <div className="relative">
             {/* Top bezel with camera */}
-            <div className="relative bg-[var(--bg-secondary)] rounded-t-2xl md:rounded-t-3xl pt-2 md:pt-3 px-4 md:px-8 pb-3 md:pb-4 border-t-2 border-x-2 border-[var(--border-color)] shadow-2xl">
+            <div className="relative bg-[var(--bg-secondary)] rounded-t-xl md:rounded-t-2xl pt-2 md:pt-2.5 px-3 md:px-6 pb-2.5 md:pb-3 border-t-2 border-x-2 border-[var(--border-color)] shadow-2xl">
               {/* Camera notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 md:w-32 h-4 md:h-6 bg-[var(--bg-secondary)] rounded-b-xl md:rounded-b-2xl border-x-2 border-b-2 border-[var(--border-color)]" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 md:w-28 h-3 md:h-5 bg-[var(--bg-secondary)] rounded-b-lg md:rounded-b-xl border-x-2 border-b-2 border-[var(--border-color)]" />
               {/* Screen bezel */}
-              <div className="h-0.5 md:h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto w-16 md:w-24" />
+              <div className="h-0.5 md:h-0.5 bg-[var(--bg-tertiary)] rounded-full mx-auto w-12 md:w-20" />
             </div>
 
             {/* Screen area */}
             <div className="relative bg-[var(--bg-secondary)] border-x-2 border-[var(--border-color)] overflow-hidden">
               {/* Browser bar */}
-              <div className="bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-3 md:px-6 py-2 md:py-3 flex items-center gap-2 md:gap-3">
+              <div className="bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-2 md:px-4 py-1.5 md:py-2 flex items-center gap-2">
                 {/* Traffic lights */}
-                <div className="flex gap-1.5 md:gap-2">
-                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-500/80" />
-                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-green-500/80" />
+                <div className="flex gap-1 md:gap-1.5">
+                  <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-500/80" />
+                  <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-yellow-500/80" />
+                  <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-green-500/80" />
                 </div>
                 
                 {/* URL bar */}
-                <div className="flex-1 flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
-                  <FiMonitor className="w-3 h-3 md:w-4 md:h-4 text-[var(--text-tertiary)] flex-shrink-0" />
+                <div className="flex-1 flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
+                  <FiMonitor className="w-3 h-3 md:w-3.5 md:h-3.5 text-[var(--text-tertiary)] flex-shrink-0" />
                   <span className="text-xs md:text-sm text-[var(--text-tertiary)] truncate">
                     doittoday.com/dashboard
                   </span>
-                  <div className="ml-auto w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500" />
+                  <div className="ml-auto w-1.5 h-1.5 md:w-1.5 md:h-1.5 rounded-full bg-green-500" />
                 </div>
               </div>
 
-              {/* App content - Dashboard mockup */}
-              <div className="relative bg-[var(--bg-primary)] min-h-[400px] md:min-h-[500px] lg:min-h-[600px] max-h-[500px] md:max-h-[600px] lg:max-h-[700px] overflow-hidden">
+              {/* App content - Dashboard mockup - Reduced height */}
+              <div className="relative bg-[var(--bg-primary)] min-h-[300px] md:min-h-[380px] lg:min-h-[420px] max-h-[300px] md:max-h-[380px] lg:max-h-[420px] overflow-hidden">
                 <div className="transform-gpu" style={{ transformStyle: 'preserve-3d' }}>
                   <DashboardMockup />
                 </div>
@@ -177,39 +176,39 @@ function DesktopPreviewSection() {
             </div>
 
             {/* Bottom bezel */}
-            <div className="relative bg-[var(--bg-secondary)] rounded-b-2xl md:rounded-b-3xl pt-3 md:pt-4 pb-4 md:pb-6 border-b-2 border-x-2 border-[var(--border-color)] shadow-2xl">
+            <div className="relative bg-[var(--bg-secondary)] rounded-b-xl md:rounded-b-2xl pt-2.5 md:pt-3 pb-3 md:pb-4 border-b-2 border-x-2 border-[var(--border-color)] shadow-2xl">
               {/* Trackpad area */}
-              <div className="w-24 md:w-32 h-0.5 md:h-1 bg-[var(--bg-tertiary)] rounded-full mx-auto mb-1.5 md:mb-2" />
-              <div className="w-36 md:w-48 h-6 md:h-8 bg-[var(--bg-tertiary)] rounded-lg mx-auto" />
+              <div className="w-20 md:w-28 h-0.5 bg-[var(--bg-tertiary)] rounded-full mx-auto mb-1 md:mb-1.5" />
+              <div className="w-32 md:w-40 h-5 md:h-6 bg-[var(--bg-tertiary)] rounded-lg mx-auto" />
             </div>
 
             {/* Glow effect on hover */}
             <motion.div
-              className="absolute -inset-8 bg-gradient-to-br from-primary-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-3xl opacity-0 pointer-events-none"
+              className="absolute -inset-6 bg-gradient-to-br from-primary-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-3xl opacity-0 pointer-events-none"
               animate={{
-                opacity: mousePosition.x !== 0 || mousePosition.y !== 0 ? 0.5 : 0,
+                opacity: mousePosition.x !== 0 || mousePosition.y !== 0 ? 0.4 : 0,
               }}
               transition={{ duration: 0.3 }}
             />
           </div>
 
-          {/* Floating decorative elements */}
+          {/* Floating decorative elements - Smaller */}
           <motion.div
             animate={{
-              y: [0, -10, 0],
-              opacity: [0.3, 0.5, 0.3],
+              y: [0, -8, 0],
+              opacity: [0.2, 0.4, 0.2],
             }}
             transition={{
               duration: 4,
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-primary-500/20 to-purple-500/20 rounded-2xl blur-xl hidden lg:block"
+            className="absolute -top-6 -right-6 w-16 h-16 bg-gradient-to-br from-primary-500/15 to-purple-500/15 rounded-xl blur-xl hidden lg:block"
           />
           <motion.div
             animate={{
-              y: [0, 10, 0],
-              opacity: [0.3, 0.5, 0.3],
+              y: [0, 8, 0],
+              opacity: [0.2, 0.4, 0.2],
             }}
             transition={{
               duration: 5,
@@ -217,7 +216,7 @@ function DesktopPreviewSection() {
               ease: 'easeInOut',
               delay: 1,
             }}
-            className="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl blur-xl hidden lg:block"
+            className="absolute -bottom-6 -left-6 w-20 h-20 bg-gradient-to-br from-cyan-500/15 to-blue-500/15 rounded-xl blur-xl hidden lg:block"
           />
         </motion.div>
 
@@ -226,13 +225,13 @@ function DesktopPreviewSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="text-center mt-12 md:mt-16"
+          className="text-center mt-10 md:mt-12"
         >
           <motion.button
             onClick={() => navigate('/login')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="group relative px-8 md:px-10 py-4 md:py-5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-base md:text-lg lg:text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center gap-2 md:gap-3 mx-auto"
+            className="group relative px-8 md:px-10 py-3.5 md:py-4 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-base md:text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 flex items-center gap-2 md:gap-3 mx-auto"
           >
             Get Started Free
             <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
@@ -241,7 +240,7 @@ function DesktopPreviewSection() {
               initial={false}
             />
           </motion.button>
-          <p className="mt-4 text-xs md:text-sm text-[var(--text-secondary)]">
+          <p className="mt-3 md:mt-4 text-xs md:text-sm text-[var(--text-secondary)]">
             No credit card required • Start in seconds
           </p>
         </motion.div>
