@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '../components/landing/HeroSection';
 import FeaturesSection from '../components/landing/FeaturesSection';
+import ProductShowcaseSection from '../components/landing/ProductShowcaseSection';
 import MotivationSection from '../components/landing/MotivationSection';
 import Footer from '../components/landing/Footer';
 import ThemeToggle from '../components/landing/ThemeToggle';
@@ -36,6 +37,9 @@ function LandingPage() {
 
         {/* Features Section */}
         <FeaturesSection />
+
+        {/* Product Showcase Section */}
+        <ProductShowcaseSection />
 
         {/* Motivation Section */}
         <MotivationSection />
