@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import { authAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
-import { useThemeStore } from '../hooks/useTheme';
 import ThemeToggle from '../components/landing/ThemeToggle';
 import { getRandomQuote } from '../utils/motivationalQuotes';
 import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiSparkles } from 'react-icons/fi';
@@ -43,7 +42,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const toast = useToast();
-  const { theme } = useThemeStore();
 
   // Rotate quotes every 5 seconds
   useEffect(() => {
