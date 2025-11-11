@@ -10,7 +10,7 @@
  * - Adjust quote display duration in Login.jsx
  */
 
-export const motivationalQuotes = [
+const motivationalQuotes = [
   "Small steps every day lead to big changes.",
   "You're one login away from a productive day.",
   "Clarity begins with action.",
@@ -37,7 +37,7 @@ export const motivationalQuotes = [
  * Get a random quote from the collection
  * @returns {string} A random motivational quote
  */
-export const getRandomQuote = () => {
+const getRandomQuote = () => {
   const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
   return motivationalQuotes[randomIndex];
 };
@@ -47,7 +47,9 @@ export const getRandomQuote = () => {
  * @param {number} index - The index of the quote to retrieve
  * @returns {string} The quote at the specified index
  */
-export const getQuoteByIndex = (index) => {
+const getQuoteByIndex = (index) => {
   return motivationalQuotes[index % motivationalQuotes.length];
 };
+
+export { motivationalQuotes, getRandomQuote, getQuoteByIndex };
 

@@ -36,7 +36,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [currentQuote, setCurrentQuote] = useState(getRandomQuote());
+  const [currentQuote, setCurrentQuote] = useState(() => getRandomQuote());
   const [quoteKey, setQuoteKey] = useState(0);
   
   const navigate = useNavigate();
