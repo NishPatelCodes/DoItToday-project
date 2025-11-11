@@ -7,8 +7,8 @@ import { useToast } from '../hooks/useToast';
 import ThemeToggle from '../components/landing/ThemeToggle';
 import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiSparkles } from 'react-icons/fi';
 
-// Motivational quotes array
-const MOTIVATIONAL_QUOTES = [
+// Motivational quotes - defined as module-level constant
+const QUOTES = [
   "Small steps every day lead to big changes.",
   "You're one login away from a productive day.",
   "Clarity begins with action.",
@@ -30,12 +30,6 @@ const MOTIVATIONAL_QUOTES = [
   "Push yourself, because no one else is going to do it for you.",
   "Wake up with determination. Go to bed with satisfaction.",
 ];
-
-// Get a random quote from the collection
-const getRandomQuote = () => {
-  const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
-  return MOTIVATIONAL_QUOTES[randomIndex];
-};
 
 /**
  * Login Page Component
@@ -74,6 +68,12 @@ const Login = () => {
 
   // Initialize and rotate quotes
   useEffect(() => {
+    // Helper function to get random quote
+    const getRandomQuote = () => {
+      const randomIndex = Math.floor(Math.random() * QUOTES.length);
+      return QUOTES[randomIndex];
+    };
+
     // Set initial quote
     setCurrentQuote(getRandomQuote());
     
