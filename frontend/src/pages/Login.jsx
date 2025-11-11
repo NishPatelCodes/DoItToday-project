@@ -314,7 +314,7 @@ const Login = () => {
           {/* Right Side - Login Form */}
           <motion.div
             variants={itemVariants}
-            className="w-full max-w-md lg:max-w-lg"
+            className="w-full max-w-md lg:max-w-sm"
           >
             {/* Mobile Logo & Quote */}
             <div className="lg:hidden text-center mb-8 space-y-4">
@@ -382,7 +382,7 @@ const Login = () => {
             >
               {/* Glassmorphism Card */}
               <div 
-                className="relative backdrop-blur-2xl bg-white/80 dark:bg-[var(--bg-secondary)]/90 border border-white/40 dark:border-[var(--border-color)]/60 rounded-2xl p-6 sm:p-8 shadow-2xl"
+                className="relative backdrop-blur-2xl bg-white/80 dark:bg-[var(--bg-secondary)]/90 border border-white/40 dark:border-[var(--border-color)]/60 rounded-2xl p-5 sm:p-6 lg:p-6 shadow-2xl"
                 style={{
                   boxShadow: '0 20px 60px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.05)',
                 }}
