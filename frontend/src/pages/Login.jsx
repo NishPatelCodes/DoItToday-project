@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
@@ -6,30 +6,6 @@ import { authAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ThemeToggle from '../components/landing/ThemeToggle';
 import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiSparkles } from 'react-icons/fi';
-
-// Motivational quotes - defined as module-level constant
-const QUOTES = [
-  "Small steps every day lead to big changes.",
-  "You're one login away from a productive day.",
-  "Clarity begins with action.",
-  "Your future is created by what you do today.",
-  "Progress, not perfection, is the goal.",
-  "Every accomplishment starts with the decision to try.",
-  "Focus on progress, not perfection.",
-  "The best time to start was yesterday. The second best time is now.",
-  "Success is the sum of small efforts repeated day in and day out.",
-  "You don't have to be great to start, but you have to start to be great.",
-  "What you get by achieving your goals is not as important as what you become.",
-  "The way to get started is to quit talking and begin doing.",
-  "Productivity is never an accident. It's always the result of commitment to excellence.",
-  "Do something today that your future self will thank you for.",
-  "The secret of getting ahead is getting started.",
-  "Your limitation—it's only your imagination.",
-  "Great things never come from comfort zones.",
-  "Dream it. Wish it. Do it.",
-  "Push yourself, because no one else is going to do it for you.",
-  "Wake up with determination. Go to bed with satisfaction.",
-];
 
 /**
  * Login Page Component
@@ -66,12 +42,36 @@ const Login = () => {
   const { login } = useAuthStore();
   const toast = useToast();
 
+  // Motivational quotes - memoized to avoid recreation
+  const quotes = useMemo(() => [
+    "Small steps every day lead to big changes.",
+    "You're one login away from a productive day.",
+    "Clarity begins with action.",
+    "Your future is created by what you do today.",
+    "Progress, not perfection, is the goal.",
+    "Every accomplishment starts with the decision to try.",
+    "Focus on progress, not perfection.",
+    "The best time to start was yesterday. The second best time is now.",
+    "Success is the sum of small efforts repeated day in and day out.",
+    "You don't have to be great to start, but you have to start to be great.",
+    "What you get by achieving your goals is not as important as what you become.",
+    "The way to get started is to quit talking and begin doing.",
+    "Productivity is never an accident. It's always the result of commitment to excellence.",
+    "Do something today that your future self will thank you for.",
+    "The secret of getting ahead is getting started.",
+    "Your limitation—it's only your imagination.",
+    "Great things never come from comfort zones.",
+    "Dream it. Wish it. Do it.",
+    "Push yourself, because no one else is going to do it for you.",
+    "Wake up with determination. Go to bed with satisfaction.",
+  ], []);
+
   // Initialize and rotate quotes
   useEffect(() => {
     // Helper function to get random quote
     const getRandomQuote = () => {
-      const randomIndex = Math.floor(Math.random() * QUOTES.length);
-      return QUOTES[randomIndex];
+      const randomIndex = Math.floor(Math.random() * quotes.length);
+      return quotes[randomIndex];
     };
 
     // Set initial quote
@@ -84,7 +84,7 @@ const Login = () => {
     }, 5000);
 
     return () => clearInterval(quoteInterval);
-  }, []);
+  }, [quotes]);
 
   const validateForm = () => {
     const newErrors = {};
