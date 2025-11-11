@@ -382,13 +382,13 @@ const Login = () => {
             >
               {/* Glassmorphism Card */}
               <div 
-                className="relative backdrop-blur-2xl bg-white/80 dark:bg-[var(--bg-secondary)]/90 border border-white/40 dark:border-[var(--border-color)]/60 rounded-2xl p-5 sm:p-6 lg:p-6 shadow-2xl"
+                className="relative backdrop-blur-2xl bg-white/90 dark:bg-[var(--bg-secondary)]/95 border border-white/50 dark:border-[var(--border-color)]/70 rounded-2xl p-5 sm:p-6 lg:p-6 shadow-2xl dark:shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)]"
                 style={{
                   boxShadow: '0 20px 60px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.05)',
                 }}
               >
                 {/* Subtle glow effect */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl blur-2xl opacity-60 -z-10" />
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-pink-500/10 dark:from-primary-500/20 dark:via-purple-500/20 dark:to-pink-500/20 rounded-2xl blur-2xl opacity-60 dark:opacity-40 -z-10" />
 
                 <div className="space-y-6 relative z-10">
                   {/* Header */}
@@ -448,10 +448,10 @@ const Login = () => {
                             }
                             setError('');
                           }}
-                          className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/60 dark:bg-[var(--bg-tertiary)]/40 border-2 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] ${
+                          className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/50 border-2 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] ${
                             errors.email
-                              ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/10'
-                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50'
+                              ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/20'
+                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 dark:border-[var(--border-color)]/80'
                           }`}
                           placeholder="name@example.com"
                           required
@@ -496,10 +496,10 @@ const Login = () => {
                             }
                             setError('');
                           }}
-                          className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white/60 dark:bg-[var(--bg-tertiary)]/40 border-2 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] ${
+                          className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/50 border-2 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] ${
                             errors.password
-                              ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/10'
-                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50'
+                              ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/20'
+                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 dark:border-[var(--border-color)]/80'
                           }`}
                           placeholder="••••••••"
                           required
@@ -583,7 +583,7 @@ const Login = () => {
                     </div>
                     <div className="relative flex justify-center text-sm">
                       <span 
-                        className="px-4 bg-white/80 dark:bg-[var(--bg-secondary)]/90 text-[var(--text-secondary)] font-medium"
+                        className="px-4 bg-white/90 dark:bg-[var(--bg-secondary)]/95 text-[var(--text-secondary)] font-medium"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
                         Or continue with
@@ -626,14 +626,14 @@ const Login = () => {
                       }}
                       whileHover={{ scale: 1.01, y: -1 }}
                       whileTap={{ scale: 0.99 }}
-                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-[var(--border-color)] rounded-xl bg-black dark:bg-[var(--bg-tertiary)]/40 hover:bg-gray-900 dark:hover:bg-[var(--bg-tertiary)]/60 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400/30"
+                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-900 dark:border-gray-700 rounded-xl bg-gray-900 dark:bg-gray-800 hover:bg-black dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:focus:ring-[var(--accent-primary)]/30"
                       aria-label="Continue with Apple"
                     >
-                      <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                      <svg className="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                       </svg>
                       <span 
-                        className="text-white dark:text-[var(--text-primary)] font-semibold text-sm"
+                        className="text-white font-semibold text-sm"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
                         Continue with Apple
