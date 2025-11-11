@@ -12,6 +12,19 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    commonjsOptions: {
+      include: [/react-icons/, /node_modules/],
+    },
+  },
+  optimizeDeps: {
+    include: ['react-icons/fi'],
+  },
 });
 
 

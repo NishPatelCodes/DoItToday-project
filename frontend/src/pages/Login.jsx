@@ -5,7 +5,14 @@ import { useAuthStore } from '../store/authStore';
 import { authAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ThemeToggle from '../components/landing/ThemeToggle';
-import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiSparkles } from 'react-icons/fi';
+import {
+  FiMail,
+  FiLock,
+  FiArrowRight,
+  FiEye,
+  FiEyeOff,
+  FiSparkles,
+} from 'react-icons/fi';
 
 /**
  * Login Page Component
