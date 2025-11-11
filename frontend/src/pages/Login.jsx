@@ -190,40 +190,54 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 bg-[var(--bg-primary)] relative overflow-hidden">
-      {/* Refined animated background */}
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 bg-[var(--bg-primary)] dark:bg-gradient-to-br dark:from-[#0F0F1A] dark:via-[#1A1A2E] dark:to-[#0F0F1A] relative overflow-hidden transition-colors duration-300">
+      {/* Enhanced animated background - More vibrant in dark mode */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Subtle gradient orbs */}
+        {/* Gradient orbs - Enhanced for dark mode */}
         <motion.div
           animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.15, 0.25, 0.15],
-            x: [0, 30, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute top-1/4 left-1/4 w-72 h-72 md:w-96 md:h-96 bg-gradient-to-br from-primary-500/8 via-purple-500/8 to-transparent rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.1, 1, 1.1],
-            opacity: [0.1, 0.2, 0.1],
-            x: [0, -30, 0],
+            scale: [1, 1.2, 1],
+            opacity: [0.15, 0.3, 0.15],
+            x: [0, 40, 0],
           }}
           transition={{
             duration: 12,
             repeat: Infinity,
             ease: 'easeInOut',
+          }}
+          className="absolute top-1/4 left-1/4 w-72 h-72 md:w-96 md:h-96 bg-gradient-to-br from-primary-500/8 dark:from-primary-500/15 via-purple-500/8 dark:via-purple-500/15 to-transparent rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1.1, 1, 1.1],
+            opacity: [0.1, 0.25, 0.1],
+            x: [0, -40, 0],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Infinity,
+            ease: 'easeInOut',
             delay: 1.5,
           }}
-          className="absolute bottom-1/4 right-1/4 w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-purple-500/8 via-pink-500/8 to-transparent rounded-full blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-purple-500/8 dark:from-purple-500/12 via-pink-500/8 dark:via-pink-500/12 to-transparent rounded-full blur-3xl"
         />
-        {/* Subtle grid pattern overlay */}
+        {/* Additional dark mode accent orb */}
+        <motion.div
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.08, 0.18, 0.08],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[500px] md:h-[500px] bg-gradient-to-br from-cyan-500/5 dark:from-cyan-500/10 via-blue-500/5 dark:via-blue-500/10 to-transparent rounded-full blur-3xl hidden dark:block"
+        />
+        {/* Enhanced grid pattern overlay - More visible in dark mode */}
         <div 
-          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.08] transition-opacity duration-300"
           style={{
             backgroundImage: `
               linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
@@ -232,6 +246,8 @@ const Login = () => {
             backgroundSize: '40px 40px',
           }}
         />
+        {/* Dark mode gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-primary)]/50 dark:to-[#0F0F1A]/80 pointer-events-none" />
       </div>
 
       {/* Theme Toggle */}
@@ -252,7 +268,7 @@ const Login = () => {
             variants={itemVariants}
             className="hidden lg:flex flex-col justify-center w-full max-w-md space-y-6 px-4"
           >
-            {/* Logo and Tagline */}
+            {/* Logo and Tagline - Enhanced for dark mode */}
             <div className="space-y-3">
               <motion.h1
                 initial={{ opacity: 0, y: -20 }}
@@ -267,14 +283,14 @@ const Login = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="text-lg text-[var(--text-secondary)] font-normal leading-relaxed"
+                className="text-lg text-[var(--text-secondary)] dark:text-[#D1D5DB] font-normal leading-relaxed"
                 style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}
               >
                 Organize your day. Achieve more.
               </motion.p>
             </div>
 
-            {/* Motivational Quote Section */}
+            {/* Motivational Quote Section - Enhanced for dark mode */}
             <div className="relative min-h-[140px] flex items-center mt-4">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -286,8 +302,8 @@ const Login = () => {
                   className="absolute inset-0 flex items-center"
                 >
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2.5 text-[var(--accent-primary)]">
-                      <FiStar className="w-4 h-4 flex-shrink-0" />
+                    <div className="flex items-center gap-2.5 text-[var(--accent-primary)] dark:text-[#A5B4FC]">
+                      <FiStar className="w-4 h-4 flex-shrink-0 drop-shadow-[0_0_8px_rgba(129,140,248,0.4)]" />
                       <span 
                         className="text-xs font-semibold uppercase tracking-widest"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '0.1em' }}
@@ -296,7 +312,7 @@ const Login = () => {
                       </span>
                     </div>
                     <p 
-                      className="text-xl lg:text-2xl font-light text-[var(--text-primary)] leading-relaxed"
+                      className="text-xl lg:text-2xl font-light text-[var(--text-primary)] dark:text-[#F5F5F5] leading-relaxed"
                       style={{ 
                         fontFamily: 'Inter, system-ui, sans-serif',
                         letterSpacing: '-0.02em',
@@ -316,7 +332,7 @@ const Login = () => {
             variants={itemVariants}
             className="w-full max-w-md lg:max-w-sm"
           >
-            {/* Mobile Logo & Quote */}
+            {/* Mobile Logo & Quote - Enhanced for dark mode */}
             <div className="lg:hidden text-center mb-8 space-y-4">
               <motion.h1
                 initial={{ opacity: 0, y: -20 }}
@@ -331,13 +347,13 @@ const Login = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-base text-[var(--text-secondary)] font-normal"
+                className="text-base text-[var(--text-secondary)] dark:text-[#D1D5DB] font-normal"
                 style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
               >
                 Organize your day. Achieve more.
               </motion.p>
               
-              {/* Mobile Quote */}
+              {/* Mobile Quote - Enhanced for dark mode */}
               <div className="relative min-h-[100px] flex items-center justify-center mt-4">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -349,8 +365,8 @@ const Login = () => {
                     className="absolute"
                   >
                     <div className="space-y-2 text-center">
-                      <div className="flex items-center justify-center gap-2 text-[var(--accent-primary)]">
-                        <FiStar className="w-3.5 h-3.5" />
+                      <div className="flex items-center justify-center gap-2 text-[var(--accent-primary)] dark:text-[#A5B4FC]">
+                        <FiStar className="w-3.5 h-3.5 drop-shadow-[0_0_6px_rgba(129,140,248,0.4)]" />
                         <span 
                           className="text-xs font-semibold uppercase tracking-widest"
                           style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '0.1em' }}
@@ -359,7 +375,7 @@ const Login = () => {
                         </span>
                       </div>
                       <p 
-                        className="text-base font-light text-[var(--text-primary)] italic leading-relaxed px-4"
+                        className="text-base font-light text-[var(--text-primary)] dark:text-[#F5F5F5] italic leading-relaxed px-4"
                         style={{ 
                           fontFamily: 'Inter, system-ui, sans-serif',
                           letterSpacing: '-0.01em'
@@ -371,7 +387,7 @@ const Login = () => {
                   </motion.div>
                 </AnimatePresence>
               </div>
-            </div>
+        </div>
 
             {/* Refined Login Card */}
             <motion.div
@@ -380,27 +396,38 @@ const Login = () => {
               transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               className="relative"
             >
-              {/* Glassmorphism Card */}
+              {/* Enhanced Glassmorphism Card - Futuristic dark mode styling */}
               <div 
-                className="relative backdrop-blur-2xl bg-white/90 dark:bg-[var(--bg-secondary)]/95 border border-white/50 dark:border-[var(--border-color)]/70 rounded-2xl p-5 sm:p-6 lg:p-6 shadow-2xl dark:shadow-[0_20px_60px_-12px_rgba(0,0,0,0.4)]"
-                style={{
-                  boxShadow: '0 20px 60px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-                }}
+                className="relative backdrop-blur-2xl bg-white/90 dark:bg-[var(--bg-secondary)]/85 dark:backdrop-blur-3xl border border-white/50 dark:border-[var(--border-color)]/70 dark:border-[rgba(129,140,248,0.15)] rounded-2xl p-5 sm:p-6 lg:p-6 transition-all duration-300 login-card"
               >
-                {/* Subtle glow effect */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-pink-500/10 dark:from-primary-500/20 dark:via-purple-500/20 dark:to-pink-500/20 rounded-2xl blur-2xl opacity-60 dark:opacity-40 -z-10" />
+                {/* Enhanced glow effect - More prominent in dark mode with animated pulse */}
+                <motion.div 
+                  className="absolute -inset-1 bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-pink-500/10 dark:from-primary-500/30 dark:via-purple-500/30 dark:to-pink-500/30 rounded-2xl blur-2xl -z-10"
+                  animate={{
+                    opacity: [0.4, 0.6, 0.4],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                />
+                {/* Additional inner glow for dark mode */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-transparent via-transparent to-primary-500/5 dark:to-primary-500/8 opacity-0 dark:opacity-100 pointer-events-none" />
+                {/* Subtle border glow in dark mode */}
+                <div className="absolute inset-0 rounded-2xl border border-primary-500/0 dark:border-primary-500/15 pointer-events-none" />
 
                 <div className="space-y-6 relative z-10">
-                  {/* Header */}
+                  {/* Header - Enhanced contrast for dark mode */}
                   <div className="space-y-1.5">
                     <h2 
-                      className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight"
+                      className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] dark:text-[#F5F5F5] tracking-tight"
                       style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}
                     >
                       Welcome back
                     </h2>
                     <p 
-                      className="text-sm sm:text-base text-[var(--text-secondary)] font-normal"
+                      className="text-sm sm:text-base text-[var(--text-secondary)] dark:text-[#D1D5DB] font-normal"
                       style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                     >
                       Sign in to continue your journey
@@ -408,14 +435,14 @@ const Login = () => {
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Error Message */}
+                    {/* Error Message - Enhanced for dark mode */}
                     <AnimatePresence>
                       {error && (
                         <motion.div
                           initial={{ opacity: 0, y: -10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl text-sm font-medium"
+                          className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm font-medium shadow-sm dark:shadow-[0_2px_8px_0_rgba(239,68,68,0.2)]"
                           role="alert"
                           aria-live="polite"
                         >
@@ -428,43 +455,43 @@ const Login = () => {
                     <div className="space-y-2">
                       <label
                         htmlFor="login-email"
-                        className="block text-sm font-semibold text-[var(--text-primary)]"
+                        className="block text-sm font-semibold text-[var(--text-primary)] dark:text-[#E5E7EB]"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
                         Email address
-                      </label>
+            </label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <FiMail className="w-4 h-4 text-[var(--text-tertiary)] group-focus-within:text-[var(--accent-primary)] transition-colors duration-200" />
+                          <FiMail className="w-4 h-4 text-[var(--text-tertiary)] dark:text-[#9CA3AF] group-focus-within:text-[var(--accent-primary)] dark:group-focus-within:text-[#A5B4FC] transition-colors duration-200" />
                         </div>
-                        <input
-                          id="login-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                            if (errors.email) {
-                              setErrors({ ...errors, email: '' });
-                            }
-                            setError('');
-                          }}
-                          className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/50 border-2 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] ${
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) {
+                  setErrors({ ...errors, email: '' });
+                }
+                setError('');
+              }}
+                          className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 text-[var(--text-primary)] dark:text-[#F5F5F5] placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
                             errors.email
-                              ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/20'
-                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 dark:border-[var(--border-color)]/80'
+                              ? 'border-red-400 dark:border-red-400 bg-red-50/50 dark:bg-red-900/30 dark:border-red-500/60'
+                              : 'border-[var(--border-color)] dark:border-[#3D4A5C] hover:border-[var(--accent-primary)]/50 dark:hover:border-[#818CF8]/50'
                           }`}
                           placeholder="name@example.com"
-                          required
-                          autoComplete="email"
-                          aria-invalid={errors.email ? 'true' : 'false'}
-                          aria-describedby={errors.email ? 'email-error' : undefined}
+              required
+              autoComplete="email"
+              aria-invalid={errors.email ? 'true' : 'false'}
+              aria-describedby={errors.email ? 'email-error' : undefined}
                           style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-                        />
+            />
                       </div>
                       {errors.email && (
                         <p
                           id="email-error"
-                          className="text-sm text-red-600 dark:text-red-400 font-medium"
+                          className="text-sm text-red-600 dark:text-red-300 font-medium"
                           role="alert"
                         >
                           {errors.email}
@@ -476,14 +503,14 @@ const Login = () => {
                     <div className="space-y-2">
                       <label
                         htmlFor="login-password"
-                        className="block text-sm font-semibold text-[var(--text-primary)]"
+                        className="block text-sm font-semibold text-[var(--text-primary)] dark:text-[#E5E7EB]"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
                         Password
                       </label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <FiLock className="w-4 h-4 text-[var(--text-tertiary)] group-focus-within:text-[var(--accent-primary)] transition-colors duration-200" />
+                          <FiLock className="w-4 h-4 text-[var(--text-tertiary)] dark:text-[#9CA3AF] group-focus-within:text-[var(--accent-primary)] dark:group-focus-within:text-[#A5B4FC] transition-colors duration-200" />
                         </div>
                         <input
                           id="login-password"
@@ -496,10 +523,10 @@ const Login = () => {
                             }
                             setError('');
                           }}
-                          className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/50 border-2 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] ${
+                          className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 text-[var(--text-primary)] dark:text-[#F5F5F5] placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
                             errors.password
-                              ? 'border-red-400 dark:border-red-500 bg-red-50/50 dark:bg-red-900/20'
-                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 dark:border-[var(--border-color)]/80'
+                              ? 'border-red-400 dark:border-red-400 bg-red-50/50 dark:bg-red-900/30 dark:border-red-500/60'
+                              : 'border-[var(--border-color)] dark:border-[#3D4A5C] hover:border-[var(--accent-primary)]/50 dark:hover:border-[#818CF8]/50'
                           }`}
                           placeholder="••••••••"
                           required
@@ -511,7 +538,7 @@ const Login = () => {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 rounded-r-xl"
+                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-[var(--text-tertiary)] dark:text-[#9CA3AF] hover:text-[var(--text-primary)] dark:hover:text-[#F5F5F5] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 rounded-r-xl"
                           aria-label={showPassword ? 'Hide password' : 'Show password'}
                           tabIndex={0}
                         >
@@ -525,32 +552,32 @@ const Login = () => {
                       {errors.password && (
                         <p
                           id="password-error"
-                          className="text-sm text-red-600 dark:text-red-400 font-medium"
+                          className="text-sm text-red-600 dark:text-red-300 font-medium"
                           role="alert"
                         >
                           {errors.password}
                         </p>
                       )}
-                    </div>
+          </div>
 
-                    {/* Forgot Password Link */}
+                    {/* Forgot Password Link - Enhanced for dark mode */}
                     <div className="flex justify-end">
                       <Link
                         to="/forgot-password"
-                        className="text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 rounded-md px-1"
+                        className="text-sm font-medium text-[var(--accent-primary)] dark:text-[#A5B4FC] hover:text-[var(--accent-hover)] dark:hover:text-[#818CF8] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 rounded-md px-1"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
                         Forgot password?
                       </Link>
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Submit Button - Enhanced glow effect for dark mode */}
                     <motion.button
-                      type="submit"
-                      disabled={loading}
+            type="submit"
+            disabled={loading}
                       whileHover={loading ? {} : { scale: 1.02, y: -1 }}
                       whileTap={loading ? {} : { scale: 0.98 }}
-                      className="w-full relative px-6 py-3.5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-offset-2"
+                      className="w-full relative px-6 py-3.5 bg-[var(--accent-primary)] dark:bg-[#818CF8] text-white rounded-xl font-semibold text-base shadow-lg dark:shadow-[0_4px_14px_0_rgba(129,140,248,0.4)] hover:shadow-xl dark:hover:shadow-[0_6px_20px_0_rgba(129,140,248,0.5)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] dark:focus:ring-[#818CF8] focus:ring-offset-2 dark:focus:ring-offset-[#1A1A2E]"
                       style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       aria-label={loading ? 'Signing in...' : 'Log in'}
                     >
@@ -569,21 +596,24 @@ const Login = () => {
                           <FiArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
                         </>
                       )}
+                      {/* Enhanced glow effect - More prominent in dark mode */}
                       <motion.div
-                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl"
+                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-100 dark:group-hover:opacity-80 transition-opacity duration-300 -z-10 blur-xl dark:blur-2xl"
                         initial={false}
                       />
+                      {/* Subtle inner glow for dark mode */}
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/0 dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     </motion.button>
-                  </form>
+        </form>
 
-                  {/* Divider */}
+                  {/* Divider - Enhanced for dark mode */}
                   <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[var(--border-color)]/60"></div>
+                      <div className="w-full border-t border-[var(--border-color)]/60 dark:border-[var(--border-color)]/50"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
                       <span 
-                        className="px-4 bg-white/90 dark:bg-[var(--bg-secondary)]/95 text-[var(--text-secondary)] font-medium"
+                        className="px-4 bg-white/90 dark:bg-[var(--bg-secondary)]/85 text-[var(--text-secondary)] dark:text-[#D1D5DB] font-medium"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
                         Or continue with
@@ -591,27 +621,27 @@ const Login = () => {
                     </div>
                   </div>
 
-                  {/* OAuth Buttons */}
-                  <div className="space-y-3">
+                  {/* OAuth Buttons - Enhanced for dark mode */}
+        <div className="space-y-3">
                     <motion.button
-                      type="button"
-                      onClick={() => {
-                        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                        window.location.href = `${apiUrl.replace('/api', '')}/auth/google`;
-                      }}
+            type="button"
+            onClick={() => {
+              const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+              window.location.href = `${apiUrl.replace('/api', '')}/auth/google`;
+            }}
                       whileHover={{ scale: 1.01, y: -1 }}
                       whileTap={{ scale: 0.99 }}
-                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-[var(--border-color)] rounded-xl bg-white/60 dark:bg-[var(--bg-tertiary)]/40 hover:bg-white/80 dark:hover:bg-[var(--bg-tertiary)]/60 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-[var(--border-color)] dark:border-[#3D4A5C] rounded-xl bg-white/60 dark:bg-[var(--bg-tertiary)]/50 hover:bg-white/80 dark:hover:bg-[var(--bg-tertiary)]/70 transition-all duration-200 shadow-sm dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.3)] hover:shadow-md dark:hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.4)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40"
                       aria-label="Continue with Google"
-                    >
+          >
                       <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                      </svg>
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
                       <span 
-                        className="text-[var(--text-primary)] font-semibold text-sm"
+                        className="text-[var(--text-primary)] dark:text-[#F5F5F5] font-semibold text-sm"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                       >
                         Continue with Google
@@ -619,19 +649,19 @@ const Login = () => {
                     </motion.button>
 
                     <motion.button
-                      type="button"
-                      onClick={() => {
-                        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                        window.location.href = `${apiUrl.replace('/api', '')}/auth/apple`;
-                      }}
+            type="button"
+            onClick={() => {
+              const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+              window.location.href = `${apiUrl.replace('/api', '')}/auth/apple`;
+            }}
                       whileHover={{ scale: 1.01, y: -1 }}
                       whileTap={{ scale: 0.99 }}
-                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-900 dark:border-gray-700 rounded-xl bg-gray-900 dark:bg-gray-800 hover:bg-black dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:focus:ring-[var(--accent-primary)]/30"
+                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-900 dark:border-[#4B5563] rounded-xl bg-gray-900 dark:bg-[#374151] hover:bg-black dark:hover:bg-[#4B5563] transition-all duration-200 shadow-sm dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.4)] hover:shadow-md dark:hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:focus:ring-[#818CF8]/40"
                       aria-label="Continue with Apple"
-                    >
+          >
                       <svg className="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                      </svg>
+              <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+            </svg>
                       <span 
                         className="text-white font-semibold text-sm"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
@@ -639,22 +669,22 @@ const Login = () => {
                         Continue with Apple
                       </span>
                     </motion.button>
-                  </div>
+        </div>
 
-                  {/* Sign Up Link */}
+                  {/* Sign Up Link - Enhanced for dark mode */}
                   <div className="text-center pt-2">
                     <p 
-                      className="text-sm text-[var(--text-secondary)]"
+                      className="text-sm text-[var(--text-secondary)] dark:text-[#D1D5DB]"
                       style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
                     >
-                      Don't have an account?{' '}
+            Don't have an account?{' '}
                       <Link
                         to="/register"
-                        className="font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 rounded-md px-1"
+                        className="font-semibold text-[var(--accent-primary)] dark:text-[#A5B4FC] hover:text-[var(--accent-hover)] dark:hover:text-[#818CF8] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 rounded-md px-1"
                       >
-                        Sign up
-                      </Link>
-                    </p>
+              Sign up
+            </Link>
+          </p>
                   </div>
                 </div>
               </div>

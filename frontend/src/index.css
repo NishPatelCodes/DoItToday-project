@@ -42,20 +42,33 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
-  /* Dark Theme */
+  /* Dark Theme - Futuristic Deep Dark with Enhanced Contrast */
   html[data-theme='dark'] {
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #111111;
-    --bg-tertiary: #1a1a1a;
-    --border-color: #2a2a2a;
-    --text-primary: #fafafa;
-    --text-secondary: #a1a1aa;
-    --text-tertiary: #71717a;
-    --accent-primary: #818cf8;
-    --accent-hover: #6366f1;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --bg-primary: #0F0F1A; /* Deep dark blue-black for futuristic feel */
+    --bg-secondary: #1A1A2E; /* Slightly lighter for card background */
+    --bg-tertiary: #16213E; /* Even lighter for inputs and elevated elements */
+    --border-color: #2D3748; /* Visible but subtle borders */
+    --text-primary: #F5F5F5; /* High contrast white for headings and primary text */
+    --text-secondary: #D1D5DB; /* Light gray for secondary text - improved contrast */
+    --text-tertiary: #9CA3AF; /* Medium gray for placeholders and tertiary text */
+    --accent-primary: #818CF8; /* Bright indigo for accents and buttons */
+    --accent-hover: #6366F1; /* Slightly darker indigo on hover */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(129, 140, 248, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 0 20px rgba(129, 140, 248, 0.15);
+  }
+
+  /* Enhanced login card shadow for dark mode */
+  html[data-theme='dark'] .login-card {
+    box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.6), 
+                0 0 0 1px rgba(129, 140, 248, 0.1),
+                0 0 40px rgba(129, 140, 248, 0.05) !important;
+  }
+
+  /* Light mode login card shadow */
+  .login-card {
+    box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.08), 
+                0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 
   body {
