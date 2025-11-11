@@ -11,7 +11,7 @@ import {
   FiArrowRight,
   FiEye,
   FiEyeOff,
-  FiSparkles,
+  FiStar,
 } from 'react-icons/fi';
 
 /**
@@ -302,7 +302,7 @@ const Login = () => {
                 >
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-[var(--accent-primary)]">
-                      <FiSparkles className="w-5 h-5" />
+                      <FiStar className="w-5 h-5" />
                       <span className="text-sm font-medium uppercase tracking-wider">Daily Inspiration</span>
                     </div>
                     <p className="text-2xl md:text-3xl font-light text-[var(--text-primary)] leading-relaxed">
