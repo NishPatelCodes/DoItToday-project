@@ -5,8 +5,37 @@ import { useAuthStore } from '../store/authStore';
 import { authAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ThemeToggle from '../components/landing/ThemeToggle';
-import { getRandomQuote } from '../utils/motivationalQuotes';
 import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff, FiSparkles } from 'react-icons/fi';
+
+// Motivational quotes array
+const MOTIVATIONAL_QUOTES = [
+  "Small steps every day lead to big changes.",
+  "You're one login away from a productive day.",
+  "Clarity begins with action.",
+  "Your future is created by what you do today.",
+  "Progress, not perfection, is the goal.",
+  "Every accomplishment starts with the decision to try.",
+  "Focus on progress, not perfection.",
+  "The best time to start was yesterday. The second best time is now.",
+  "Success is the sum of small efforts repeated day in and day out.",
+  "You don't have to be great to start, but you have to start to be great.",
+  "What you get by achieving your goals is not as important as what you become.",
+  "The way to get started is to quit talking and begin doing.",
+  "Productivity is never an accident. It's always the result of commitment to excellence.",
+  "Do something today that your future self will thank you for.",
+  "The secret of getting ahead is getting started.",
+  "Your limitation—it's only your imagination.",
+  "Great things never come from comfort zones.",
+  "Dream it. Wish it. Do it.",
+  "Push yourself, because no one else is going to do it for you.",
+  "Wake up with determination. Go to bed with satisfaction.",
+];
+
+// Get a random quote from the collection
+const getRandomQuote = () => {
+  const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+  return MOTIVATIONAL_QUOTES[randomIndex];
+};
 
 /**
  * Login Page Component
@@ -36,15 +65,19 @@ const Login = () => {
   const [error, setError] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [currentQuote, setCurrentQuote] = useState(() => getRandomQuote());
+  const [currentQuote, setCurrentQuote] = useState('');
   const [quoteKey, setQuoteKey] = useState(0);
   
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const toast = useToast();
 
-  // Rotate quotes every 5 seconds
+  // Initialize and rotate quotes
   useEffect(() => {
+    // Set initial quote
+    setCurrentQuote(getRandomQuote());
+    
+    // Rotate quotes every 5 seconds
     const quoteInterval = setInterval(() => {
       setQuoteKey(prev => prev + 1);
       setCurrentQuote(getRandomQuote());
