@@ -15,6 +15,9 @@ import {
   FaTimes,
   FaHeart,
   FaStickyNote,
+  FaTrophy,
+  FaHeadphones,
+  FaDollarSign,
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
@@ -56,6 +59,9 @@ const Sidebar = ({ isOpen, onClose }) => {
     { icon: FaHome, label: 'Dashboard', path: '/dashboard' },
     { icon: FaTasks, label: 'Tasks', path: '/dashboard/tasks' },
     { icon: FaBullseye, label: 'Goals', path: '/dashboard/goals' },
+    { icon: FaTrophy, label: 'Challenges', path: '/dashboard/challenges' },
+    { icon: FaHeadphones, label: 'Focus Mode', path: '/dashboard/focus' },
+    { icon: FaDollarSign, label: 'Finance', path: '/dashboard/finance' },
     { icon: FaCalendarAlt, label: 'Calendar', path: '/dashboard/calendar' },
     { icon: FaStickyNote, label: 'Notes', path: '/dashboard/notes' },
     { icon: FaHeart, label: 'Gratitude', path: '/dashboard/gratitude' },

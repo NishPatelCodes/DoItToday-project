@@ -435,14 +435,15 @@ const Login = () => {
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Error Message - Enhanced for dark mode */}
+                    {/* Error Message - Small, clean, professional */}
                     <AnimatePresence>
                       {error && (
                         <motion.div
-                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm font-medium shadow-sm dark:shadow-[0_2px_8px_0_rgba(239,68,68,0.2)]"
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-red-600 dark:text-red-400 text-sm px-2 py-1"
                           role="alert"
                           aria-live="polite"
                         >

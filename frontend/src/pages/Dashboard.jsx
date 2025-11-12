@@ -36,6 +36,9 @@ import {
   DashboardTeam,
 } from './DashboardViews';
 import Profile from '../components/Profile';
+import Challenges from '../components/Challenges';
+import FocusModePage from '../pages/FocusModePage';
+import FinanceTracker from '../components/FinanceTracker';
 import { useToast } from '../hooks/useToast';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 
@@ -746,6 +749,18 @@ const Dashboard = () => {
               <Route
                 path="notes"
                 element={<NotesView />}
+              />
+              <Route
+                path="challenges"
+                element={<Challenges />}
+              />
+              <Route
+                path="focus"
+                element={<FocusModePage />}
+              />
+              <Route
+                path="finance"
+                element={<FinanceTracker />}
               />
               <Route
                 path="profile"

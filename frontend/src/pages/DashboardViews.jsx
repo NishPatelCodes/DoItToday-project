@@ -11,6 +11,7 @@ import DisciplinePoints from '../components/DisciplinePoints';
 import GraphCard from '../components/GraphCard';
 import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
+import DashboardSummary from '../components/DashboardSummary';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 
@@ -48,6 +49,9 @@ export const DashboardHome = ({
           Here's your productivity overview for today
         </p>
       </div>
+
+      {/* Dashboard Summary */}
+      <DashboardSummary user={user} streak={user?.streak || 0} />
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
