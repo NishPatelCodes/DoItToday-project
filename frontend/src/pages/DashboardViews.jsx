@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine } from 'react-icons/fa';
-import { format, isToday, isYesterday, isThisWeek, isLastWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays } from 'date-fns';
+import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import GoalAnalytics from '../components/GoalAnalytics';
