@@ -107,13 +107,13 @@ export const DashboardHome = ({
         </div>
       </div>
 
-      {/* Top Section: Today's Plan, Pending, Goals */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      {/* Top Section: Today's Plan, Pending, Goals - Horizontal scroll on mobile */}
+      <div className="flex md:grid md:grid-cols-3 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Today's Plan Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-5 rounded-2xl"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
@@ -123,7 +123,7 @@ export const DashboardHome = ({
             >
               {todaysPlanExpanded ? <FaChevronUp /> : <FaChevronDown />}
             </button>
-          </div>
+            </div>
           <div className="flex items-center gap-4">
             {/* Circular Progress */}
             <div className="relative w-16 h-16 flex-shrink-0">
@@ -178,10 +178,10 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card p-5 rounded-2xl"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
           <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">Pending</h3>
-          <div>
+            <div>
             <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
             <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
           </div>
@@ -192,7 +192,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-5 rounded-2xl"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-[var(--text-primary)]">Goals</h3>
@@ -211,7 +211,7 @@ export const DashboardHome = ({
       </div>
 
       {/* Middle Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 mb-6">
         {/* Today's Plan List Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -223,20 +223,20 @@ export const DashboardHome = ({
             <div className="flex items-center gap-2">
               <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
               {!todaysPlanExpanded && (
-                <button
+              <button
                   onClick={() => setTodaysPlanExpanded(true)}
                   className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
                 >
                   <FaChevronDown />
-                </button>
+              </button>
               )}
               {todaysPlanExpanded && (
-                <button
+              <button
                   onClick={() => setTodaysPlanExpanded(false)}
                   className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
                 >
                   <FaChevronUp />
-                </button>
+              </button>
               )}
             </div>
             <button className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
@@ -283,28 +283,28 @@ export const DashboardHome = ({
               ) : (
                 <p className="text-sm text-[var(--text-tertiary)] text-center py-4">No tasks for today</p>
               )}
-              <button
-                onClick={() => {
-                  setEditingTask(null);
-                  setIsTaskModalOpen(true);
-                }}
+                  <button
+                    onClick={() => {
+                      setEditingTask(null);
+                      setIsTaskModalOpen(true);
+                    }}
                 className="w-full mt-4 py-2 px-4 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] font-medium transition-colors flex items-center justify-center gap-2"
-              >
+                  >
                 <FaPlus className="text-xs" />
                 <span>Smart Task</span>
-              </button>
-            </div>
-          )}
+                  </button>
+                </div>
+              )}
         </motion.div>
 
         {/* Right Side: Streak and Consistency */}
-        <div className="space-y-4">
+        <div className="flex lg:flex-col gap-4 lg:space-y-4 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
           {/* Streak Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="card p-5 rounded-2xl"
+            className="card p-5 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto"
           >
             <div className="flex items-center gap-2 mb-3">
               <FaFire className="text-orange-500" />
@@ -318,7 +318,7 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="card p-5 rounded-2xl"
+            className="card p-5 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto"
           >
             <h3 className="text-base font-semibold text-[var(--text-primary)] mb-2">Stay consistent!</h3>
             <p className="text-sm text-[var(--text-secondary)] mb-3">
@@ -335,13 +335,13 @@ export const DashboardHome = ({
       </div>
 
       {/* Lower Middle Section: Focus Mode and Consistency */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="flex md:grid md:grid-cols-2 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Focus Mode Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="card p-6 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white"
+          className="card p-6 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex-shrink-0 w-[300px] md:w-auto"
         >
           <h3 className="text-lg font-semibold mb-4">Focus mode ready</h3>
           <button
@@ -357,12 +357,12 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="card p-6 rounded-2xl"
+          className="card p-6 rounded-2xl flex-shrink-0 w-[300px] md:w-auto"
         >
           <div className="flex items-center gap-3 mb-3">
             <FaLightbulb className="text-yellow-500 text-xl" />
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">Stay consistent</h3>
-          </div>
+            </div>
           <p className="text-sm text-[var(--text-secondary)] mb-3">
             You've done {consistencyPercentage}% of your week's plan
           </p>
@@ -371,26 +371,26 @@ export const DashboardHome = ({
               className="bg-yellow-500 h-2 rounded-full transition-all duration-500"
               style={{ width: `${consistencyPercentage}%` }}
             />
-          </div>
+            </div>
         </motion.div>
-      </div>
+          </div>
 
       {/* Bottom Section: Today's Spend and Quick Note */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="flex md:grid md:grid-cols-2 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Today's Spend Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="card p-5 rounded-2xl"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                 <span className="text-blue-600 dark:text-blue-400 font-semibold">$</span>
-              </div>
+        </div>
               <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Spend</h3>
-            </div>
+      </div>
             <button
               onClick={() => navigate('/dashboard/finance')}
               className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
@@ -407,7 +407,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="card p-5 rounded-2xl"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
           <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">Quick Note</h3>
           <input
@@ -764,34 +764,34 @@ export const DashboardGoals = ({
         <div className="lg:col-span-2 space-y-4">
           {goals && goals.length > 0 ? (
             goals.map((goal) => (
-              <GoalTracker
-                key={goal._id}
-                goal={goal}
-                onUpdate={onUpdateGoalProgress}
-                onDelete={onDeleteGoal}
-                onEdit={onEditGoal}
+          <GoalTracker
+            key={goal._id}
+            goal={goal}
+            onUpdate={onUpdateGoalProgress}
+            onDelete={onDeleteGoal}
+            onEdit={onEditGoal}
                 onViewAnalytics={() => setSelectedGoalForAnalytics(goal)}
               />
             ))
           ) : (
             <div className="card p-12 text-center">
-              <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
-              <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
+            <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
               <p className="text-sm text-[var(--text-tertiary)] mb-6">Create your first goal to get started!</p>
-              <button
-                onClick={() => {
-                  setEditingGoal(null);
-                  setIsGoalModalOpen(true);
-                }}
-                className="btn-primary"
-              >
-                <FaPlus className="inline mr-2" />
-                Create Goal
-              </button>
-            </div>
-          )}
-        </div>
-
+            <button
+              onClick={() => {
+                setEditingGoal(null);
+                setIsGoalModalOpen(true);
+              }}
+              className="btn-primary"
+            >
+              <FaPlus className="inline mr-2" />
+              Create Goal
+            </button>
+          </div>
+        )}
+      </div>
+      
         {/* Analytics Sidebar */}
         <div className="space-y-6">
           {selectedGoalForAnalytics ? (
@@ -817,27 +817,27 @@ export const DashboardAnalytics = ({ analytics, tasks, goals, habits }) => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
         <p className="text-[var(--text-secondary)]">Track your productivity and progress</p>
-      </div>
-
+          </div>
+          
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {analytics?.taskCompletion && (
-          <GraphCard
+            <GraphCard
             title="Task Completion Over Time"
             data={analytics.taskCompletion}
-            type="line"
+              type="line"
             dataKey="completed"
-          />
-        )}
+            />
+          )}
 
         {analytics?.weeklyCompletion && (
-          <GraphCard
-            title="Weekly Task Completion"
+            <GraphCard
+              title="Weekly Task Completion"
             data={analytics.weeklyCompletion.map((item, index) => ({
               name: item.week || `Week ${index + 1}`,
               completed: item.completed || 0,
               total: item.total || 0,
             }))}
-            type="bar"
+              type="bar"
             dataKey="completed"
           />
         )}
@@ -874,7 +874,7 @@ export const DashboardTeam = ({ friends, friendRequests, sentFriendRequests, lea
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <FriendStatus
+                  <FriendStatus
           friends={friends}
           friendRequests={friendRequests}
           sentFriendRequests={sentFriendRequests}
@@ -896,15 +896,15 @@ export const DashboardTeam = ({ friends, friendRequests, sentFriendRequests, lea
                     <div>
                       <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
                       <p className="text-sm text-[var(--text-secondary)]">{user.xp || 0} XP</p>
+                      </div>
                     </div>
-                  </div>
                   {index === 0 && <FaTrophy className="text-yellow-500" />}
-                </div>
+                  </div>
               ))}
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+          )}
+        </div>
     </div>
   );
 };
