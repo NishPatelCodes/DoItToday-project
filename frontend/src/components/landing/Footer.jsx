@@ -24,36 +24,37 @@ function Footer() {
   ];
 
   return (
-    <footer className="bg-[var(--bg-secondary)] border-t border-[var(--border-color)] py-12 md:py-14 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Subtle background decoration */}
+    <footer className="bg-[var(--bg-secondary)] border-t border-[var(--border-color)] py-16 md:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Apple-inspired subtle background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-primary-500/3 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-[300px] h-[300px] bg-[var(--accent-primary)]/2 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-8 md:mb-10">
-          {/* Brand Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 mb-10 md:mb-12">
+          {/* Brand Section - Apple-style typography */}
           <div>
-            <h3 className="text-xl md:text-2xl font-bold gradient-text mb-3 md:mb-4">
+            <h3 className="text-2xl md:text-3xl font-bold gradient-text mb-4 md:mb-5" style={{ letterSpacing: '-0.02em' }}>
               DoItToday
             </h3>
-            <p className="text-sm md:text-base text-[var(--text-secondary)] leading-relaxed">
+            <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>
               Your all-in-one productivity platform. Organize your day, 
               achieve your goals, and build better habits.
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links - Apple-style */}
           <div>
-            <h4 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">
+            <h4 className="text-lg md:text-xl font-semibold text-[var(--text-primary)] mb-4 md:mb-5" style={{ letterSpacing: '-0.01em' }}>
               Quick Links
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {footerLinks.map((link, index) => (
                 <li key={index}>
                   <a
                     href={link.path}
-                    className="text-sm md:text-base text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors duration-200 inline-block"
+                    className="text-base md:text-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors duration-300 inline-block font-light"
+                    style={{ letterSpacing: '-0.01em', fontWeight: 300 }}
                   >
                     {link.name}
                   </a>
@@ -62,12 +63,12 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Social Links */}
+          {/* Social Links - Apple-style */}
           <div>
-            <h4 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">
+            <h4 className="text-lg md:text-xl font-semibold text-[var(--text-primary)] mb-4 md:mb-5" style={{ letterSpacing: '-0.01em' }}>
               Connect
             </h4>
-            <div className="flex gap-3 md:gap-4">
+            <div className="flex gap-4">
               {socialLinks.map((social, index) => {
                 const Icon = social.icon;
                 return (
@@ -76,9 +77,9 @@ function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }}
+                    whileHover={{ scale: 1.08, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="w-10 h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="w-12 h-12 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] transition-all duration-300"
                     aria-label={social.label}
                   >
                     <Icon className="w-5 h-5" />
@@ -89,9 +90,9 @@ function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="pt-6 md:pt-8 border-t border-[var(--border-color)] text-center">
-          <p className="text-xs md:text-sm text-[var(--text-secondary)]">
+        {/* Copyright - Apple-style */}
+        <div className="pt-8 md:pt-10 border-t border-[var(--border-color)] text-center">
+          <p className="text-sm md:text-base text-[var(--text-secondary)] font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>
             © {currentYear} DoItToday. All rights reserved.
           </p>
         </div>

@@ -33,13 +33,13 @@ function FeaturesSection() {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 40 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1],
+        duration: 0.6,
+        ease: [0.25, 0.46, 0.45, 0.94], // Apple-style easing
       },
     },
   };
@@ -99,37 +99,37 @@ function FeaturesSection() {
     <section
       id="features"
       ref={ref}
-      className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
+      className="py-20 md:py-28 lg:py-32 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
     >
-      {/* Subtle background decoration */}
+      {/* Apple-inspired subtle background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/3 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/3 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-[var(--accent-primary)]/4 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[var(--accent-secondary)]/4 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
+        {/* Section Header - Apple-style typography */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10 md:mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="text-center mb-16 md:mb-20"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-4 md:mb-5 text-[var(--text-primary)] leading-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-5 md:mb-6 text-[var(--text-primary)] leading-[1.05] tracking-tight" style={{ letterSpacing: '-0.03em' }}>
             Everything You Need to
-            <span className="block mt-2 gradient-text">Stay Productive</span>
+            <span className="block mt-3 md:mt-4 gradient-text">Stay Productive</span>
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto px-4 leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto px-4 leading-relaxed font-light" style={{ letterSpacing: '-0.015em', fontWeight: 300 }}>
             Powerful features designed to help you organize, focus, and achieve your goals.
           </p>
         </motion.div>
 
-        {/* Features Grid - Responsive: 1 col mobile, 2 col tablet, 4 col desktop */}
+        {/* Features Grid - Apple-inspired cards */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6"
         >
           {features.map((feature, index) => {
             const Icon = feature.icon;
@@ -138,72 +138,38 @@ function FeaturesSection() {
                 key={index}
                 variants={itemVariants}
                 whileHover={{ 
-                  y: -6,
-                  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+                  y: -4,
+                  transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
                 }}
-                className="group relative p-5 md:p-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] cursor-pointer overflow-hidden"
+                className="group relative p-6 md:p-7 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] cursor-pointer overflow-hidden backdrop-blur-xl"
               >
-                {/* Animated gradient background on hover - smoother */}
+                {/* Apple-inspired subtle gradient on hover */}
                 <motion.div
                   className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0`}
-                  whileHover={{ opacity: 0.08 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ opacity: 0.05 }}
+                  transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
                 />
 
-                {/* Subtle border glow on hover */}
-                <motion.div
-                  className={`absolute inset-0 rounded-xl border-2 bg-gradient-to-br ${feature.color} opacity-0`}
-                  whileHover={{ opacity: 0.2 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ borderImage: 'linear-gradient(135deg, transparent, transparent) 1' }}
-                />
-
-                {/* Icon with smooth scale animation */}
-                <div className="relative mb-4">
+                {/* Icon with Apple-style animation */}
+                <div className="relative mb-5">
                   <motion.div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-white shadow-lg`}
+                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-white shadow-md`}
                     whileHover={{ 
-                      scale: 1.1,
-                      rotate: [0, -5, 5, 0],
-                      transition: { duration: 0.4 }
+                      scale: 1.08,
+                      transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
                     }}
                   >
-                    <Icon className="w-6 h-6" />
+                    <Icon className="w-7 h-7" />
                   </motion.div>
                 </div>
 
-                {/* Content */}
-                <h3 className="text-lg md:text-xl font-semibold mb-2 text-[var(--text-primary)] relative z-10">
+                {/* Content - Apple-style typography */}
+                <h3 className="text-xl md:text-2xl font-semibold mb-3 text-[var(--text-primary)] relative z-10" style={{ letterSpacing: '-0.02em' }}>
                   {feature.title}
                 </h3>
-                <p className="text-sm md:text-base text-[var(--text-secondary)] leading-relaxed relative z-10">
+                <p className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed relative z-10 font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>
                   {feature.description}
                 </p>
-
-                {/* Bottom accent line - smooth reveal */}
-                <motion.div
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${feature.color} opacity-0`}
-                  whileHover={{ 
-                    opacity: 1,
-                    scaleX: 1,
-                  }}
-                  initial={{ scaleX: 0 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                />
-
-                {/* Shine effect on hover */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0"
-                  whileHover={{
-                    opacity: 1,
-                    x: ['-100%', '100%'],
-                  }}
-                  transition={{
-                    duration: 0.6,
-                    ease: 'easeInOut',
-                  }}
-                  style={{ transform: 'skewX(-20deg)' }}
-                />
               </motion.div>
             );
           })}

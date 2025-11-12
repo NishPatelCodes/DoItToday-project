@@ -389,16 +389,16 @@ const Login = () => {
               </div>
         </div>
 
-            {/* Refined Login Card */}
+              {/* Apple-inspired Login Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="relative"
             >
-              {/* Enhanced Glassmorphism Card - Futuristic dark mode styling */}
+              {/* Apple Glass Card */}
               <div 
-                className="relative backdrop-blur-2xl bg-white/90 dark:bg-[var(--bg-secondary)]/85 dark:backdrop-blur-3xl border border-white/50 dark:border-[var(--border-color)]/70 dark:border-[rgba(129,140,248,0.15)] rounded-2xl p-5 sm:p-6 lg:p-6 transition-all duration-300 login-card"
+                className="relative backdrop-blur-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-3xl p-6 sm:p-7 lg:p-8 transition-all duration-300 login-card"
               >
                 {/* Enhanced glow effect - More prominent in dark mode with animated pulse */}
                 <motion.div 
@@ -418,17 +418,17 @@ const Login = () => {
                 <div className="absolute inset-0 rounded-2xl border border-primary-500/0 dark:border-primary-500/15 pointer-events-none" />
 
                 <div className="space-y-6 relative z-10">
-                  {/* Header - Enhanced contrast for dark mode */}
-                  <div className="space-y-1.5">
+                  {/* Header - Apple-style typography */}
+                  <div className="space-y-2">
                     <h2 
-                      className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] dark:text-[#F5F5F5] tracking-tight"
-                      style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}
+                      className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] tracking-tight"
+                      style={{ letterSpacing: '-0.03em' }}
                     >
                       Welcome back
                     </h2>
                     <p 
-                      className="text-sm sm:text-base text-[var(--text-secondary)] dark:text-[#D1D5DB] font-normal"
-                      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                      className="text-base sm:text-lg text-[var(--text-secondary)] font-light"
+                      style={{ letterSpacing: '-0.01em', fontWeight: 300 }}
                     >
                       Sign in to continue your journey
                     </p>
@@ -475,17 +475,17 @@ const Login = () => {
                 }
                 setError('');
               }}
-                          className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 text-[var(--text-primary)] dark:text-[#F5F5F5] placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
+                          className={`w-full pl-11 pr-4 py-3.5 rounded-2xl bg-[var(--bg-secondary)] border text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-300 focus:outline-none focus:border-[var(--accent-primary)] focus:shadow-[0_0_0_4px_rgba(0,113,227,0.1)] ${
                             errors.email
-                              ? 'border-red-400 dark:border-red-400 bg-red-50/50 dark:bg-red-900/30 dark:border-red-500/60'
-                              : 'border-[var(--border-color)] dark:border-[#3D4A5C] hover:border-[var(--accent-primary)]/50 dark:hover:border-[#818CF8]/50'
+                              ? 'border-red-400 bg-red-50/50'
+                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50'
                           }`}
                           placeholder="name@example.com"
               required
               autoComplete="email"
               aria-invalid={errors.email ? 'true' : 'false'}
               aria-describedby={errors.email ? 'email-error' : undefined}
-                          style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                          style={{ letterSpacing: '-0.01em' }}
             />
                       </div>
                       {errors.email && (
@@ -523,10 +523,10 @@ const Login = () => {
                             }
                             setError('');
                           }}
-                          className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 text-[var(--text-primary)] dark:text-[#F5F5F5] placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
+                          className={`w-full pl-11 pr-12 py-3.5 rounded-2xl bg-[var(--bg-secondary)] border text-[var(--text-primary)] placeholder-[var(--text-tertiary)] transition-all duration-300 focus:outline-none focus:border-[var(--accent-primary)] focus:shadow-[0_0_0_4px_rgba(0,113,227,0.1)] ${
                             errors.password
-                              ? 'border-red-400 dark:border-red-400 bg-red-50/50 dark:bg-red-900/30 dark:border-red-500/60'
-                              : 'border-[var(--border-color)] dark:border-[#3D4A5C] hover:border-[var(--accent-primary)]/50 dark:hover:border-[#818CF8]/50'
+                              ? 'border-red-400 bg-red-50/50'
+                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50'
                           }`}
                           placeholder="••••••••"
                           required
@@ -571,14 +571,14 @@ const Login = () => {
                       </Link>
                     </div>
 
-                    {/* Submit Button - Enhanced glow effect for dark mode */}
+                    {/* Submit Button - Apple-style */}
                     <motion.button
             type="submit"
             disabled={loading}
                       whileHover={loading ? {} : { scale: 1.02, y: -1 }}
                       whileTap={loading ? {} : { scale: 0.98 }}
-                      className="w-full relative px-6 py-3.5 bg-[var(--accent-primary)] dark:bg-[#818CF8] text-white rounded-xl font-semibold text-base shadow-lg dark:shadow-[0_4px_14px_0_rgba(129,140,248,0.4)] hover:shadow-xl dark:hover:shadow-[0_6px_20px_0_rgba(129,140,248,0.5)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] dark:focus:ring-[#818CF8] focus:ring-offset-2 dark:focus:ring-offset-[#1A1A2E]"
-                      style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                      className="w-full relative px-6 py-4 bg-[var(--accent-primary)] text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group focus:outline-none"
+                      style={{ letterSpacing: '-0.01em' }}
                       aria-label={loading ? 'Signing in...' : 'Log in'}
                     >
                       {loading ? (

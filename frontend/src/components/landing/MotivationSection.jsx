@@ -38,64 +38,65 @@ function MotivationSection() {
   return (
     <section
       ref={ref}
-      className="py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
+      className="py-20 md:py-28 lg:py-32 px-4 sm:px-6 lg:px-8 bg-[var(--bg-primary)] relative overflow-hidden"
     >
-      {/* Background Decoration */}
+      {/* Apple-inspired Background Decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-64 h-64 md:w-96 md:h-96 bg-primary-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-64 h-64 md:w-96 md:h-96 bg-purple-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-[var(--accent-primary)]/3 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[var(--accent-secondary)]/3 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-5xl mx-auto relative z-10">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
           className="text-center"
         >
-          {/* Quote Icon */}
-          <motion.div variants={itemVariants} className="mb-6 md:mb-8">
-            <FiMessageSquare className="w-10 h-10 md:w-14 md:h-14 mx-auto text-[var(--accent-primary)] opacity-20" />
+          {/* Quote Icon - Apple-style subtle */}
+          <motion.div variants={itemVariants} className="mb-8 md:mb-10">
+            <FiMessageSquare className="w-12 h-12 md:w-16 md:h-16 mx-auto text-[var(--accent-primary)] opacity-15" />
           </motion.div>
 
-          {/* Main Quote */}
+          {/* Main Quote - Apple-style typography */}
           <motion.blockquote
             variants={itemVariants}
-            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-[var(--text-primary)] mb-6 md:mb-8 leading-relaxed px-4"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-[var(--text-primary)] mb-10 md:mb-12 leading-[1.2] px-4"
+            style={{ letterSpacing: '-0.02em', fontWeight: 300 }}
           >
             "Productivity is not about doing more. It's about doing what matters 
-            <span className="block mt-2 md:mt-3 gradient-text">
+            <span className="block mt-4 md:mt-5 gradient-text">
               with clarity and focus."
             </span>
           </motion.blockquote>
 
-          {/* Statistics */}
+          {/* Statistics - Apple-style clean */}
           <motion.div
             variants={itemVariants}
-            className="mt-10 md:mt-12 pt-10 md:pt-12 border-t border-[var(--border-color)]"
+            className="mt-14 md:mt-16 pt-12 md:pt-14 border-t border-[var(--border-color)]"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
               <div className="pb-4">
-                <div className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-bold gradient-text mb-1.5 md:mb-2">
+                <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold gradient-text mb-3 md:mb-4" style={{ letterSpacing: '-0.03em' }}>
                   10x
                 </div>
-                <div className="text-sm md:text-base text-[var(--text-secondary)] leading-relaxed">
+                <div className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>
                   More productive users
                 </div>
               </div>
               <div className="pb-4">
-                <div className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-bold gradient-text mb-1.5 md:mb-2">
+                <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold gradient-text mb-3 md:mb-4" style={{ letterSpacing: '-0.03em' }}>
                   95%
                 </div>
-                <div className="text-sm md:text-base text-[var(--text-secondary)] leading-relaxed">
+                <div className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>
                   Goal completion rate
                 </div>
               </div>
               <div className="pb-4">
-                <div className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-bold gradient-text mb-1.5 md:mb-2">
+                <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold gradient-text mb-3 md:mb-4" style={{ letterSpacing: '-0.03em' }}>
                   50k+
                 </div>
-                <div className="text-sm md:text-base text-[var(--text-secondary)] leading-relaxed">
+                <div className="text-base md:text-lg text-[var(--text-secondary)] leading-relaxed font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>
                   Active users
                 </div>
               </div>
