@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../hooks/useTheme';
 import { authAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ThemeToggle from '../components/landing/ThemeToggle';
@@ -41,6 +42,12 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const toast = useToast();
+  const { theme } = useThemeStore();
+
+  // Ensure theme is applied on mount
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Motivational quotes - memoized for performance
   const quotes = useMemo(() => [
@@ -476,7 +483,7 @@ const Login = () => {
                 }
                 setError('');
               }}
-                          className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 text-gray-900 dark:text-[#F5F5F5] placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
+                          className={`w-full pl-11 pr-4 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 text-gray-900 dark:text-white placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
                             errors.email
                               ? 'border-red-400 dark:border-red-400 bg-red-50/50 dark:bg-red-900/30 dark:border-red-500/60'
                               : 'border-[var(--border-color)] dark:border-[#3D4A5C] hover:border-[var(--accent-primary)]/50 dark:hover:border-[#818CF8]/50'
@@ -486,7 +493,7 @@ const Login = () => {
               autoComplete="email"
               aria-invalid={errors.email ? 'true' : 'false'}
               aria-describedby={errors.email ? 'email-error' : undefined}
-                          style={{ fontFamily: 'Inter, system-ui, sans-serif', color: 'inherit' }}
+                          style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
             />
                       </div>
                       {errors.email && (
@@ -524,10 +531,10 @@ const Login = () => {
                             }
                             setError('');
                           }}
-                          className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 text-gray-900 dark:text-[#F5F5F5] placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
+                          className={`w-full pl-11 pr-12 py-3 rounded-xl bg-white/70 dark:bg-[var(--bg-tertiary)]/60 border-2 placeholder-[var(--text-tertiary)] dark:placeholder-[#6B7280] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 dark:focus:ring-[#818CF8]/40 focus:border-[var(--accent-primary)] dark:focus:border-[#818CF8] dark:focus:shadow-[0_0_0_3px_rgba(129,140,248,0.1)] ${
                             errors.password
-                              ? 'border-red-400 dark:border-red-400 bg-red-50/50 dark:bg-red-900/30 dark:border-red-500/60'
-                              : 'border-[var(--border-color)] dark:border-[#3D4A5C] hover:border-[var(--accent-primary)]/50 dark:hover:border-[#818CF8]/50'
+                              ? 'border-red-400 dark:border-red-400 bg-red-50/50 dark:bg-red-900/30 dark:border-red-500/60 text-gray-900 dark:text-white'
+                              : 'border-[var(--border-color)] dark:border-[#3D4A5C] hover:border-[var(--accent-primary)]/50 dark:hover:border-[#818CF8]/50 text-gray-900 dark:text-white'
                           }`}
                           placeholder="••••••••"
                           required
