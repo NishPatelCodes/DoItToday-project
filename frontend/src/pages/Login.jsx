@@ -394,7 +394,7 @@ const Login = () => {
                   </motion.div>
                 </AnimatePresence>
               </div>
-        </div>
+            </div>
 
             {/* Refined Login Card */}
             <motion.div
