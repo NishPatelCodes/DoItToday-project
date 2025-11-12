@@ -111,18 +111,18 @@ function ProductShowcaseSection() {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
+        {/* Section Header - Apple-style typography */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10 md:mb-12"
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="text-center mb-16 md:mb-20"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-4 md:mb-5 text-[var(--text-primary)] leading-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-5 md:mb-6 text-[var(--text-primary)] leading-[1.05] tracking-tight" style={{ letterSpacing: '-0.03em' }}>
             Your Day,
-            <span className="block mt-2 gradient-text">Beautifully Organized</span>
+            <span className="block mt-3 md:mt-4 gradient-text">Beautifully Organized</span>
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl md:max-w-3xl mx-auto font-light px-4 leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto font-light px-4 leading-relaxed" style={{ letterSpacing: '-0.015em', fontWeight: 300 }}>
             See how DoItToday transforms your productivity with an intuitive, 
             elegant interface designed for clarity and focus.
           </p>
@@ -257,16 +257,13 @@ function ProductShowcaseSection() {
         >
           <motion.button
             onClick={() => navigate('/login')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="group relative px-8 py-4 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 mx-auto"
+            whileHover={{ scale: 1.03, y: -1 }}
+            whileTap={{ scale: 0.97 }}
+            className="group relative px-10 md:px-12 py-4 md:py-4.5 bg-[var(--accent-primary)] text-white rounded-2xl font-semibold text-lg md:text-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 mx-auto"
+            style={{ letterSpacing: '-0.01em' }}
           >
             Explore More
-            <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
-            <motion.div
-              className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl"
-              initial={false}
-            />
+            <FiArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
           </motion.button>
         </motion.div>
       </div>
