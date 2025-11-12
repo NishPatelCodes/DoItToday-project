@@ -77,9 +77,20 @@ router.post('/add', authenticate, async (req, res) => {
       await user.save();
       await friend.save();
 
+      // Ensure level is calculated correctly
+      const { calculateLevelFromXP } = await import('../utils/xpSystem.js');
+      const calculatedLevel = calculateLevelFromXP(friend.xp || 0);
+      if (friend.level !== calculatedLevel) {
+        friend.level = calculatedLevel;
+        await friend.save();
+      }
+      
       const friendData = await User.findById(friend._id).select(
         'name email avatar streak totalTasksCompleted lastActiveDate xp level'
-      );
+      ).lean();
+      
+      // Add calculated level to ensure consistency
+      friendData.level = calculateLevelFromXP(friendData.xp || 0);
 
       return res.json({ 
         message: 'Friend request accepted! You are now friends.',
@@ -254,11 +265,33 @@ router.get('/leaderboard', authenticate, async (req, res) => {
     // Include current user in leaderboard
     const allUsers = [req.user._id, ...friendIds];
 
-    // Get all users with their stats
-    const leaderboard = await User.find({ _id: { $in: allUsers } })
+    // Get all users with their stats (don't use lean to allow updates)
+    const users = await User.find({ _id: { $in: allUsers } })
       .select('name email avatar streak totalTasksCompleted xp level')
-      .lean()
       .exec();
+
+    // Recalculate levels for all users to ensure consistency
+    const { calculateLevelFromXP } = await import('../utils/xpSystem.js');
+    const leaderboard = users.map(userDoc => {
+      const calculatedLevel = calculateLevelFromXP(userDoc.xp || 0);
+      // Update level if it's incorrect (async, don't await to avoid blocking response)
+      if (userDoc.level !== calculatedLevel) {
+        userDoc.level = calculatedLevel;
+        userDoc.save().catch(err => console.error('Error updating level:', err));
+      }
+      
+      return {
+        _id: userDoc._id,
+        id: userDoc._id,
+        name: userDoc.name,
+        email: userDoc.email,
+        avatar: userDoc.avatar,
+        streak: userDoc.streak || 0,
+        totalTasksCompleted: userDoc.totalTasksCompleted || 0,
+        xp: userDoc.xp || 0,
+        level: calculatedLevel, // Always use calculated level for consistency
+      };
+    });
 
     // Sort by XP (primary), then level, then streak, then totalTasksCompleted
     leaderboard.sort((a, b) => {

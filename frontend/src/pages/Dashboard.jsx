@@ -11,6 +11,7 @@ import {
   FaBars,
 } from 'react-icons/fa';
 import GratitudeJournal from '../components/GratitudeJournal';
+import NotesView from '../components/NotesView';
 import { useAuthStore } from '../store/authStore';
 import { useDataStore } from '../store/dataStore';
 import {
@@ -35,10 +36,16 @@ import {
   DashboardTeam,
 } from './DashboardViews';
 import Profile from '../components/Profile';
+import Challenges from '../components/Challenges';
+import FocusModePage from '../pages/FocusModePage';
+import FinanceTracker from '../components/FinanceTracker';
+import { useToast } from '../hooks/useToast';
+import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const toast = useToast();
   const {
     tasks,
     goals,
@@ -151,12 +158,17 @@ const Dashboard = () => {
       }
 
       if (authRes.status === 'fulfilled' && authRes.value?.data?.user) {
-        const { updateUser } = useAuthStore.getState();
+        const { updateUser, user: currentUser } = useAuthStore.getState();
+        const userData = authRes.value.data.user;
+        const oldLevel = currentUser?.level || 1;
+        const newLevel = userData.level || 1;
+        
         updateUser({
-          ...user,
-          xp: authRes.value.data.user.xp || 0,
-          level: authRes.value.data.user.level || 1,
-          streak: authRes.value.data.user.streak || 0,
+          ...currentUser,
+          xp: userData.xp || 0,
+          level: newLevel,
+          streak: userData.streak || 0,
+          totalTasksCompleted: userData.totalTasksCompleted || 0,
         });
       }
     } catch (error) {
@@ -180,20 +192,41 @@ const Dashboard = () => {
       if (!task) return;
 
       const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+      
+      // Store old user level before update
+      const { user: oldUser } = useAuthStore.getState();
+      const oldLevel = oldUser?.level || 1;
+      
       const response = await tasksAPI.update(id, { status: newStatus });
       
       // Update task in store immediately
       const { updateTask } = useDataStore.getState();
       updateTask(id, response.data);
       
-      // Refresh user data to get updated XP (XP is awarded on task completion)
+      // Refresh user data to get updated Discipline Points (DP is awarded on task completion)
       try {
         const userRes = await authAPI.getMe();
         const { updateUser } = useAuthStore.getState();
-        updateUser(userRes.data);
-        setUser(userRes.data);
+        const updatedUser = userRes.data.user;
+        const newLevel = updatedUser.level || 1;
+        
+        updateUser({
+          ...updatedUser,
+          xp: updatedUser.xp || 0,
+          level: newLevel,
+        });
+        
+        // Check for level up and show appropriate message
+        if (newStatus === 'completed' && newLevel > oldLevel) {
+          toast.success(`🎉 Level Up! You're now level ${newLevel}!`, { duration: 5000 });
+        } else if (newStatus === 'completed') {
+          toast.success('Task completed! ✨ Discipline Points earned!');
+        } else {
+          toast.success('Task marked as pending');
+        }
       } catch (e) {
         // Silently handle user reload failure
+        toast.success(newStatus === 'completed' ? 'Task completed! 🎉' : 'Task marked as pending');
       }
       
       // Reload only analytics to update stats
@@ -203,8 +236,16 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      
+      // Reload leaderboard to show updated rankings
+      try {
+        const leaderboardRes = await friendsAPI.getLeaderboard();
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle leaderboard reload failure
+      }
     } catch (error) {
-      alert('Failed to update task. Please try again.');
+      toast.error('Failed to update task. Please try again.');
     }
   };
 
@@ -223,8 +264,27 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      
+      // Refresh user data and leaderboard
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
+      }
+      
+      toast.success('Task deleted successfully');
     } catch (error) {
-      alert('Failed to delete task. Please try again.');
+      toast.error('Failed to delete task. Please try again.');
     }
   };
 
@@ -257,16 +317,35 @@ const Dashboard = () => {
       } catch (e) {
         // Silently handle analytics reload failure
       }
+      
+      // Always refresh user data and leaderboard to get updated Discipline Points/level
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
+      }
+      
+      toast.success(editingTask ? 'Task updated successfully!' : 'Task created successfully!');
     } catch (error) {
       // Check if it's a timeout error (will be retried automatically)
       const isTimeout = error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || error.message?.includes('timeout');
       
       // Only show error if it's not a timeout (timeouts are handled by retry logic)
       if (!isTimeout) {
-        alert('Failed to save task. Please try again.');
+        toast.error('Failed to save task. Please try again.');
       } else {
         // For timeout, show a more helpful message
-        alert('Server is taking longer than usual to respond. The task may have been saved - please check your tasks list.');
+        toast.error('Server is taking longer than usual to respond. The task may have been saved - please check your tasks list.');
       }
       throw error;
     }
@@ -300,6 +379,23 @@ const Dashboard = () => {
         setAnalytics(analyticsRes.data || {});
       } catch (e) {
         // Silently handle analytics reload failure
+      }
+      
+      // Refresh user data and leaderboard to get updated Discipline Points/level (goals award DP)
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
       }
     } catch (error) {
       console.error('Error updating goal progress:', error);
@@ -362,8 +458,9 @@ const Dashboard = () => {
     try {
       await friendsAPI.accept(friendId);
       loadData(); // Reload friends
+      toast.success('Friend request accepted!');
     } catch (error) {
-      alert('Failed to accept friend request. Please try again.');
+      toast.error('Failed to accept friend request. Please try again.');
     }
   };
 
@@ -371,8 +468,9 @@ const Dashboard = () => {
     try {
       await friendsAPI.decline(friendId);
       loadData(); // Reload friends
+      toast.success('Friend request declined');
     } catch (error) {
-      alert('Failed to decline friend request. Please try again.');
+      toast.error('Failed to decline friend request. Please try again.');
     }
   };
 
@@ -380,8 +478,9 @@ const Dashboard = () => {
     try {
       await friendsAPI.cancel(friendId);
       loadData(); // Reload friends
+      toast.success('Friend request cancelled');
     } catch (error) {
-      alert('Failed to cancel friend request. Please try again.');
+      toast.error('Failed to cancel friend request. Please try again.');
     }
   };
 
@@ -397,21 +496,23 @@ const Dashboard = () => {
   const handleCompleteHabit = async (id) => {
     try {
       await habitsAPI.complete(id);
-      // Refresh user data to get updated XP (XP is awarded on habit completion)
+      // Refresh user data and leaderboard to get updated Discipline Points (DP is awarded on habit completion)
       try {
-        const userRes = await authAPI.getMe();
+        const [userRes, leaderboardRes, habitsRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard(),
+          habitsAPI.getAll()
+        ]);
         const { updateUser } = useAuthStore.getState();
-        updateUser(userRes.data);
-        setUser(userRes.data);
-      } catch (e) {
-        // Silently handle user reload failure
-      }
-      // Reload habits to update streak
-      try {
-        const habitsRes = await habitsAPI.getAll();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
         setHabits(habitsRes.data || []);
       } catch (e) {
-        // Silently handle habits reload failure
+        // Silently handle reload failure
       }
     } catch (error) {
       // Silently handle error
@@ -428,19 +529,80 @@ const Dashboard = () => {
   };
 
   const pendingTasks = Array.isArray(tasks) ? tasks.filter((t) => t.status === 'pending') : [];
-  const completedTasks = Array.isArray(tasks) ? tasks.filter((t) => t.status === 'completed') : [];
+  const completedTasks = Array.isArray(tasks) 
+    ? tasks
+        .filter((t) => t.status === 'completed')
+        .sort((a, b) => {
+          // Sort by completedAt (most recent first), fallback to updatedAt or createdAt
+          const dateA = new Date(a.completedAt || a.updatedAt || a.createdAt || 0);
+          const dateB = new Date(b.completedAt || b.updatedAt || b.createdAt || 0);
+          return dateB - dateA; // Descending order (newest first)
+        })
+    : [];
   const activeGoals = Array.isArray(goals) ? goals.filter((g) => (g.progress || 0) < 100) : [];
 
   if (loading && tasks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading dashboard...</p>
-          {loadingTasks && (
-            <p className="text-sm text-[var(--text-tertiary)] mt-2">Loading your tasks...</p>
-          )}
-        </div>
+      <div className="flex min-h-screen bg-[var(--bg-primary)]">
+        <Sidebar isOpen={false} onClose={() => {}} />
+        <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0 p-4 md:p-8" tabIndex="-1">
+          <div className="mb-6 md:mb-8">
+            <Skeleton width="40%" height={32} className="mb-2" />
+            <Skeleton width="60%" height={20} />
+          </div>
+          
+          {/* Stats Skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card p-3 md:p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton width={40} height={40} rounded="lg" />
+                  <div className="space-y-2">
+                    <Skeleton width={60} height={14} />
+                    <Skeleton width={40} height={20} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
+              {/* Smart Planner Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="30%" height={24} className="mb-4" />
+                <Skeleton width="100%" height={100} />
+              </div>
+              
+              {/* Tasks Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="25%" height={24} className="mb-4" />
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <TaskCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4 md:space-y-6">
+              {/* Discipline Points Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="100%" height={150} />
+              </div>
+              
+              {/* Goals Skeleton */}
+              <div className="card p-4 md:p-6">
+                <Skeleton width="30%" height={24} className="mb-4" />
+                <div className="space-y-3">
+                  {[1, 2].map((i) => (
+                    <GoalCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -451,6 +613,8 @@ const Dashboard = () => {
       <button
         onClick={() => setIsSidebarOpen(true)}
         className="fixed top-4 left-4 z-50 md:hidden p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-[var(--text-primary)] shadow-lg"
+        aria-label="Open navigation menu"
+        aria-expanded={isSidebarOpen}
       >
         <FaBars className="text-lg" />
       </button>
@@ -459,7 +623,7 @@ const Dashboard = () => {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:ml-64 pt-14 md:pt-0">
+      <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0" tabIndex="-1">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
@@ -470,6 +634,7 @@ const Dashboard = () => {
                   loadData();
                 }}
                 className="ml-4 px-3 py-1 text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded transition-colors"
+                aria-label="Retry loading data"
               >
                 Retry
               </button>
@@ -589,6 +754,22 @@ const Dashboard = () => {
               <Route
                 path="gratitude"
                 element={<GratitudeJournal />}
+              />
+              <Route
+                path="notes"
+                element={<NotesView />}
+              />
+              <Route
+                path="challenges"
+                element={<Challenges />}
+              />
+              <Route
+                path="focus"
+                element={<FocusModePage />}
+              />
+              <Route
+                path="finance"
+                element={<FinanceTracker />}
               />
               <Route
                 path="profile"

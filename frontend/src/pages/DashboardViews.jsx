@@ -1,16 +1,19 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine } from 'react-icons/fa';
+import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import GoalAnalytics from '../components/GoalAnalytics';
 import HabitCard from '../components/HabitCard';
 import SmartPlanner from '../components/SmartPlanner';
 import FocusMode from '../components/FocusMode';
-import XPLevel from '../components/XPLevel';
+import DisciplinePoints from '../components/DisciplinePoints';
 import GraphCard from '../components/GraphCard';
 import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
+import DashboardSummary from '../components/DashboardSummary';
+import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 
 // Dashboard Home View
@@ -47,6 +50,9 @@ export const DashboardHome = ({
           Here's your productivity overview for today
         </p>
       </div>
+
+      {/* Dashboard Summary */}
+      <DashboardSummary user={user} streak={user?.streak || 0} />
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
@@ -159,19 +165,32 @@ export const DashboardHome = ({
               <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Recent Tasks</h2>
             </div>
             <div className="space-y-2">
-              {pendingTasks.slice(0, 5).map((task) => (
-                <TaskCard
-                  key={task._id}
-                  task={task}
-                  onToggle={onToggleTask}
-                  onDelete={onDeleteTask}
-                  onEdit={onEditTask}
-                />
-              ))}
-              {pendingTasks.length === 0 && (
-                <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
-                  No pending tasks. Create one to get started!
-                </p>
+              {pendingTasks.length > 0 ? (
+                pendingTasks.slice(0, 5).map((task) => (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    onToggle={onToggleTask}
+                    onDelete={onDeleteTask}
+                    onEdit={onEditTask}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <FaTasks className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+                  <p className="text-[var(--text-secondary)] mb-2 font-medium">No pending tasks</p>
+                  <p className="text-sm text-[var(--text-tertiary)] mb-4">Create one to get started!</p>
+                  <button
+                    onClick={() => {
+                      setEditingTask(null);
+                      setIsTaskModalOpen(true);
+                    }}
+                    className="btn-primary text-sm"
+                  >
+                    <FaPlus className="inline mr-2" />
+                    Create Task
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -179,8 +198,8 @@ export const DashboardHome = ({
 
         {/* Sidebar */}
         <div className="space-y-4 md:space-y-6">
-          {/* XP Level */}
-          <XPLevel xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
+          {/* Discipline Points */}
+          <DisciplinePoints xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
 
           {/* Active Goals */}
           <div className="card p-4 md:p-6">
@@ -234,6 +253,99 @@ export const DashboardTasks = ({
   setIsTaskModalOpen,
   setEditingTask,
 }) => {
+  // Group completed tasks by date segments
+  const groupedCompletedTasks = useMemo(() => {
+    if (!completedTasks || completedTasks.length === 0) return {};
+
+    const groups = {
+      today: [],
+      yesterday: [],
+      thisWeek: [],
+      lastWeek: [],
+      older: [],
+    };
+
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const yesterdayStart = startOfDay(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+    const thisWeekStart = startOfWeek(now, { weekStartsOn: 0 });
+    const lastWeekStart = startOfWeek(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 0 });
+    const lastWeekEnd = endOfWeek(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 0 });
+
+    completedTasks.forEach((task) => {
+      const taskDate = new Date(task.completedAt || task.updatedAt || task.createdAt || 0);
+      const taskDateStart = startOfDay(taskDate);
+
+      if (isToday(taskDate)) {
+        groups.today.push(task);
+      } else if (isYesterday(taskDate)) {
+        groups.yesterday.push(task);
+      } else if (taskDateStart >= thisWeekStart && taskDateStart < todayStart) {
+        // This week (excluding today and yesterday which are already handled)
+        groups.thisWeek.push(task);
+      } else if (taskDateStart >= lastWeekStart && taskDateStart <= lastWeekEnd) {
+        groups.lastWeek.push(task);
+      } else {
+        groups.older.push(task);
+      }
+    });
+
+    return groups;
+  }, [completedTasks]);
+
+  // Group older tasks by specific dates
+  const olderTasksByDate = useMemo(() => {
+    if (!groupedCompletedTasks.older || groupedCompletedTasks.older.length === 0) return {};
+
+    const dateGroups = {};
+    groupedCompletedTasks.older.forEach((task) => {
+      const taskDate = new Date(task.completedAt || task.updatedAt || task.createdAt || 0);
+      const dateKey = format(startOfDay(taskDate), 'yyyy-MM-dd');
+      const displayDate = format(startOfDay(taskDate), 'MMMM dd, yyyy');
+
+      if (!dateGroups[dateKey]) {
+        dateGroups[dateKey] = {
+          date: displayDate,
+          tasks: [],
+        };
+      }
+      dateGroups[dateKey].tasks.push(task);
+    });
+
+    // Sort date keys in descending order (newest first)
+    return Object.keys(dateGroups)
+      .sort((a, b) => new Date(b) - new Date(a))
+      .reduce((acc, key) => {
+        acc[key] = dateGroups[key];
+        return acc;
+      }, {});
+  }, [groupedCompletedTasks.older]);
+
+  const renderDateSection = (title, tasks, icon = null) => {
+    if (!tasks || tasks.length === 0) return null;
+
+    return (
+      <div key={title} className="mb-6">
+        <div className="flex items-center gap-2 mb-3 px-2">
+          {icon && <span className="text-[var(--accent-primary)]">{icon}</span>}
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">{title}</h3>
+          <span className="text-sm text-[var(--text-tertiary)]">({tasks.length})</span>
+        </div>
+        <div className="space-y-2">
+          {tasks.map((task) => (
+            <TaskCard
+              key={task._id}
+              task={task}
+              onToggle={onToggleTask}
+              onDelete={onDeleteTask}
+              onEdit={onEditTask}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="p-4 md:p-8 overflow-x-hidden">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
@@ -260,31 +372,8 @@ export const DashboardTasks = ({
             Pending ({pendingTasks.length})
           </h2>
           <div className="space-y-2">
-            {pendingTasks.map((task) => (
-              <TaskCard
-                key={task._id}
-                task={task}
-                onToggle={onToggleTask}
-                onDelete={onDeleteTask}
-                onEdit={onEditTask}
-              />
-            ))}
-            {pendingTasks.length === 0 && (
-              <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
-                No pending tasks
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Completed Tasks */}
-        {completedTasks.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
-              Completed ({completedTasks.length})
-            </h2>
-            <div className="space-y-2">
-              {completedTasks.map((task) => (
+            {pendingTasks.length > 0 ? (
+              pendingTasks.map((task) => (
                 <TaskCard
                   key={task._id}
                   task={task}
@@ -292,7 +381,109 @@ export const DashboardTasks = ({
                   onDelete={onDeleteTask}
                   onEdit={onEditTask}
                 />
-              ))}
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <FaTasks className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+                <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No pending tasks</p>
+                <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
+                <button
+                  onClick={() => {
+                    setEditingTask(null);
+                    setIsTaskModalOpen(true);
+                  }}
+                  className="btn-primary"
+                >
+                  <FaPlus className="inline mr-2" />
+                  Create Task
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Completed Tasks - Grouped by Date */}
+        {completedTasks.length > 0 && (
+          <div className="card p-6">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
+              Completed ({completedTasks.length})
+            </h2>
+            <div className="space-y-6">
+              {/* Today */}
+              {renderDateSection('Today', groupedCompletedTasks.today, '📅')}
+
+              {/* Yesterday */}
+              {renderDateSection('Yesterday', groupedCompletedTasks.yesterday, '📆')}
+
+              {/* This Week */}
+              {groupedCompletedTasks.thisWeek && groupedCompletedTasks.thisWeek.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3 px-2">
+                    <span className="text-[var(--accent-primary)]">📊</span>
+                    <h3 className="text-base font-semibold text-[var(--text-primary)]">This Week</h3>
+                    <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.thisWeek.length})</span>
+                  </div>
+                  <div className="space-y-2">
+                    {groupedCompletedTasks.thisWeek.map((task) => (
+                      <TaskCard
+                        key={task._id}
+                        task={task}
+                        onToggle={onToggleTask}
+                        onDelete={onDeleteTask}
+                        onEdit={onEditTask}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Last Week */}
+              {groupedCompletedTasks.lastWeek && groupedCompletedTasks.lastWeek.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3 px-2">
+                    <span className="text-[var(--accent-primary)]">📋</span>
+                    <h3 className="text-base font-semibold text-[var(--text-primary)]">Last Week</h3>
+                    <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.lastWeek.length})</span>
+                  </div>
+                  <div className="space-y-2">
+                    {groupedCompletedTasks.lastWeek.map((task) => (
+                      <TaskCard
+                        key={task._id}
+                        task={task}
+                        onToggle={onToggleTask}
+                        onDelete={onDeleteTask}
+                        onEdit={onEditTask}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Older - Grouped by specific dates */}
+              {Object.keys(olderTasksByDate).length > 0 && (
+                <div className="space-y-6">
+                  {Object.entries(olderTasksByDate).map(([dateKey, dateGroup]) => (
+                    <div key={dateKey} className="mb-6">
+                      <div className="flex items-center gap-2 mb-3 px-2">
+                        <span className="text-[var(--accent-primary)]">🗓️</span>
+                        <h3 className="text-base font-semibold text-[var(--text-primary)]">{dateGroup.date}</h3>
+                        <span className="text-sm text-[var(--text-tertiary)]">({dateGroup.tasks.length})</span>
+                      </div>
+                      <div className="space-y-2">
+                        {dateGroup.tasks.map((task) => (
+                          <TaskCard
+                            key={task._id}
+                            task={task}
+                            onToggle={onToggleTask}
+                            onDelete={onDeleteTask}
+                            onEdit={onEditTask}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -344,7 +535,19 @@ export const DashboardGoals = ({
         ))}
         {(!Array.isArray(goals) || goals.length === 0) && (
           <div className="col-span-2 card p-12 text-center">
-            <p className="text-[var(--text-secondary)]">No goals yet. Create one to get started!</p>
+            <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
+            <p className="text-sm text-[var(--text-tertiary)] mb-6">Set your first goal to start tracking your progress</p>
+            <button
+              onClick={() => {
+                setEditingGoal(null);
+                setIsGoalModalOpen(true);
+              }}
+              className="btn-primary"
+            >
+              <FaPlus className="inline mr-2" />
+              Create Goal
+            </button>
           </div>
         )}
       </div>
@@ -984,7 +1187,7 @@ export const DashboardTeam = ({
                         )}
                       </div>
                       <p className="text-xs text-[var(--text-secondary)]">
-                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} XP • Level {leaderboardUser.level || 1}
+                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} DP • Level {leaderboardUser.level || 1}
                       </p>
                     </div>
                   </div>

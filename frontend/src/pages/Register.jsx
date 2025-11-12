@@ -1,44 +1,112 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import { authAPI } from '../services/api';
+import { useToast } from '../hooks/useToast';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const toast = useToast();
+
+  const passwordStrength = useMemo(() => {
+    if (!password) return { strength: 0, label: '', color: '' };
+    
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.length >= 8) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^a-zA-Z\d]/.test(password)) strength++;
+    
+    if (strength <= 2) return { strength, label: 'Weak', color: 'text-red-600' };
+    if (strength <= 3) return { strength, label: 'Fair', color: 'text-yellow-600' };
+    if (strength <= 4) return { strength, label: 'Good', color: 'text-blue-600' };
+    return { strength, label: 'Strong', color: 'text-green-600' };
+  }, [password]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Name validation
+    if (!name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    } else if (name.trim().length > 50) {
+      newErrors.name = 'Name must be less than 50 characters';
+    }
+    
+    // Email validation
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    // Password validation
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    } else if (password.length > 100) {
+      newErrors.password = 'Password must be less than 100 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setErrors({});
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
 
     try {
-      const response = await authAPI.register({ name, email, password });
+      const response = await authAPI.register({ 
+        name: name.trim(), 
+        email: email.trim(), 
+        password 
+      });
       login(response.data.user, response.data.token);
+      toast.success('Account created successfully! Welcome!');
       navigate('/dashboard');
     } catch (err) {
       // Handle validation errors
       if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
         const errorMessages = err.response.data.errors.map((e) => e.msg || e.message).join(', ');
         setError(errorMessages);
+        toast.error(errorMessages);
       } 
       // Handle single message errors
       else if (err.response?.data?.message) {
         setError(err.response.data.message);
+        toast.error(err.response.data.message);
       }
       // Handle network errors
       else if (err.message === 'Network Error' || !err.response) {
-        setError('Cannot connect to server. Make sure the backend is running on port 5000.');
+        const errorMsg = 'Cannot connect to server. Make sure the backend is running on port 5000.';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
       // Generic error
       else {
-        setError(err.response?.data?.error || err.message || 'Registration failed. Please try again.');
+        const errorMsg = err.response?.data?.error || err.message || 'Registration failed. Please try again.';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } finally {
       setLoading(false);
@@ -70,47 +138,119 @@ const Register = () => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="register-name" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
               Name
             </label>
             <input
+              id="register-name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="input-field"
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) {
+                  setErrors({ ...errors, name: '' });
+                }
+                setError('');
+              }}
+              className={`input-field ${errors.name ? 'border-red-500' : ''}`}
               placeholder="Your name"
               required
+              autoComplete="name"
+              aria-invalid={errors.name ? 'true' : 'false'}
+              aria-describedby={errors.name ? 'name-error' : undefined}
             />
+            {errors.name && (
+              <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">
+                {errors.name}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="register-email" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
               Email
             </label>
             <input
+              id="register-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) {
+                  setErrors({ ...errors, email: '' });
+                }
+                setError('');
+              }}
+              className={`input-field ${errors.email ? 'border-red-500' : ''}`}
               placeholder="your@email.com"
               required
+              autoComplete="email"
+              aria-invalid={errors.email ? 'true' : 'false'}
+              aria-describedby={errors.email ? 'email-error' : undefined}
             />
+            {errors.email && (
+              <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="register-password" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
               Password
             </label>
             <input
+              id="register-password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) {
+                  setErrors({ ...errors, password: '' });
+                }
+                setError('');
+              }}
+              className={`input-field ${errors.password ? 'border-red-500' : ''}`}
               placeholder="••••••••"
               minLength={6}
               required
+              autoComplete="new-password"
+              aria-invalid={errors.password ? 'true' : 'false'}
+              aria-describedby={errors.password ? 'password-error' : password ? 'password-strength' : undefined}
             />
-            <p className="text-xs text-[var(--text-tertiary)] mt-1">Must be at least 6 characters</p>
+            {errors.password && (
+              <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
+                {errors.password}
+              </p>
+            )}
+            {password && !errors.password && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs text-[var(--text-tertiary)]">Password strength:</p>
+                  <p className={`text-xs font-medium ${passwordStrength.color}`}>
+                    {passwordStrength.label}
+                  </p>
+                </div>
+                <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-1.5">
+                  <div
+                    className={`h-1.5 rounded-full transition-all ${
+                      passwordStrength.strength <= 2 ? 'bg-red-500' :
+                      passwordStrength.strength <= 3 ? 'bg-yellow-500' :
+                      passwordStrength.strength <= 4 ? 'bg-blue-500' : 'bg-green-500'
+                    }`}
+                    style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
+                    role="progressbar"
+                    aria-valuenow={passwordStrength.strength}
+                    aria-valuemin="0"
+                    aria-valuemax="5"
+                    aria-label={`Password strength: ${passwordStrength.label}`}
+                  />
+                </div>
+                <p id="password-strength" className="mt-1 text-xs text-[var(--text-tertiary)]">
+                  Must be at least 6 characters. Use uppercase, lowercase, numbers, and symbols for better security.
+                </p>
+              </div>
+            )}
           </div>
 
           <button

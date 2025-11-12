@@ -1,6 +1,8 @@
 import express from 'express';
 import Gratitude from '../models/Gratitude.js';
 import { authenticate } from '../middleware/auth.js';
+import { awardXP, XP_REWARDS, calculateXPWithBonus } from '../utils/xpSystem.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -185,6 +187,10 @@ router.post('/', authenticate, async (req, res) => {
     // Normalize date to midnight UTC
     entryDate.setUTCHours(0, 0, 0, 0);
 
+    // Check if this is a new entry or update
+    const existingEntry = await Gratitude.findOne({ userId, date: entryDate });
+    const isNewEntry = !existingEntry;
+    
     // Find or create entry
     const gratitude = await Gratitude.findOneAndUpdate(
       { userId, date: entryDate },
@@ -198,6 +204,45 @@ router.post('/', authenticate, async (req, res) => {
         runValidators: true,
       }
     );
+
+    // Award XP only for new entries (once per day)
+    if (isNewEntry) {
+      const user = await User.findById(userId);
+      
+      // Get gratitude streak for bonus
+      const streakRes = await Gratitude.find({ userId })
+        .sort({ date: -1 })
+        .limit(30)
+        .exec();
+      
+      let gratitudeStreak = 0;
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      let checkDate = new Date(today);
+      
+      for (const entry of streakRes) {
+        const entryDate = new Date(entry.date);
+        entryDate.setUTCHours(0, 0, 0, 0);
+        if (entryDate.getTime() === checkDate.getTime()) {
+          gratitudeStreak++;
+          checkDate.setUTCDate(checkDate.getUTCDate() - 1);
+        } else if (entryDate < checkDate) {
+          break;
+        }
+      }
+      
+      // Base XP for gratitude entry
+      let xpAmount = XP_REWARDS.GRATITUDE_ENTRY;
+      
+      // Add gratitude streak bonus
+      if (gratitudeStreak > 1) {
+        xpAmount += Math.min(gratitudeStreak - 1, 7) * XP_REWARDS.GRATITUDE_STREAK_BONUS;
+      }
+      
+      // Apply user streak multiplier
+      const xpWithBonus = calculateXPWithBonus(xpAmount, user.streak || 0);
+      await awardXP(user, xpWithBonus, 'Gratitude journal entry');
+    }
 
     res.status(201).json(gratitude);
   } catch (error) {

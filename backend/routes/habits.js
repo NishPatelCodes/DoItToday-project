@@ -1,6 +1,7 @@
 import express from 'express';
 import Habit from '../models/Habit.js';
 import { authenticate } from '../middleware/auth.js';
+import { awardXP, XP_REWARDS, calculateXPWithBonus } from '../utils/xpSystem.js';
 
 const router = express.Router();
 
@@ -116,18 +117,23 @@ router.post('/:id/complete', authenticate, async (req, res) => {
     habit.totalCompletions += 1;
     await habit.save();
 
-    // Award XP for completing habit (5 XP per habit completion)
+    // Award XP for completing habit
     const User = (await import('../models/User.js')).default;
     const user = await User.findById(req.user._id);
-    user.xp += 5;
     
-    // Level up if XP threshold reached
-    const xpNeededForNextLevel = user.level * 100;
-    if (user.xp >= xpNeededForNextLevel) {
-      user.level += 1;
+    // Base XP for habit completion
+    let xpAmount = XP_REWARDS.HABIT_COMPLETION;
+    
+    // Add streak bonus (capped at 10 days for habit streak)
+    if (habit.streak > 1) {
+      const streakBonus = Math.min(habit.streak - 1, 10) * XP_REWARDS.HABIT_STREAK_BONUS;
+      xpAmount += streakBonus;
     }
     
-    await user.save();
+    // Apply user streak multiplier
+    const xpWithBonus = calculateXPWithBonus(xpAmount, user.streak || 0);
+    
+    await awardXP(user, xpWithBonus, `Completed habit: ${habit.name}`);
 
     res.json(habit);
   } catch (error) {
