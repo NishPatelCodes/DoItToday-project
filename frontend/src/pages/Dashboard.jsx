@@ -200,7 +200,7 @@ const Dashboard = () => {
       const { updateTask } = useDataStore.getState();
       updateTask(id, response.data);
       
-      // Refresh user data to get updated XP (XP is awarded on task completion)
+      // Refresh user data to get updated Discipline Points (DP is awarded on task completion)
       try {
         const userRes = await authAPI.getMe();
         const { updateUser } = useAuthStore.getState();
@@ -217,7 +217,7 @@ const Dashboard = () => {
         if (newStatus === 'completed' && newLevel > oldLevel) {
           toast.success(`🎉 Level Up! You're now level ${newLevel}!`, { duration: 5000 });
         } else if (newStatus === 'completed') {
-          toast.success('Task completed! ✨ XP earned!');
+          toast.success('Task completed! ✨ Discipline Points earned!');
         } else {
           toast.success('Task marked as pending');
         }
@@ -315,7 +315,7 @@ const Dashboard = () => {
         // Silently handle analytics reload failure
       }
       
-      // Always refresh user data and leaderboard to get updated XP/level
+      // Always refresh user data and leaderboard to get updated Discipline Points/level
       try {
         const [userRes, leaderboardRes] = await Promise.all([
           authAPI.getMe(),
@@ -378,7 +378,7 @@ const Dashboard = () => {
         // Silently handle analytics reload failure
       }
       
-      // Refresh user data and leaderboard to get updated XP/level (goals award XP)
+      // Refresh user data and leaderboard to get updated Discipline Points/level (goals award DP)
       try {
         const [userRes, leaderboardRes] = await Promise.all([
           authAPI.getMe(),
@@ -493,7 +493,7 @@ const Dashboard = () => {
   const handleCompleteHabit = async (id) => {
     try {
       await habitsAPI.complete(id);
-      // Refresh user data and leaderboard to get updated XP (XP is awarded on habit completion)
+      // Refresh user data and leaderboard to get updated Discipline Points (DP is awarded on habit completion)
       try {
         const [userRes, leaderboardRes, habitsRes] = await Promise.all([
           authAPI.getMe(),
@@ -574,7 +574,7 @@ const Dashboard = () => {
             </div>
             
             <div className="space-y-4 md:space-y-6">
-              {/* XP Level Skeleton */}
+              {/* Discipline Points Skeleton */}
               <div className="card p-4 md:p-6">
                 <Skeleton width="100%" height={150} />
               </div>

@@ -84,7 +84,7 @@ function FeaturesSection() {
     {
       icon: FiStar,
       title: 'Gamification',
-      description: 'Earn XP, level up, and unlock badges as you complete tasks and goals.',
+      description: 'Earn Discipline Points, level up, and unlock badges as you complete tasks and goals.',
       color: 'from-yellow-500 to-orange-500',
     },
     {
