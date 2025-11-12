@@ -220,6 +220,39 @@
     box-shadow: var(--shadow-md);
   }
 
+  /* OAuth Button */
+  .oauth-button {
+    @apply w-full flex items-center justify-center gap-3 px-4 py-3 border rounded-lg transition-colors;
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .oauth-button:hover {
+    background: var(--bg-secondary);
+  }
+
+  /* Apple OAuth Button - Black in light mode, dark background in dark mode */
+  .oauth-button-apple {
+    @apply w-full flex items-center justify-center gap-3 px-4 py-3 border rounded-lg transition-colors;
+    background: #000000;
+    border-color: var(--border-color);
+    color: white;
+  }
+
+  html[data-theme='dark'] .oauth-button-apple {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .oauth-button-apple:hover {
+    background: #1a1a1a;
+  }
+
+  html[data-theme='dark'] .oauth-button-apple:hover {
+    background: var(--bg-secondary);
+  }
+
   /* Subtle Animations */
   .fade-in {
     animation: fadeIn 0.3s ease-out;
