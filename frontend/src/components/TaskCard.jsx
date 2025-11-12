@@ -65,7 +65,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
         </button>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2.5 mb-2">
+          <div className="flex items-center gap-3 mb-2">
             <h3
               className={`font-semibold text-[var(--text-primary)] text-base ${
                 isCompleted ? 'text-[var(--text-secondary)] line-through' : ''
@@ -75,14 +75,14 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
               {task.title}
             </h3>
             <span
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium ${priorityColors[task.priority]}`}
+              className={`px-3 py-1 rounded-lg text-xs font-medium ${priorityColors[task.priority]}`}
             >
               {task.priority}
             </span>
           </div>
 
           {task.description && (
-            <p className="text-sm text-[var(--text-secondary)] mb-2.5 leading-relaxed font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>{task.description}</p>
+            <p className="text-sm text-[var(--text-secondary)] mb-3 leading-relaxed font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>{task.description}</p>
           )}
 
           <div className="flex items-center gap-4 text-xs text-[var(--text-tertiary)] flex-wrap">
@@ -119,13 +119,13 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {!isCompleted && onEdit && (
             <motion.button
               onClick={() => onEdit(task)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="p-2.5 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors rounded-lg hover:bg-[var(--bg-tertiary)]"
+              className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors rounded-lg hover:bg-[var(--bg-tertiary)]"
               aria-label={`Edit task: ${task.title}`}
             >
               <FaEdit />
@@ -135,7 +135,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
             onClick={() => setShowDeleteConfirm(true)}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="p-2.5 text-[var(--text-tertiary)] hover:text-red-600 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+            className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
             aria-label={`Delete task: ${task.title}`}
           >
             <FaTrash />

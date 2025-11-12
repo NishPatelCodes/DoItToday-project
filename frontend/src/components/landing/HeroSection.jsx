@@ -114,7 +114,7 @@ function HeroSection() {
               onClick={() => navigate('/login')}
               whileHover={{ scale: 1.03, y: -1 }}
               whileTap={{ scale: 0.97 }}
-              className="group relative px-10 md:px-12 py-4 md:py-4.5 bg-[var(--accent-primary)] text-white rounded-2xl font-semibold text-lg md:text-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3"
+              className="group relative px-10 md:px-12 py-4 md:py-5 bg-[var(--accent-primary)] text-white rounded-2xl font-semibold text-lg md:text-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3"
               style={{ letterSpacing: '-0.01em' }}
             >
               Get Started
@@ -125,7 +125,7 @@ function HeroSection() {
               onClick={() => navigate('/register')}
               whileHover={{ scale: 1.03, y: -1 }}
               whileTap={{ scale: 0.97 }}
-              className="px-10 md:px-12 py-4 md:py-4.5 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-2xl font-semibold text-lg md:text-xl hover:shadow-lg transition-all duration-300 backdrop-blur-xl"
+              className="px-10 md:px-12 py-4 md:py-5 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-2xl font-semibold text-lg md:text-xl hover:shadow-lg transition-all duration-300 backdrop-blur-xl"
               style={{ letterSpacing: '-0.01em' }}
             >
               Sign Up Free
@@ -137,15 +137,15 @@ function HeroSection() {
             variants={itemVariants}
             className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-base sm:text-lg text-[var(--text-secondary)]"
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <FiCheckCircle className="text-[var(--accent-primary)] flex-shrink-0 w-5 h-5" />
               <span style={{ letterSpacing: '-0.01em' }}>Free forever</span>
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <FiCheckCircle className="text-[var(--accent-primary)] flex-shrink-0 w-5 h-5" />
               <span style={{ letterSpacing: '-0.01em' }}>No credit card required</span>
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <FiCheckCircle className="text-[var(--accent-primary)] flex-shrink-0 w-5 h-5" />
               <span style={{ letterSpacing: '-0.01em' }}>Start in seconds</span>
             </div>

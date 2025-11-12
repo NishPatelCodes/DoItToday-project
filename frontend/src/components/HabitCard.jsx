@@ -54,13 +54,13 @@ const HabitCard = ({ habit, onComplete, onDelete, onEdit }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {onEdit && (
             <motion.button
               onClick={() => onEdit(habit)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="p-2.5 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors rounded-lg hover:bg-[var(--bg-tertiary)]"
+              className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors rounded-lg hover:bg-[var(--bg-tertiary)]"
             >
               <FaEdit />
             </motion.button>
@@ -69,7 +69,7 @@ const HabitCard = ({ habit, onComplete, onDelete, onEdit }) => {
             onClick={() => onDelete(habit._id)}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="p-2.5 text-[var(--text-tertiary)] hover:text-red-600 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+            className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
           >
             <FaTrash />
           </motion.button>

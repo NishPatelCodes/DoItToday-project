@@ -259,7 +259,7 @@ function ProductShowcaseSection() {
             onClick={() => navigate('/login')}
             whileHover={{ scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.97 }}
-            className="group relative px-10 md:px-12 py-4 md:py-4.5 bg-[var(--accent-primary)] text-white rounded-2xl font-semibold text-lg md:text-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 mx-auto"
+            className="group relative px-10 md:px-12 py-4 md:py-5 bg-[var(--accent-primary)] text-white rounded-2xl font-semibold text-lg md:text-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 mx-auto"
             style={{ letterSpacing: '-0.01em' }}
           >
             Explore More
