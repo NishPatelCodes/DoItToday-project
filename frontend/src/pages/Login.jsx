@@ -406,70 +406,7 @@ const Login = () => {
                   </motion.div>
                 </AnimatePresence>
               </div>
-          </motion.div>
-
-          {/* Right Side - Login Form */}
-          <motion.div
-            variants={itemVariants}
-            className="w-full max-w-md lg:max-w-sm"
-          >
-            {/* Mobile Logo & Quote - Enhanced for dark mode */}
-            <div className="lg:hidden text-center mb-8 space-y-4">
-              <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-3xl font-bold gradient-text tracking-tight"
-                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-              >
-                DoItToday
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-base text-[var(--text-secondary)] dark:text-[#D1D5DB] font-normal"
-                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-              >
-                Organize your day. Achieve more.
-              </motion.p>
-              
-              {/* Mobile Quote - Enhanced for dark mode */}
-              <div className="relative min-h-[100px] flex items-center justify-center mt-4">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={quoteKey}
-                    variants={quoteVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="absolute"
-                  >
-                    <div className="space-y-2 text-center">
-                      <div className="flex items-center justify-center gap-2 text-[var(--accent-primary)] dark:text-[#A5B4FC]">
-                        <FiStar className="w-3.5 h-3.5 drop-shadow-[0_0_6px_rgba(129,140,248,0.4)]" />
-                        <span 
-                          className="text-xs font-semibold uppercase tracking-widest"
-                          style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '0.1em' }}
-                        >
-                          Daily Inspiration
-                        </span>
-                      </div>
-                      <p 
-                        className="text-base font-light text-[var(--text-primary)] dark:text-[#F5F5F5] italic leading-relaxed px-4"
-                        style={{ 
-                          fontFamily: 'Inter, system-ui, sans-serif',
-                          letterSpacing: '-0.01em'
-                        }}
-                      >
-                        "{currentQuote}"
-                      </p>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
             </div>
-        </div>
 
             {/* Refined Login Card */}
             <motion.div
