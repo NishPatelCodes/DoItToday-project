@@ -529,7 +529,16 @@ const Dashboard = () => {
   };
 
   const pendingTasks = Array.isArray(tasks) ? tasks.filter((t) => t.status === 'pending') : [];
-  const completedTasks = Array.isArray(tasks) ? tasks.filter((t) => t.status === 'completed') : [];
+  const completedTasks = Array.isArray(tasks) 
+    ? tasks
+        .filter((t) => t.status === 'completed')
+        .sort((a, b) => {
+          // Sort by completedAt (most recent first), fallback to updatedAt or createdAt
+          const dateA = new Date(a.completedAt || a.updatedAt || a.createdAt || 0);
+          const dateB = new Date(b.completedAt || b.updatedAt || b.createdAt || 0);
+          return dateB - dateA; // Descending order (newest first)
+        })
+    : [];
   const activeGoals = Array.isArray(goals) ? goals.filter((g) => (g.progress || 0) < 100) : [];
 
   if (loading && tasks.length === 0) {
