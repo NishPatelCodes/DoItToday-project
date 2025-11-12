@@ -66,26 +66,28 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const sidebarContent = (
     <>
-      {/* Logo */}
-      <div className="p-4 md:p-6 border-b border-[var(--border-color)]">
+      {/* Logo - Apple-style */}
+      <div className="p-5 md:p-7 border-b border-[var(--border-color)]">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg md:text-xl font-bold gradient-text">DoItToday</h1>
-            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">Task Manager</p>
+            <h1 className="text-xl md:text-2xl font-bold gradient-text" style={{ letterSpacing: '-0.02em' }}>DoItToday</h1>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1.5 font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>Task Manager</p>
           </div>
           {/* Close button for mobile */}
-          <button
+          <motion.button
             onClick={onClose}
-            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors rounded-lg"
             aria-label="Close navigation menu"
           >
             <FaTimes className="text-lg" />
-          </button>
+          </motion.button>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 md:p-4 space-y-1">
+      {/* Navigation - Apple-style */}
+      <nav className="flex-1 overflow-y-auto p-3 md:p-5 space-y-1.5">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -97,15 +99,15 @@ const Sidebar = ({ isOpen, onClose }) => {
               }
             }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 ${
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
                 isActive
-                  ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20'
+                  ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 shadow-sm'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
               }`
             }
           >
-            <item.icon className="text-base md:text-base" />
-            <span className="text-sm md:text-sm font-medium">{item.label}</span>
+            <item.icon className="text-lg" />
+            <span className="text-sm md:text-base font-medium" style={{ letterSpacing: '-0.01em' }}>{item.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -129,11 +131,11 @@ const Sidebar = ({ isOpen, onClose }) => {
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
+      {/* Sidebar - Apple-style */}
       <aside className={`
         sidebar-mobile
-        w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
-        transform transition-transform duration-300 ease-in-out
+        w-64 bg-[var(--bg-secondary)]/95 backdrop-blur-xl border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
+        transform transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]
         md:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>

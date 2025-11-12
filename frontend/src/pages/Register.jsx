@@ -114,16 +114,32 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--bg-primary)]">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--bg-primary)] relative overflow-hidden">
+      {/* Apple-inspired background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.1, 0.2, 0.1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[var(--accent-primary)]/8 rounded-full blur-3xl"
+        />
+      </div>
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="card p-8 w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.96, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="relative glass-card p-8 md:p-10 w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold gradient-text mb-2">DoItToday</h1>
-          <p className="text-[var(--text-secondary)]">Create your account to get started</p>
+          <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-3" style={{ letterSpacing: '-0.02em' }}>DoItToday</h1>
+          <p className="text-base md:text-lg text-[var(--text-secondary)] font-light" style={{ letterSpacing: '-0.01em', fontWeight: 300 }}>Create your account to get started</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -138,7 +154,7 @@ const Register = () => {
           )}
 
           <div>
-            <label htmlFor="register-name" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="register-name" className="block text-sm font-semibold text-[var(--text-primary)] mb-2" style={{ letterSpacing: '-0.01em' }}>
               Name
             </label>
             <input
@@ -152,7 +168,7 @@ const Register = () => {
                 }
                 setError('');
               }}
-              className={`input-field ${errors.name ? 'border-red-500' : ''}`}
+              className={`input-field ${errors.name ? 'border-red-400 bg-red-50/50' : ''}`}
               placeholder="Your name"
               required
               autoComplete="name"
@@ -253,13 +269,15 @@ const Register = () => {
             )}
           </div>
 
-          <button
+          <motion.button
             type="submit"
             disabled={loading}
+            whileHover={loading ? {} : { scale: 1.02, y: -1 }}
+            whileTap={loading ? {} : { scale: 0.98 }}
             className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
+          </motion.button>
         </form>
 
         {/* Divider */}
