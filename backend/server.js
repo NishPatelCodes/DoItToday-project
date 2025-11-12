@@ -16,6 +16,8 @@ import oauthRoutes from './routes/oauth.js';
 import gratitudeRoutes from './routes/gratitude.js';
 import adminRoutes from './routes/admin.js';
 import notesRoutes from './routes/notes.js';
+import challengesRoutes from './routes/challenges.js';
+import financeRoutes from './routes/finance.js';
 
 dotenv.config();
 
@@ -78,6 +80,8 @@ app.use('/api/smart-planner', smartPlannerRoutes);
 app.use('/api/gratitude', gratitudeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/challenges', challengesRoutes);
+app.use('/api/finance', financeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

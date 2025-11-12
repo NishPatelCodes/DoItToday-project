@@ -226,8 +226,9 @@ export const habitsAPI = {
 // Focus API
 export const focusAPI = {
   start: (data) => api.post('/focus/start', data),
-  complete: (id) => api.put(`/focus/${id}/complete`),
+  complete: (id, data) => api.put(`/focus/${id}/complete`, data),
   getHistory: () => api.get('/focus/history'),
+  getStats: () => api.get('/focus/stats'),
 };
 
 // Reactions API
@@ -272,6 +273,32 @@ export const notesAPI = {
   update: (id, data) => api.put(`/notes/${id}`, data),
   delete: (id) => api.delete(`/notes/${id}`),
   getAllTags: () => api.get('/notes/tags/all'),
+};
+
+// Challenges API
+export const challengesAPI = {
+  getAll: () => api.get('/challenges'),
+  getActive: () => api.get('/challenges/active'),
+  getCompleted: () => api.get('/challenges/completed'),
+  create: (data) => api.post('/challenges', data),
+  createPremade: (challengeType) => api.post('/challenges/premade', { challengeType }),
+  checkIn: (id, data) => api.post(`/challenges/${id}/checkin`, data),
+  update: (id, data) => api.put(`/challenges/${id}`, data),
+  delete: (id) => api.delete(`/challenges/${id}`),
+  restart: (id) => api.post(`/challenges/${id}/restart`),
+};
+
+// Finance API
+export const financeAPI = {
+  getAll: () => api.get('/finance'),
+  getStats: () => api.get('/finance/stats'),
+  addTransaction: (data) => api.post('/finance/transactions', data),
+  updateTransaction: (id, data) => api.put(`/finance/transactions/${id}`, data),
+  deleteTransaction: (id) => api.delete(`/finance/transactions/${id}`),
+  addSavingsGoal: (data) => api.post('/finance/savings-goals', data),
+  updateSavingsGoal: (id, data) => api.put(`/finance/savings-goals/${id}`, data),
+  deleteSavingsGoal: (id) => api.delete(`/finance/savings-goals/${id}`),
+  updateMonthlyBudget: (data) => api.put('/finance/monthly-budget', data),
 };
 
 export default api;

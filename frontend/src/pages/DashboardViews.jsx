@@ -7,10 +7,11 @@ import GoalAnalytics from '../components/GoalAnalytics';
 import HabitCard from '../components/HabitCard';
 import SmartPlanner from '../components/SmartPlanner';
 import FocusMode from '../components/FocusMode';
-import XPLevel from '../components/XPLevel';
+import DisciplinePoints from '../components/DisciplinePoints';
 import GraphCard from '../components/GraphCard';
 import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
+import DashboardSummary from '../components/DashboardSummary';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 
@@ -48,6 +49,9 @@ export const DashboardHome = ({
           Here's your productivity overview for today
         </p>
       </div>
+
+      {/* Dashboard Summary */}
+      <DashboardSummary user={user} streak={user?.streak || 0} />
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
@@ -193,8 +197,8 @@ export const DashboardHome = ({
 
         {/* Sidebar */}
         <div className="space-y-4 md:space-y-6">
-          {/* XP Level */}
-          <XPLevel xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
+          {/* Discipline Points */}
+          <DisciplinePoints xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
 
           {/* Active Goals */}
           <div className="card p-4 md:p-6">
@@ -1023,7 +1027,7 @@ export const DashboardTeam = ({
                         )}
                       </div>
                       <p className="text-xs text-[var(--text-secondary)]">
-                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} XP • Level {leaderboardUser.level || 1}
+                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} DP • Level {leaderboardUser.level || 1}
                       </p>
                     </div>
                   </div>

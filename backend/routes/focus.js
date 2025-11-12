@@ -29,27 +29,30 @@ router.post('/start', authenticate, async (req, res) => {
 // @desc    Complete a focus session
 router.put('/:id/complete', authenticate, async (req, res) => {
   try {
+    const { completedDuration } = req.body;
     const session = await FocusSession.findOne({ _id: req.params.id, userId: req.user._id });
 
     if (!session) {
       return res.status(404).json({ message: 'Session not found' });
     }
 
-    session.completed = true;
-    session.completedAt = new Date();
+    session.status = 'completed';
+    session.endTime = new Date();
+    session.completedDuration = completedDuration || session.duration;
+    
+    // Calculate DP earned
+    session.calculateDP();
     await session.save();
 
-    // Award XP for completing focus session
+    // Award Discipline Points for completing focus session
     const User = (await import('../models/User.js')).default;
     const user = await User.findById(req.user._id);
     
-    // Calculate XP based on session duration
-    const durationMinutes = session.duration || 0;
-    let xpAmount = durationMinutes >= 25 ? XP_REWARDS.FOCUS_SESSION_LONG : XP_REWARDS.FOCUS_SESSION;
-    
-    // Apply streak multiplier
-    const xpWithBonus = calculateXPWithBonus(xpAmount, user.streak || 0);
-    await awardXP(user, xpWithBonus, `Focus session completed (${durationMinutes} min)`);
+    if (user && session.dpEarned > 0) {
+      // Apply streak multiplier
+      const dpWithBonus = calculateXPWithBonus(session.dpEarned, user.streak || 0);
+      await awardXP(user, dpWithBonus, `Focus session completed (${session.completedDuration} min)`);
+    }
 
     res.json(session);
   } catch (error) {
@@ -62,11 +65,43 @@ router.put('/:id/complete', authenticate, async (req, res) => {
 router.get('/history', authenticate, async (req, res) => {
   try {
     const sessions = await FocusSession.find({ userId: req.user._id })
-      .sort({ startedAt: -1 })
+      .sort({ startTime: -1 })
       .limit(50)
+      .populate('taskId', 'title')
       .exec();
 
     res.json(sessions);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   GET /api/focus/stats
+// @desc    Get focus session statistics
+router.get('/stats', authenticate, async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+    const sessionsThisWeek = await FocusSession.find({
+      userId: req.user._id,
+      status: 'completed',
+      startTime: { $gte: startOfWeek, $lte: endOfWeek },
+    });
+
+    const totalMinutes = sessionsThisWeek.reduce((sum, s) => sum + (s.completedDuration || s.duration), 0);
+    const totalSessions = sessionsThisWeek.length;
+    const totalDP = sessionsThisWeek.reduce((sum, s) => sum + (s.dpEarned || 0), 0);
+
+    res.json({
+      totalMinutes,
+      totalSessions,
+      totalDP,
+      averageSessionLength: totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
