@@ -16,6 +16,11 @@ const loadThemeFromStorage = () => {
 
 const initialTheme = loadThemeFromStorage();
 
+// Initialize theme attribute on document immediately
+if (typeof document !== 'undefined') {
+  document.documentElement.setAttribute('data-theme', initialTheme);
+}
+
 export const useThemeStore = create((set, get) => ({
   theme: initialTheme,
   toggleTheme: () => {

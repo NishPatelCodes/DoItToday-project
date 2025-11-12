@@ -288,6 +288,19 @@
     box-shadow: none !important;
   }
 
+  /* Ensure input text is always visible */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    color: var(--text-primary) !important;
+  }
+
+  html[data-theme='dark'] input[type="text"],
+  html[data-theme='dark'] input[type="email"],
+  html[data-theme='dark'] input[type="password"] {
+    color: #F5F5F5 !important;
+  }
+
   /* Notes editor specific styles */
   .note-editor input,
   .note-editor textarea {
