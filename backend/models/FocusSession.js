@@ -6,36 +6,55 @@ const focusSessionSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  taskId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Task',
-    default: null,
-  },
   duration: {
-    type: Number,
+    type: Number, // in minutes
     required: true,
-    default: 25, // Pomodoro default: 25 minutes
   },
-  completed: {
-    type: Boolean,
-    default: false,
+  completedDuration: {
+    type: Number, // in minutes
+    default: 0,
   },
-  startedAt: {
+  startTime: {
     type: Date,
     default: Date.now,
   },
-  completedAt: {
+  endTime: {
     type: Date,
-    default: null,
+  },
+  status: {
+    type: String,
+    enum: ['active', 'completed', 'paused', 'abandoned'],
+    default: 'active',
   },
   ambientMode: {
     type: String,
-    enum: ['silent', 'rain', 'ocean', 'forest', 'coffee'],
     default: 'silent',
+  },
+  taskId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task',
+  },
+  dpEarned: {
+    type: Number,
+    default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 
+// Calculate DP earned based on duration
+focusSessionSchema.methods.calculateDP = function () {
+  const minutes = this.completedDuration || this.duration;
+  if (minutes >= 25) {
+    this.dpEarned = 20; // Long session
+  } else if (minutes >= 15) {
+    this.dpEarned = 15;
+  } else {
+    this.dpEarned = 10; // Short session
+  }
+  return this.dpEarned;
+};
+
 export default mongoose.model('FocusSession', focusSessionSchema);
-
-
-

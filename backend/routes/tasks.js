@@ -3,75 +3,9 @@ import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
+import { awardXP, deductXP, XP_REWARDS, calculateXPWithBonus } from '../utils/xpSystem.js';
 
 const router = express.Router();
-
-// Helper function to check and deduct XP for overdue tasks
-const checkOverdueTasks = async (userId) => {
-  try {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Set to start of day for date comparison
-    
-    // Get all pending tasks with due dates that haven't been marked overdue
-    const tasks = await Task.find({
-      userId: userId,
-      status: 'pending',
-      dueDate: { $exists: true, $ne: null },
-      isOverdue: false, // Only check tasks that haven't been marked overdue yet
-    });
-    
-    // Filter tasks where due date has passed (comparing dates only, not time)
-    const overdueTasks = tasks.filter(task => {
-      if (!task.dueDate) return false;
-      const dueDate = new Date(task.dueDate);
-      dueDate.setHours(0, 0, 0, 0);
-      return dueDate < now;
-    });
-
-    if (overdueTasks.length === 0) {
-      return { deducted: 0, tasksChecked: 0 };
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return { deducted: 0, tasksChecked: 0 };
-    }
-
-    let totalXpDeducted = 0;
-    let tasksUpdated = 0;
-
-    for (const task of overdueTasks) {
-      // Fixed XP deduction: -10 XP for overdue tasks
-      const xpToDeduct = 10;
-      
-      // Deduct XP (ensure it doesn't go below 0)
-      const previousXp = user.xp;
-      user.xp = Math.max(0, user.xp - xpToDeduct);
-      totalXpDeducted += previousXp - user.xp;
-      
-      // Update task
-      task.isOverdue = true;
-      task.xpDeducted = xpToDeduct;
-      task.lastXpCheck = now;
-      await task.save();
-      
-      tasksUpdated++;
-    }
-
-    // Check if level needs to be reduced
-    const previousLevelThreshold = (user.level - 1) * 100;
-    if (user.xp < previousLevelThreshold && user.level > 1) {
-      user.level -= 1;
-    }
-
-    await user.save();
-
-    return { deducted: totalXpDeducted, tasksChecked: tasksUpdated };
-  } catch (error) {
-    console.error('Error checking overdue tasks:', error);
-    return { deducted: 0, tasksChecked: 0 };
-  }
-};
 
 // @route   GET /api/tasks
 // @desc    Get all tasks for the authenticated user (including shared tasks)
@@ -96,9 +30,6 @@ router.get('/', authenticate, async (req, res) => {
       .populate('goalId', 'title progress')
       .sort({ createdAt: -1 })
       .exec();
-
-    // Check for overdue tasks and deduct XP (only for own tasks)
-    await checkOverdueTasks(req.user._id);
 
     // Combine and return
     const allTasks = [...ownTasks, ...sharedTasks].sort((a, b) => 
@@ -240,57 +171,66 @@ router.put('/:id', authenticate, async (req, res) => {
         const completingUser = await User.findById(req.user._id);
         completingUser.totalTasksCompleted += 1;
         
-        // Check if task is completed on time (before or on due date)
-        const now = new Date();
-        let isOnTime = true;
-        if (task.dueDate) {
-          const dueDate = new Date(task.dueDate);
-          // Compare dates (ignore time for due date comparison)
-          dueDate.setHours(23, 59, 59, 999); // Set to end of due date
-          isOnTime = now <= dueDate;
+        // Award XP based on priority with streak bonus
+        const baseXP = task.priority === 'high' ? XP_REWARDS.TASK_HIGH : 
+                      task.priority === 'medium' ? XP_REWARDS.TASK_MEDIUM : 
+                      XP_REWARDS.TASK_LOW;
+        const xpWithBonus = calculateXPWithBonus(baseXP, completingUser.streak || 0);
+        
+        const xpResult = await awardXP(
+          completingUser, 
+          xpWithBonus, 
+          `Completed ${task.priority} priority task`
+        );
+        
+        // Store level up status for response
+        let levelUpMessage = '';
+        if (xpResult.levelUp) {
+          levelUpMessage = ` 🎉 Level up! You're now level ${xpResult.newLevel}!`;
         }
         
-        // Fixed XP award: +20 XP for completing a task (only if completed on time)
-        let xpAward = 0;
-        if (isOnTime) {
-          xpAward = 20; // Fixed amount: +20 XP
-          completingUser.xp += xpAward;
-          task.xpAwarded = xpAward;
-        } else {
-          // Task is overdue - no XP awarded
-          task.xpAwarded = 0;
+        // Check for daily bonuses (only check once to avoid duplicate awards)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const userTasks = await Task.find({ 
+          userId: req.user._id,
+          status: 'completed',
+          completedAt: { $gte: today }
+        });
+        
+        // First task of the day bonus
+        if (userTasks.length === 1) {
+          const firstTaskBonus = await awardXP(completingUser, XP_REWARDS.FIRST_TASK_OF_DAY, 'First task of the day');
+          if (firstTaskBonus.levelUp && !xpResult.levelUp) {
+            levelUpMessage = ` 🎉 Level up! You're now level ${firstTaskBonus.newLevel}!`;
+          }
         }
         
-        // If task was overdue but now completed, remove the overdue status
-        if (task.isOverdue) {
-          task.isOverdue = false;
+        // Check if all tasks are completed (daily bonus)
+        const allTasks = await Task.find({ userId: req.user._id });
+        const pendingTasks = allTasks.filter(t => t.status === 'pending');
+        if (pendingTasks.length === 0 && allTasks.length > 0) {
+          const allTasksBonus = await awardXP(completingUser, XP_REWARDS.ALL_TASKS_COMPLETE, 'All tasks completed today');
+          if (allTasksBonus.levelUp && !xpResult.levelUp && !levelUpMessage) {
+            levelUpMessage = ` 🎉 Level up! You're now level ${allTasksBonus.newLevel}!`;
+          }
         }
         
-        // Level up if XP threshold reached
-        const xpNeededForNextLevel = completingUser.level * 100;
-        if (completingUser.xp >= xpNeededForNextLevel) {
-          completingUser.level += 1;
-        }
-        
-        await completingUser.save();
+        // Add XP info to response for frontend notification
+        res.locals.xpGained = xpResult.xpGained;
+        res.locals.levelUp = xpResult.levelUp;
+        res.locals.levelUpMessage = levelUpMessage;
       } else if (status === 'pending' && wasCompleted) {
         task.completedAt = null;
         const completingUser = await User.findById(req.user._id);
         completingUser.totalTasksCompleted = Math.max(0, completingUser.totalTasksCompleted - 1);
         
-        // Deduct XP that was awarded when task was completed (only if XP was awarded)
-        if (task.xpAwarded > 0) {
-          completingUser.xp = Math.max(0, completingUser.xp - task.xpAwarded);
-          task.xpAwarded = 0;
-        }
+        // Deduct XP when task is uncompleted (base XP only, no bonus)
+        const baseXP = task.priority === 'high' ? XP_REWARDS.TASK_HIGH : 
+                      task.priority === 'medium' ? XP_REWARDS.TASK_MEDIUM : 
+                      XP_REWARDS.TASK_LOW;
         
-        // Check if level needs to be reduced (if XP falls below previous level threshold)
-        const previousLevelThreshold = (completingUser.level - 1) * 100;
-        if (completingUser.xp < previousLevelThreshold && completingUser.level > 1) {
-          completingUser.level -= 1;
-        }
-        
-        await completingUser.save();
+        await deductXP(completingUser, baseXP, `Uncompleted ${task.priority} priority task`);
       }
     }
 

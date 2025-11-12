@@ -21,7 +21,7 @@ import {
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
 import { authAPI, friendsAPI, analyticsAPI, tasksAPI, goalsAPI } from '../services/api';
-import XPLevel from './XPLevel';
+import DisciplinePoints from './DisciplinePoints';
 import GraphCard from './GraphCard';
 import TaskCard from './TaskCard';
 import RankFrame from './RankFrame';
@@ -225,8 +225,8 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
       {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* XP Level Card */}
-          <XPLevel
+          {/* Discipline Points Card */}
+          <DisciplinePoints
             xp={user?.xp || 0}
             level={user?.level || 1}
             streak={user?.streak || 0}

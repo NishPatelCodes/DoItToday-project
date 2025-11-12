@@ -2,6 +2,7 @@ import express from 'express';
 import Goal from '../models/Goal.js';
 import User from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
+import { awardXP, XP_REWARDS, calculateXPWithBonus } from '../utils/xpSystem.js';
 
 const router = express.Router();
 
@@ -53,6 +54,9 @@ router.put('/:id', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Goal not found' });
     }
 
+    const oldProgress = goal.progress || 0;
+    const wasCompleted = oldProgress >= 100;
+    
     if (title !== undefined) goal.title = title;
     if (description !== undefined) goal.description = description;
     if (progress !== undefined) goal.progress = Math.max(0, Math.min(100, progress));
@@ -61,6 +65,31 @@ router.put('/:id', authenticate, async (req, res) => {
     if (isShared !== undefined) goal.isShared = isShared;
 
     await goal.save();
+    
+    // Award XP for goal progress milestones and completion (only on increase)
+    if (progress !== undefined && progress > oldProgress) {
+      const user = await User.findById(req.user._id);
+      const newProgress = goal.progress;
+      const newCompleted = newProgress >= 100;
+      
+      // Only award completion XP once (when crossing 100%)
+      if (newCompleted && !wasCompleted) {
+        const xpWithBonus = calculateXPWithBonus(XP_REWARDS.GOAL_COMPLETION, user.streak || 0);
+        await awardXP(user, xpWithBonus, `Goal completed: ${goal.title}`);
+      } 
+      // Award milestone XP only when crossing milestone thresholds (25%, 50%, 75%)
+      else if (!newCompleted) {
+        const oldMilestone = Math.floor(oldProgress / 25);
+        const newMilestone = Math.floor(newProgress / 25);
+        
+        // Only award if we crossed a milestone threshold
+        if (newMilestone > oldMilestone && newMilestone < 4) {
+          const xpWithBonus = calculateXPWithBonus(XP_REWARDS.GOAL_MILESTONE, user.streak || 0);
+          await awardXP(user, xpWithBonus, `Goal milestone: ${newMilestone * 25}%`);
+        }
+      }
+    }
+    
     res.json(goal);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

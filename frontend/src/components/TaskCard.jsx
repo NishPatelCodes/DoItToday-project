@@ -166,6 +166,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
             <button
               onClick={() => onEdit(task)}
               className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+              aria-label={`Edit task: ${task.title}`}
             >
               <FaEdit />
             </button>
@@ -173,6 +174,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+            aria-label={`Delete task: ${task.title}`}
           >
             <FaTrash />
           </button>

@@ -7,10 +7,12 @@ import GoalAnalytics from '../components/GoalAnalytics';
 import HabitCard from '../components/HabitCard';
 import SmartPlanner from '../components/SmartPlanner';
 import FocusMode from '../components/FocusMode';
-import XPLevel from '../components/XPLevel';
+import DisciplinePoints from '../components/DisciplinePoints';
 import GraphCard from '../components/GraphCard';
 import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
+import DashboardSummary from '../components/DashboardSummary';
+import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 
 // Dashboard Home View
@@ -47,6 +49,9 @@ export const DashboardHome = ({
           Here's your productivity overview for today
         </p>
       </div>
+
+      {/* Dashboard Summary */}
+      <DashboardSummary user={user} streak={user?.streak || 0} />
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
@@ -159,19 +164,32 @@ export const DashboardHome = ({
               <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Recent Tasks</h2>
             </div>
             <div className="space-y-2">
-              {pendingTasks.slice(0, 5).map((task) => (
-                <TaskCard
-                  key={task._id}
-                  task={task}
-                  onToggle={onToggleTask}
-                  onDelete={onDeleteTask}
-                  onEdit={onEditTask}
-                />
-              ))}
-              {pendingTasks.length === 0 && (
-                <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
-                  No pending tasks. Create one to get started!
-                </p>
+              {pendingTasks.length > 0 ? (
+                pendingTasks.slice(0, 5).map((task) => (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    onToggle={onToggleTask}
+                    onDelete={onDeleteTask}
+                    onEdit={onEditTask}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <FaTasks className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+                  <p className="text-[var(--text-secondary)] mb-2 font-medium">No pending tasks</p>
+                  <p className="text-sm text-[var(--text-tertiary)] mb-4">Create one to get started!</p>
+                  <button
+                    onClick={() => {
+                      setEditingTask(null);
+                      setIsTaskModalOpen(true);
+                    }}
+                    className="btn-primary text-sm"
+                  >
+                    <FaPlus className="inline mr-2" />
+                    Create Task
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -179,8 +197,8 @@ export const DashboardHome = ({
 
         {/* Sidebar */}
         <div className="space-y-4 md:space-y-6">
-          {/* XP Level */}
-          <XPLevel xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
+          {/* Discipline Points */}
+          <DisciplinePoints xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
 
           {/* Active Goals */}
           <div className="card p-4 md:p-6">
@@ -260,19 +278,32 @@ export const DashboardTasks = ({
             Pending ({pendingTasks.length})
           </h2>
           <div className="space-y-2">
-            {pendingTasks.map((task) => (
-              <TaskCard
-                key={task._id}
-                task={task}
-                onToggle={onToggleTask}
-                onDelete={onDeleteTask}
-                onEdit={onEditTask}
-              />
-            ))}
-            {pendingTasks.length === 0 && (
-              <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
-                No pending tasks
-              </p>
+            {pendingTasks.length > 0 ? (
+              pendingTasks.map((task) => (
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  onToggle={onToggleTask}
+                  onDelete={onDeleteTask}
+                  onEdit={onEditTask}
+                />
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <FaTasks className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+                <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No pending tasks</p>
+                <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
+                <button
+                  onClick={() => {
+                    setEditingTask(null);
+                    setIsTaskModalOpen(true);
+                  }}
+                  className="btn-primary"
+                >
+                  <FaPlus className="inline mr-2" />
+                  Create Task
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -344,7 +375,19 @@ export const DashboardGoals = ({
         ))}
         {(!Array.isArray(goals) || goals.length === 0) && (
           <div className="col-span-2 card p-12 text-center">
-            <p className="text-[var(--text-secondary)]">No goals yet. Create one to get started!</p>
+            <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
+            <p className="text-sm text-[var(--text-tertiary)] mb-6">Set your first goal to start tracking your progress</p>
+            <button
+              onClick={() => {
+                setEditingGoal(null);
+                setIsGoalModalOpen(true);
+              }}
+              className="btn-primary"
+            >
+              <FaPlus className="inline mr-2" />
+              Create Goal
+            </button>
           </div>
         )}
       </div>
@@ -984,7 +1027,7 @@ export const DashboardTeam = ({
                         )}
                       </div>
                       <p className="text-xs text-[var(--text-secondary)]">
-                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} XP • Level {leaderboardUser.level || 1}
+                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} DP • Level {leaderboardUser.level || 1}
                       </p>
                     </div>
                   </div>
