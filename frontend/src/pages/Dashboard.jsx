@@ -554,62 +554,10 @@ const Dashboard = () => {
     return (
       <div className="flex min-h-screen bg-[var(--bg-primary)]">
         <Sidebar isOpen={false} onClose={() => {}} />
-        <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0 p-4 md:p-8" tabIndex="-1">
-          <div className="mb-6 md:mb-8">
-            <Skeleton width="40%" height={32} className="mb-2" />
-            <Skeleton width="60%" height={20} />
-          </div>
-          
-          {/* Stats Skeleton */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="card p-3 md:p-4">
-                <div className="flex items-center gap-3">
-                  <Skeleton width={40} height={40} rounded="lg" />
-                  <div className="space-y-2">
-                    <Skeleton width={60} height={14} />
-                    <Skeleton width={40} height={20} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-            <div className="lg:col-span-2 space-y-4 md:space-y-6">
-              {/* Smart Planner Skeleton */}
-              <div className="card p-4 md:p-6">
-                <Skeleton width="30%" height={24} className="mb-4" />
-                <Skeleton width="100%" height={100} />
-              </div>
-              
-              {/* Tasks Skeleton */}
-              <div className="card p-4 md:p-6">
-                <Skeleton width="25%" height={24} className="mb-4" />
-                <div className="space-y-2">
-                  {[1, 2, 3].map((i) => (
-                    <TaskCardSkeleton key={i} />
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4 md:space-y-6">
-              {/* Discipline Points Skeleton */}
-              <div className="card p-4 md:p-6">
-                <Skeleton width="100%" height={150} />
-              </div>
-              
-              {/* Goals Skeleton */}
-              <div className="card p-4 md:p-6">
-                <Skeleton width="30%" height={24} className="mb-4" />
-                <div className="space-y-3">
-                  {[1, 2].map((i) => (
-                    <GoalCardSkeleton key={i} />
-                  ))}
-                </div>
-              </div>
-            </div>
+        <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0 flex items-center justify-center" tabIndex="-1">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div>
+            <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
           </div>
         </main>
       </div>

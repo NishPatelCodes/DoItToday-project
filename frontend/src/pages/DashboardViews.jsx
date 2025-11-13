@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle } from 'react-icons/fa';
-import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays } from 'date-fns';
+import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaUser, FaStickyNote, FaCopy, FaTimes } from 'react-icons/fa';
+import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import GoalAnalytics from '../components/GoalAnalytics';
@@ -16,6 +16,7 @@ import DashboardSummary from '../components/DashboardSummary';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { notesAPI } from '../services/api';
 
 // Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
@@ -44,6 +45,61 @@ export const DashboardHome = ({
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [todaysPlanExpanded, setTodaysPlanExpanded] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
+  const [notes, setNotes] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Close menu and search on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.menu-container')) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
+
+  // Load notes for search
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      notesAPI.getAll({ search: searchQuery, archived: 'false' })
+        .then(res => setNotes(res.data || []))
+        .catch(() => setNotes([]));
+    } else {
+      setNotes([]);
+    }
+  }, [searchQuery]);
+
+  // Filter search results
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return { tasks: [], goals: [], notes: [] };
+    const query = searchQuery.toLowerCase();
+    return {
+      tasks: tasks.filter(t => 
+        t.title?.toLowerCase().includes(query) || 
+        t.description?.toLowerCase().includes(query)
+      ).slice(0, 5),
+      goals: goals.filter(g => 
+        g.title?.toLowerCase().includes(query) || 
+        g.description?.toLowerCase().includes(query)
+      ).slice(0, 5),
+      notes: notes.filter(n => 
+        n.title?.toLowerCase().includes(query) || 
+        n.content?.toLowerCase().includes(query)
+      ).slice(0, 5),
+    };
+  }, [searchQuery, tasks, goals, notes]);
+
+  // Get yesterday's tasks for "Same as yesterday" feature
+  const yesterdaysTasks = useMemo(() => {
+    const yesterday = subDays(new Date(), 1);
+    return tasks.filter(task => {
+      if (!task.dueDate) return false;
+      const taskDate = new Date(task.dueDate);
+      return isSameDay(taskDate, yesterday) && task.status === 'completed';
+    });
+  }, [tasks]);
 
   // Get today's tasks
   const todaysTasks = useMemo(() => {
@@ -93,84 +149,168 @@ export const DashboardHome = ({
   const todaysSpend = 0;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 xl:p-10 bg-[var(--bg-primary)] min-h-screen max-w-[1920px] mx-auto">
+    <div className="p-4 md:p-6 lg:p-8 xl:p-10 bg-[var(--bg-primary)] min-h-screen max-w-[1920px] mx-auto overflow-x-hidden">
       {/* Search Bar */}
-      <div className="mb-6">
+      <div className="mb-6 relative">
         <div className="relative">
           <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search tasks, goals, notes..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSearchResults(e.target.value.trim().length > 0);
+            }}
+            onFocus={() => setShowSearchResults(searchQuery.trim().length > 0)}
+            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
           />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setShowSearchResults(false);
+              }}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+            >
+              <FaTimes />
+            </button>
+          )}
         </div>
+
+        {/* Search Results Dropdown */}
+        <AnimatePresence>
+          {showSearchResults && (searchResults.tasks.length > 0 || searchResults.goals.length > 0 || searchResults.notes.length > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-full left-0 right-0 mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto"
+            >
+              {searchResults.tasks.length > 0 && (
+                <div className="p-4 border-b border-[var(--border-color)]">
+                  <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--text-secondary)]">
+                    <FaTasks />
+                    Tasks ({searchResults.tasks.length})
+                  </div>
+                  <div className="space-y-2">
+                    {searchResults.tasks.map(task => (
+                      <div
+                        key={task._id}
+                        onClick={() => {
+                          onEditTask(task);
+                          setSearchQuery('');
+                          setShowSearchResults(false);
+                        }}
+                        className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] cursor-pointer"
+                      >
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{task.title}</p>
+                        {task.description && (
+                          <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-1">{task.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {searchResults.goals.length > 0 && (
+                <div className="p-4 border-b border-[var(--border-color)]">
+                  <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--text-secondary)]">
+                    <FaBullseye />
+                    Goals ({searchResults.goals.length})
+                  </div>
+                  <div className="space-y-2">
+                    {searchResults.goals.map(goal => (
+                      <div
+                        key={goal._id}
+                        onClick={() => {
+                          onEditGoal(goal);
+                          setSearchQuery('');
+                          setShowSearchResults(false);
+                        }}
+                        className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] cursor-pointer"
+                      >
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{goal.title}</p>
+                        {goal.description && (
+                          <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-1">{goal.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {searchResults.notes.length > 0 && (
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--text-secondary)]">
+                    <FaStickyNote />
+                    Notes ({searchResults.notes.length})
+                  </div>
+                  <div className="space-y-2">
+                    {searchResults.notes.map(note => (
+                      <div
+                        key={note._id}
+                        onClick={() => {
+                          navigate('/dashboard/notes');
+                          setSearchQuery('');
+                          setShowSearchResults(false);
+                        }}
+                        className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] cursor-pointer"
+                      >
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{note.title || 'Untitled Note'}</p>
+                        {note.content && (
+                          <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-1">{note.content.replace(/<[^>]*>/g, '')}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Top Section: Today's Plan, Pending, Goals, Challenges - Improved desktop grid */}
-      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-        {/* Today's Plan Card */}
+      {/* Top Section: Today's Progress, Pending, Goals, Challenges - Improved desktop grid */}
+      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        {/* Today's Progress Bar Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-            <button
-              onClick={() => setTodaysPlanExpanded(!todaysPlanExpanded)}
-              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              {todaysPlanExpanded ? <FaChevronUp /> : <FaChevronDown />}
-            </button>
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Progress</h3>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-[var(--text-secondary)]">Tasks Completed</span>
+                <span className="text-sm font-semibold text-[var(--text-primary)]">
+                  {todaysTasks.filter(t => t.status === 'completed').length} / {todaysTasks.length}
+                </span>
+              </div>
+              <div className="w-full h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${todaysPlanProgress}%` }}
+                  transition={{ duration: 0.5 }}
+                  className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-blue-500 rounded-full"
+                />
+              </div>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">{todaysPlanProgress}% complete</p>
             </div>
-          <div className="flex items-center gap-4">
-            {/* Circular Progress */}
-            <div className="relative w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0">
-              <svg className="w-16 h-16 lg:w-20 lg:h-20 transform -rotate-90" viewBox="0 0 64 64">
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  className="text-gray-200 dark:text-gray-700"
-                />
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                  strokeDasharray={`${todaysPlanProgress * 1.76} 176`}
-                  className="text-[var(--accent-primary)] transition-all duration-500"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                {todaysPlanProgress === 100 ? (
-                  <span className="text-white text-xl lg:text-2xl">✓</span>
-                ) : (
-                  <span className="text-[var(--text-primary)] text-xs lg:text-sm font-semibold">{todaysPlanProgress}%</span>
+            {nextTask && (
+              <div className="pt-3 border-t border-[var(--border-color)]">
+                <p className="text-xs text-[var(--text-secondary)] mb-1">Next Task</p>
+                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
+                {nextTask.dueDate && (
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                    {format(new Date(nextTask.dueDate), 'h:mm a')}
+                  </p>
                 )}
               </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              {nextTask ? (
-                <>
-                  <p className="text-sm lg:text-base font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
-                  {nextTask.dueDate && (
-                    <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                      {format(new Date(nextTask.dueDate), 'h:mm a')}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-[var(--text-tertiary)]">No tasks for today</p>
-              )}
-            </div>
+            )}
           </div>
         </motion.div>
 
@@ -285,9 +425,78 @@ export const DashboardHome = ({
             <div className="flex items-center gap-2">
               <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
             </div>
-            <button className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
-              <FaEllipsisV />
-            </button>
+            <div className="relative menu-container">
+              <button 
+                onClick={() => setShowMenu(!showMenu)}
+                className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                <FaEllipsisV />
+              </button>
+              <AnimatePresence>
+                {showMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute right-0 top-full mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg z-10 min-w-[180px]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={() => {
+                        if (yesterdaysTasks.length > 0) {
+                          // Create first task from yesterday as template
+                          const firstTask = yesterdaysTasks[0];
+                          const newTask = {
+                            title: firstTask.title,
+                            description: firstTask.description,
+                            priority: firstTask.priority || 'medium',
+                            dueDate: new Date().toISOString(),
+                            status: 'pending',
+                          };
+                          setEditingTask(newTask);
+                          setIsTaskModalOpen(true);
+                          // Note: User can repeat this for other tasks
+                        }
+                        setShowMenu(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
+                        yesterdaysTasks.length > 0
+                          ? 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                          : 'text-[var(--text-tertiary)] cursor-not-allowed opacity-50'
+                      }`}
+                      disabled={yesterdaysTasks.length === 0}
+                      title={yesterdaysTasks.length > 0 ? `Copy ${yesterdaysTasks.length} task(s) from yesterday` : 'No completed tasks from yesterday'}
+                    >
+                      <FaCopy />
+                      Same as Yesterday
+                      {yesterdaysTasks.length > 0 && (
+                        <span className="ml-auto text-xs text-[var(--text-tertiary)]">({yesterdaysTasks.length})</span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate('/dashboard/tasks');
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2"
+                    >
+                      <FaTasks />
+                      View All Tasks
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTodaysPlanExpanded(!todaysPlanExpanded);
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2"
+                    >
+                      {todaysPlanExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                      {todaysPlanExpanded ? 'Collapse' : 'Expand'}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
           {todaysPlanExpanded && (
             <div className="space-y-3">
@@ -344,7 +553,7 @@ export const DashboardHome = ({
         </motion.div>
 
         {/* Right Side: Streak and Consistency */}
-        <div className="flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
+        <div className="flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
           {/* Streak Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -381,7 +590,7 @@ export const DashboardHome = ({
       </div>
 
       {/* Lower Middle Section: Focus Mode and Consistency */}
-      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
         {/* Focus Mode Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -422,7 +631,7 @@ export const DashboardHome = ({
           </div>
 
       {/* Bottom Section: Today's Spend and Quick Note */}
-      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
         {/* Today's Spend Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -861,11 +1070,11 @@ export const DashboardAnalytics = ({ analytics, tasks, goals, habits }) => {
   return (
     <div className="p-4 md:p-8 overflow-x-hidden">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
-        <p className="text-[var(--text-secondary)]">Track your productivity and progress</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
+        <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your productivity and progress</p>
           </div>
           
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:gap-6">
         {analytics?.taskCompletion && (
             <GraphCard
             title="Task Completion Over Time"
@@ -911,46 +1120,279 @@ export const DashboardAnalytics = ({ analytics, tasks, goals, habits }) => {
 };
 
 // Team View
-export const DashboardTeam = ({ friends, friendRequests, sentFriendRequests, leaderboard }) => {
+export const DashboardTeam = ({ 
+  friends = [], 
+  friendRequests = [], 
+  sentFriendRequests = [], 
+  leaderboard = [],
+  onAddFriend,
+  onRemoveFriend,
+  onAcceptFriendRequest,
+  onDeclineFriendRequest,
+  onCancelFriendRequest,
+  currentUser
+}) => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('friends');
+
+  // Get user rank from leaderboard
+  const userRank = useMemo(() => {
+    if (!currentUser || !leaderboard.length) return null;
+    const userId = currentUser._id || currentUser.id;
+    const rankIndex = leaderboard.findIndex(
+      (user) => (user._id || user.id)?.toString() === userId?.toString()
+    );
+    return rankIndex !== -1 ? rankIndex + 1 : null;
+  }, [leaderboard, currentUser]);
+
   return (
     <div className="p-4 md:p-8 overflow-x-hidden">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Team</h1>
-        <p className="text-[var(--text-secondary)]">Connect with friends and compete on the leaderboard</p>
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Team</h1>
+        <p className="text-sm md:text-base text-[var(--text-secondary)]">Connect with friends and compete on the leaderboard</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 border-b border-[var(--border-color)]">
+        <button
+          onClick={() => setActiveTab('friends')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'friends'
+              ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          }`}
+        >
+          Friends ({friends.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('requests')}
+          className={`px-4 py-2 font-medium transition-colors relative ${
+            activeTab === 'requests'
+              ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          }`}
+        >
+          Requests
+          {(friendRequests.length > 0 || sentFriendRequests.length > 0) && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('leaderboard')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'leaderboard'
+              ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          }`}
+        >
+          Leaderboard
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <FriendStatus
-          friends={friends}
-          friendRequests={friendRequests}
-          sentFriendRequests={sentFriendRequests}
-        />
-
-        {leaderboard && leaderboard.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
-            <div className="space-y-3">
-              {leaderboard.map((user, index) => (
-                <div
-                  key={user._id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
+        {/* Friends List */}
+        {activeTab === 'friends' && (
+          <div className="card p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">My Friends</h2>
+              {onAddFriend && (
+                <button
+                  onClick={onAddFriend}
+                  className="btn-primary flex items-center gap-2 px-3 py-1.5 text-sm"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center font-semibold">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
-                      <p className="text-sm text-[var(--text-secondary)]">{user.xp || 0} XP</p>
+                  <FaPlus />
+                  Add Friend
+                </button>
+              )}
+            </div>
+            {friends.length > 0 ? (
+              <div className="space-y-3">
+                {friends.map((friend, index) => {
+                  const friendRank = leaderboard.findIndex(
+                    (u) => (u._id || u.id)?.toString() === (friend._id || friend.id)?.toString()
+                  ) + 1;
+                  return (
+                    <FriendStatus
+                      key={friend._id || friend.id}
+                      friend={friend}
+                      onRemove={onRemoveFriend}
+                      rank={friendRank || null}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-[var(--text-tertiary)]">
+                <FaUserFriends className="text-4xl mx-auto mb-3 opacity-50" />
+                <p>No friends yet</p>
+                {onAddFriend && (
+                  <button
+                    onClick={onAddFriend}
+                    className="btn-primary mt-4"
+                  >
+                    Add Your First Friend
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Friend Requests */}
+        {activeTab === 'requests' && (
+          <div className="space-y-6">
+            {/* Incoming Requests */}
+            {friendRequests.length > 0 && (
+              <div className="card p-4 md:p-6">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Incoming Requests</h2>
+                <div className="space-y-3">
+                  {friendRequests.map((request) => (
+                    <div
+                      key={request._id || request.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                          {request.name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div>
+                          <p className="font-medium text-[var(--text-primary)]">{request.name || request.email}</p>
+                          <p className="text-xs text-[var(--text-secondary)]">Wants to be friends</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onAcceptFriendRequest && onAcceptFriendRequest(request._id || request.id)}
+                          className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => onDeclineFriendRequest && onDeclineFriendRequest(request._id || request.id)}
+                          className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                        >
+                          Decline
+                        </button>
                       </div>
                     </div>
-                  {index === 0 && <FaTrophy className="text-yellow-500" />}
-                  </div>
-              ))}
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sent Requests */}
+            {sentFriendRequests.length > 0 && (
+              <div className="card p-4 md:p-6">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Sent Requests</h2>
+                <div className="space-y-3">
+                  {sentFriendRequests.map((request) => (
+                    <div
+                      key={request._id || request.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                          {request.name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div>
+                          <p className="font-medium text-[var(--text-primary)]">{request.name || request.email}</p>
+                          <p className="text-xs text-[var(--text-secondary)]">Pending</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => onCancelFriendRequest && onCancelFriendRequest(request._id || request.id)}
+                        className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {friendRequests.length === 0 && sentFriendRequests.length === 0 && (
+              <div className="card p-8 text-center text-[var(--text-tertiary)]">
+                <p>No pending requests</p>
+              </div>
+            )}
           </div>
-        </div>
-          )}
-        </div>
+        )}
+
+        {/* Leaderboard */}
+        {activeTab === 'leaderboard' && (
+          <div className="card p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
+            {leaderboard && leaderboard.length > 0 ? (
+              <div className="space-y-3">
+                {leaderboard.map((user, index) => {
+                  const isCurrentUser = currentUser && (
+                    (user._id || user.id)?.toString() === (currentUser._id || currentUser.id)?.toString()
+                  );
+                  return (
+                    <div
+                      key={user._id || user.id}
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        isCurrentUser 
+                          ? 'bg-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)]' 
+                          : 'bg-[var(--bg-tertiary)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
+                          index === 0 
+                            ? 'bg-yellow-500 text-white' 
+                            : index === 1
+                            ? 'bg-gray-400 text-white'
+                            : index === 2
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-[var(--accent-primary)] text-white'
+                        }`}>
+                          {index === 0 ? <FaTrophy /> : index + 1}
+                        </div>
+                        <div>
+                          <p className={`font-medium ${isCurrentUser ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                            {user.name} {isCurrentUser && '(You)'}
+                          </p>
+                          <p className="text-sm text-[var(--text-secondary)]">
+                            {user.xp || 0} XP • Level {user.level || 1}
+                          </p>
+                        </div>
+                      </div>
+                      {index === 0 && <FaTrophy className="text-yellow-500 text-xl" />}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-[var(--text-tertiary)]">
+                <FaTrophy className="text-4xl mx-auto mb-3 opacity-50" />
+                <p>No leaderboard data yet</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Your Rank Card */}
+        {userRank && activeTab === 'leaderboard' && (
+          <div className="card p-4 md:p-6 bg-gradient-to-br from-[var(--accent-primary)]/10 to-[var(--accent-primary)]/5">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Your Rank</h3>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-2xl">
+                {userRank}
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-[var(--text-primary)]">
+                  {currentUser?.xp || 0} XP
+                </p>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Level {currentUser?.level || 1}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

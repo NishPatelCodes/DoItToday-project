@@ -243,7 +243,7 @@ const NotesView = () => {
 
   return (
     <div className="w-full flex flex-col" style={{ height: '100%', minHeight: 'calc(100vh - 4rem)' }}>
-      <div className="p-4 md:p-6 md:p-8 flex flex-col flex-1 min-h-0">
+      <div className="p-4 md:p-6 lg:p-8 flex flex-col flex-1 min-h-0 overflow-hidden">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between flex-shrink-0">
         <div>
@@ -265,7 +265,7 @@ const NotesView = () => {
 
       <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 overflow-hidden">
         {/* Sidebar - Notes List */}
-        <div className={`w-full ${!isMobile ? 'md:w-80 lg:w-96 md:border-r md:border-[var(--border-color)] md:pr-6' : ''} flex flex-col ${isMobile && (selectedNote || isCreating) ? 'hidden' : ''}`} style={{ maxHeight: '100%', minHeight: 0 }}>
+        <div className={`w-full ${!isMobile ? 'md:w-80 lg:w-96 md:border-r md:border-[var(--border-color)] md:pr-6' : ''} flex flex-col ${isMobile && (selectedNote || isCreating) ? 'hidden' : ''}`} style={{ maxHeight: '100%', minHeight: 0, overflow: 'hidden' }}>
           {/* Search and Filters */}
           <div className="mb-4 space-y-3 flex-shrink-0">
             <div className="relative">
@@ -453,7 +453,8 @@ const NotesView = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[var(--bg-primary)] z-50 p-4"
+            className="fixed inset-0 bg-[var(--bg-primary)] z-50 p-4 overflow-y-auto"
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
             <NoteEditor
               note={selectedNote}

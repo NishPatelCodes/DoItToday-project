@@ -24,7 +24,6 @@ import { authAPI, friendsAPI, analyticsAPI, tasksAPI, goalsAPI } from '../servic
 import DisciplinePoints from './DisciplinePoints';
 import GraphCard from './GraphCard';
 import TaskCard from './TaskCard';
-import RankFrame from './RankFrame';
 
 const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) => {
   const { userId } = useParams();
@@ -155,11 +154,9 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
           </button>
         )}
         <div className="flex items-center gap-4">
-          <RankFrame rank={userRank} size="default">
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl md:text-3xl shadow-lg">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-          </RankFrame>
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl md:text-3xl shadow-lg">
+            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
               {user?.name || 'User'}
@@ -168,6 +165,11 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
               <FaEnvelope className="text-xs" />
               {user?.email || 'No email'}
             </p>
+            {userRank && (
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                Rank #{userRank} on Leaderboard
+              </p>
+            )}
           </div>
         </div>
       </div>

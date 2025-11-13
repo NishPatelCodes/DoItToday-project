@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlus, FaEdit, FaTrash, FaDollarSign, FaArrowUp, FaArrowDown, FaPiggyBank, FaChartLine } from 'react-icons/fa';
+import { format } from 'date-fns';
 import { financeAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
 const FinanceTracker = () => {
   const [finance, setFinance] = useState(null);
@@ -193,6 +194,76 @@ const FinanceTracker = () => {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
 
+  // Weekly spending data (last 4 weeks)
+  const weeklyData = Array.from({ length: 4 }, (_, i) => {
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - (3 - i) * 7);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+    
+    const weekExpenses = transactions
+      .filter(t => t.type === 'expense' && new Date(t.date) >= weekStart && new Date(t.date) <= weekEnd)
+      .reduce((sum, t) => sum + t.amount, 0);
+    const weekIncome = transactions
+      .filter(t => t.type === 'income' && new Date(t.date) >= weekStart && new Date(t.date) <= weekEnd)
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    return {
+      week: `Week ${i + 1}`,
+      expenses: weekExpenses,
+      income: weekIncome,
+      date: format(weekStart, 'MMM dd')
+    };
+  });
+
+  // Last 6 months income vs expenses
+  const sixMonthData = Array.from({ length: 6 }, (_, i) => {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+    
+    const monthIncome = transactions
+      .filter(t => t.type === 'income' && new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
+      .reduce((sum, t) => sum + t.amount, 0);
+    const monthExpenses = transactions
+      .filter(t => t.type === 'expense' && new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    return {
+      month: format(monthStart, 'MMM yyyy'),
+      income: monthIncome,
+      expenses: monthExpenses,
+      savings: monthIncome - monthExpenses
+    };
+  });
+
+  // Top spending categories over time (last 3 months)
+  const topCategories = categoryData
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5)
+    .map(c => c.name);
+  
+  const categoryTrendData = Array.from({ length: 3 }, (_, i) => {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - (2 - i), 1);
+    const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+    
+    const data = { month: format(monthStart, 'MMM') };
+    topCategories.forEach(category => {
+      data[category] = transactions
+        .filter(t => 
+          t.type === 'expense' && 
+          t.category === category && 
+          new Date(t.date) >= monthStart && 
+          new Date(t.date) <= monthEnd
+        )
+        .reduce((sum, t) => sum + t.amount, 0);
+    });
+    return data;
+  });
+
   if (loading) {
     return (
       <div className="p-4 md:p-8">
@@ -301,7 +372,7 @@ const FinanceTracker = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8">
         {/* Monthly Overview Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -369,6 +440,64 @@ const FinanceTracker = () => {
             </ResponsiveContainer>
           </motion.div>
         )}
+
+        {/* Weekly Spending Trend */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card p-5 md:p-6"
+        >
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+            Weekly Spending (Last 4 Weeks)
+          </h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={weeklyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <XAxis dataKey="date" stroke="var(--text-secondary)" />
+              <YAxis stroke="var(--text-secondary)" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                }}
+              />
+              <Legend />
+              <Line type="monotone" dataKey="expenses" stroke="#ef4444" name="Expenses" strokeWidth={2} />
+              <Line type="monotone" dataKey="income" stroke="#22c55e" name="Income" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Income vs Expenses (6 Months) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="card p-5 md:p-6"
+        >
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+            Income vs Expenses (6 Months)
+          </h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={sixMonthData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <XAxis dataKey="month" stroke="var(--text-secondary)" />
+              <YAxis stroke="var(--text-secondary)" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                }}
+              />
+              <Legend />
+              <Area type="monotone" dataKey="income" stackId="1" stroke="#22c55e" fill="#22c55e" fillOpacity={0.6} name="Income" />
+              <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} name="Expenses" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </motion.div>
       </div>
 
       {/* Savings Goals */}
