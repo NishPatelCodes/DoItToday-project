@@ -425,8 +425,8 @@ const FocusModePage = () => {
       <div className={`relative z-10 flex flex-col items-center justify-center p-4 md:p-8 ${
         isFullscreen ? 'min-h-full py-8' : 'min-h-screen'
       }`}>
-        {/* Header with Fullscreen Button */}
-        {!isActive && !isFullscreen && (
+        {/* Header with Fullscreen Button - Only show when timer is active */}
+        {isActive && !isFullscreen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
