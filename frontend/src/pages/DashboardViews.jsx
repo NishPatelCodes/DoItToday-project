@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -117,12 +117,6 @@ export const DashboardHome = ({
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-            <button
-              onClick={() => setTodaysPlanExpanded(!todaysPlanExpanded)}
-              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              {todaysPlanExpanded ? <FaChevronUp /> : <FaChevronDown />}
-            </button>
             </div>
           <div className="flex items-center gap-4">
             {/* Circular Progress */}
@@ -222,22 +216,6 @@ export const DashboardHome = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-              {!todaysPlanExpanded && (
-              <button
-                  onClick={() => setTodaysPlanExpanded(true)}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
-                >
-                  <FaChevronDown />
-              </button>
-              )}
-              {todaysPlanExpanded && (
-              <button
-                  onClick={() => setTodaysPlanExpanded(false)}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
-                >
-                  <FaChevronUp />
-              </button>
-              )}
             </div>
             <button className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
               <FaEllipsisV />
