@@ -488,9 +488,6 @@ export const DashboardTasks = ({
   setIsTaskModalOpen,
   setEditingTask,
 }) => {
-  const [isThisWeekExpanded, setIsThisWeekExpanded] = useState(true);
-  const [isLastWeekExpanded, setIsLastWeekExpanded] = useState(true);
-
   // Group completed tasks by date segments
   const groupedCompletedTasks = useMemo(() => {
     if (!completedTasks || completedTasks.length === 0) return {};
@@ -657,84 +654,44 @@ export const DashboardTasks = ({
               {/* This Week */}
               {groupedCompletedTasks.thisWeek && groupedCompletedTasks.thisWeek.length > 0 && (
                 <div className="mb-6">
-                  <motion.button
-                    onClick={() => setIsThisWeekExpanded(!isThisWeekExpanded)}
-                    className="w-full flex items-center justify-between gap-2 mb-3 px-2 py-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--accent-primary)]">📊</span>
-                      <h3 className="text-base font-semibold text-[var(--text-primary)]">This Week</h3>
-                      <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.thisWeek.length})</span>
-                    </div>
-                    {isThisWeekExpanded ? (
-                      <FaChevronUp className="text-[var(--text-tertiary)]" />
-                    ) : (
-                      <FaChevronDown className="text-[var(--text-tertiary)]" />
-                    )}
-                  </motion.button>
-                  {isThisWeekExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="space-y-2"
-                    >
-                      {groupedCompletedTasks.thisWeek.map((task) => (
-                        <TaskCard
-                          key={task._id}
-                          task={task}
-                          onToggle={onToggleTask}
-                          onDelete={onDeleteTask}
-                          onEdit={onEditTask}
-                        />
-                      ))}
-                    </motion.div>
-                  )}
+                  <div className="flex items-center gap-2 mb-3 px-2">
+                    <span className="text-[var(--accent-primary)]">📊</span>
+                    <h3 className="text-base font-semibold text-[var(--text-primary)]">This Week</h3>
+                    <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.thisWeek.length})</span>
+                  </div>
+                  <div className="space-y-2">
+                    {groupedCompletedTasks.thisWeek.map((task) => (
+                      <TaskCard
+                        key={task._id}
+                        task={task}
+                        onToggle={onToggleTask}
+                        onDelete={onDeleteTask}
+                        onEdit={onEditTask}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Last Week */}
               {groupedCompletedTasks.lastWeek && groupedCompletedTasks.lastWeek.length > 0 && (
                 <div className="mb-6">
-                  <motion.button
-                    onClick={() => setIsLastWeekExpanded(!isLastWeekExpanded)}
-                    className="w-full flex items-center justify-between gap-2 mb-3 px-2 py-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-[var(--accent-primary)]">📋</span>
-                      <h3 className="text-base font-semibold text-[var(--text-primary)]">Last Week</h3>
-                      <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.lastWeek.length})</span>
-                    </div>
-                    {isLastWeekExpanded ? (
-                      <FaChevronUp className="text-[var(--text-tertiary)]" />
-                    ) : (
-                      <FaChevronDown className="text-[var(--text-tertiary)]" />
-                    )}
-                  </motion.button>
-                  {isLastWeekExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="space-y-2"
-                    >
-                      {groupedCompletedTasks.lastWeek.map((task) => (
-                        <TaskCard
-                          key={task._id}
-                          task={task}
-                          onToggle={onToggleTask}
-                          onDelete={onDeleteTask}
-                          onEdit={onEditTask}
-                        />
-                      ))}
-                    </motion.div>
-                  )}
+                  <div className="flex items-center gap-2 mb-3 px-2">
+                    <span className="text-[var(--accent-primary)]">📋</span>
+                    <h3 className="text-base font-semibold text-[var(--text-primary)]">Last Week</h3>
+                    <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.lastWeek.length})</span>
+                  </div>
+                  <div className="space-y-2">
+                    {groupedCompletedTasks.lastWeek.map((task) => (
+                      <TaskCard
+                        key={task._id}
+                        task={task}
+                        onToggle={onToggleTask}
+                        onDelete={onDeleteTask}
+                        onEdit={onEditTask}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
