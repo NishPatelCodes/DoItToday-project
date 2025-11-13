@@ -116,17 +116,30 @@ export const DashboardHome = ({
     return Math.round((completed / todaysTasks.length) * 100);
   }, [todaysTasks]);
 
-  // Get next task
-  const nextTask = useMemo(() => {
-    const sorted = [...todaysTasks]
+  // Get sorted today's tasks (pending first, completed last)
+  const sortedTodaysTasks = useMemo(() => {
+    const pending = todaysTasks
       .filter(t => t.status !== 'completed')
       .sort((a, b) => {
         if (!a.dueDate) return 1;
         if (!b.dueDate) return -1;
         return new Date(a.dueDate) - new Date(b.dueDate);
       });
-    return sorted[0];
+    const completed = todaysTasks
+      .filter(t => t.status === 'completed')
+      .sort((a, b) => {
+        // Most recently completed first
+        const dateA = new Date(a.completedAt || a.updatedAt || a.createdAt || 0);
+        const dateB = new Date(b.completedAt || b.updatedAt || b.createdAt || 0);
+        return dateB - dateA;
+      });
+    return [...pending, ...completed];
   }, [todaysTasks]);
+
+  // Get next task
+  const nextTask = useMemo(() => {
+    return sortedTodaysTasks.find(t => t.status !== 'completed') || null;
+  }, [sortedTodaysTasks]);
 
   // Calculate consistency percentage
   const consistencyPercentage = useMemo(() => {
@@ -552,41 +565,94 @@ export const DashboardHome = ({
           </div>
           {todaysPlanExpanded && (
             <div className="space-y-3">
-              {todaysTasks.length > 0 ? (
-                todaysTasks.slice(0, 3).map((task) => (
-                  <div
-                    key={task._id}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={task.status === 'completed'}
-                      onChange={() => onToggleTask(task._id)}
-                      className="w-5 h-5 rounded border-[var(--border-color)] text-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/30"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]'}`}>
-                        {task.title}
-                      </p>
-                      {task.dueDate && (
-                        <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                          {format(new Date(task.dueDate), 'h:mm a')}
-                        </p>
-                      )}
+              {sortedTodaysTasks.length > 0 ? (
+                <>
+                  {sortedTodaysTasks
+                    .filter(t => t.status !== 'completed')
+                    .slice(0, 5)
+                    .map((task) => (
+                      <div
+                        key={task._id}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={task.status === 'completed'}
+                          onChange={() => onToggleTask(task._id)}
+                          className="w-5 h-5 rounded border-[var(--border-color)] text-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[var(--text-primary)]">
+                            {task.title}
+                          </p>
+                          {task.dueDate && (
+                            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                              {format(new Date(task.dueDate), 'h:mm a')}
+                            </p>
+                          )}
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            task.priority === 'high'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                              : task.priority === 'medium'
+                              ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                          }`}
+                        >
+                          {task.priority || 'Low'}
+                        </span>
+                      </div>
+                    ))}
+                  
+                  {/* Separator between pending and completed */}
+                  {sortedTodaysTasks.some(t => t.status === 'completed') && 
+                   sortedTodaysTasks.some(t => t.status !== 'completed') && (
+                    <div className="flex items-center gap-2 py-2">
+                      <div className="flex-1 h-px bg-[var(--border-color)]"></div>
+                      <span className="text-xs text-[var(--text-tertiary)]">Completed</span>
+                      <div className="flex-1 h-px bg-[var(--border-color)]"></div>
                     </div>
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        task.priority === 'high'
-                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                          : task.priority === 'medium'
-                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                      }`}
-                    >
-                      {task.priority || 'Low'}
-                    </span>
-                  </div>
-                ))
+                  )}
+                  
+                  {sortedTodaysTasks
+                    .filter(t => t.status === 'completed')
+                    .slice(0, 3)
+                    .map((task) => (
+                      <div
+                        key={task._id}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors opacity-75"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={task.status === 'completed'}
+                          onChange={() => onToggleTask(task._id)}
+                          className="w-5 h-5 rounded border-[var(--border-color)] text-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium line-through text-[var(--text-tertiary)]">
+                            {task.title}
+                          </p>
+                          {task.dueDate && (
+                            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                              {format(new Date(task.dueDate), 'h:mm a')}
+                            </p>
+                          )}
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium opacity-60 ${
+                            task.priority === 'high'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                              : task.priority === 'medium'
+                              ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                          }`}
+                        >
+                          {task.priority || 'Low'}
+                        </span>
+                      </div>
+                    ))}
+                </>
               ) : (
                 <p className="text-sm text-[var(--text-tertiary)] text-center py-4">No tasks for today</p>
               )}
