@@ -12,8 +12,11 @@ const FinanceTracker = () => {
   const [loading, setLoading] = useState(true);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [editingGoal, setEditingGoal] = useState(null);
+  const [updatingGoal, setUpdatingGoal] = useState(null);
+  const [progressAmount, setProgressAmount] = useState('');
   const [transactionForm, setTransactionForm] = useState({
     type: 'expense',
     category: '',
@@ -134,6 +137,16 @@ const FinanceTracker = () => {
       loadFinanceData();
     } catch (error) {
       toast.error('Failed to delete savings goal');
+    }
+  };
+
+  const handleUpdateProgress = async (goalId, newCurrentAmount) => {
+    try {
+      await financeAPI.updateSavingsGoal(goalId, { currentAmount: parseFloat(newCurrentAmount) });
+      toast.success('Progress updated successfully');
+      loadFinanceData();
+    } catch (error) {
+      toast.error('Failed to update progress');
     }
   };
 
@@ -421,8 +434,20 @@ const FinanceTracker = () => {
                       />
                     </div>
                   </div>
+                  <motion.button
+                    onClick={() => {
+                      setUpdatingGoal(goal);
+                      setProgressAmount(goal.currentAmount.toString());
+                      setShowProgressModal(true);
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full mt-3 py-2 px-4 bg-[var(--accent-primary)] text-white rounded-lg font-medium hover:bg-[var(--accent-hover)] transition-colors text-sm"
+                  >
+                    Update Progress
+                  </motion.button>
                   {goal.targetDate && (
-                    <p className="text-xs text-[var(--text-tertiary)]">
+                    <p className="text-xs text-[var(--text-tertiary)] mt-2">
                       Target: {new Date(goal.targetDate).toLocaleDateString()}
                     </p>
                   )}
@@ -547,6 +572,28 @@ const FinanceTracker = () => {
           form={goalForm}
           setForm={setGoalForm}
           isEditing={!!editingGoal}
+        />
+      )}
+
+      {/* Progress Update Modal */}
+      {showProgressModal && updatingGoal && (
+        <ProgressModal
+          isOpen={showProgressModal}
+          onClose={() => {
+            setShowProgressModal(false);
+            setUpdatingGoal(null);
+            setProgressAmount('');
+          }}
+          onSave={async (e) => {
+            e.preventDefault();
+            await handleUpdateProgress(updatingGoal._id, progressAmount);
+            setShowProgressModal(false);
+            setUpdatingGoal(null);
+            setProgressAmount('');
+          }}
+          goal={updatingGoal}
+          progressAmount={progressAmount}
+          setProgressAmount={setProgressAmount}
         />
       )}
     </div>
@@ -707,6 +754,58 @@ const GoalModal = ({ isOpen, onClose, onSave, form, setForm, isEditing }) => {
           <div className="flex gap-3">
             <button type="submit" className="btn-primary flex-1">
               {isEditing ? 'Update' : 'Create'} Goal
+            </button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
+
+// Progress Update Modal Component
+const ProgressModal = ({ isOpen, onClose, onSave, goal, progressAmount, setProgressAmount }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="card p-6 md:p-8 max-w-md w-full"
+      >
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+          Update Progress
+        </h2>
+        <p className="text-sm text-[var(--text-secondary)] mb-6">
+          {goal.name} - Target: ${goal.targetAmount.toFixed(2)}
+        </p>
+        <form onSubmit={onSave} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Current Amount
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max={goal.targetAmount}
+              value={progressAmount}
+              onChange={(e) => setProgressAmount(e.target.value)}
+              className="input-field"
+              placeholder="Enter current amount"
+              required
+              autoFocus
+            />
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+              Current: ${goal.currentAmount.toFixed(2)} / Target: ${goal.targetAmount.toFixed(2)}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button type="submit" className="btn-primary flex-1">
+              Update Progress
             </button>
             <button type="button" onClick={onClose} className="btn-secondary flex-1">
               Cancel
