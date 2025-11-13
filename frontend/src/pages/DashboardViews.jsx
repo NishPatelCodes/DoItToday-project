@@ -101,13 +101,13 @@ export const DashboardHome = ({
     });
   }, [tasks]);
 
-  // Get today's tasks
+  // Get today's tasks (ALL tasks for today, both pending and completed)
   const todaysTasks = useMemo(() => {
-    return pendingTasks.filter(task => {
+    return tasks.filter(task => {
       if (!task.dueDate) return false;
       return isToday(new Date(task.dueDate));
     });
-  }, [pendingTasks]);
+  }, [tasks]);
 
   // Calculate today's plan progress
   const todaysPlanProgress = useMemo(() => {
@@ -322,10 +322,33 @@ export const DashboardHome = ({
           className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Pending</h3>
-            <div>
+          <div className="mb-4">
             <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
             <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
           </div>
+          {pendingTasks.length > 0 && (
+            <div className="pt-4 border-t border-[var(--border-color)]">
+              <p className="text-xs text-[var(--text-secondary)] mb-2">Upcoming Tasks</p>
+              <div className="space-y-2">
+                {pendingTasks.slice(0, 2).map(task => (
+                  <div key={task._id} className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] flex-shrink-0"></div>
+                    <p className="text-xs text-[var(--text-primary)] truncate flex-1">{task.title}</p>
+                    {task.dueDate && (
+                      <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0">
+                        {format(new Date(task.dueDate), 'MMM dd')}
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {pendingTasks.length > 2 && (
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
+                    +{pendingTasks.length - 2} more tasks
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Goals Card */}
@@ -339,7 +362,7 @@ export const DashboardHome = ({
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Goals</h3>
             <span className="text-sm font-semibold text-green-600 dark:text-green-400">{activeGoals.length}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <FaBullseye className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
             </div>
@@ -348,6 +371,35 @@ export const DashboardHome = ({
               <p className="text-xs text-[var(--text-tertiary)]">Active</p>
             </div>
           </div>
+          {activeGoals.length > 0 && (
+            <div className="pt-4 border-t border-[var(--border-color)]">
+              <p className="text-xs text-[var(--text-secondary)] mb-2">Top Goals</p>
+              <div className="space-y-2">
+                {activeGoals.slice(0, 2).map(goal => {
+                  const progress = goal.progress || 0;
+                  return (
+                    <div key={goal._id} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-medium text-[var(--text-primary)] truncate flex-1">{goal.title}</p>
+                        <span className="text-[10px] text-[var(--text-tertiary)] ml-2">{progress}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                {activeGoals.length > 2 && (
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
+                    +{activeGoals.length - 2} more goals
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Challenges Card */}
