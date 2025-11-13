@@ -92,103 +92,108 @@ export const DashboardHome = ({
   const todaysSpend = 0;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 min-h-screen" style={{ 
-      background: 'linear-gradient(to bottom, var(--bg-primary) 0%, var(--bg-secondary) 100%)',
-    }}>
-      {/* Search Bar - Apple Style */}
-      <div className="mb-8">
+    <div className="p-4 md:p-6 lg:p-8 min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-[#0F0F1A] dark:via-[#1A1A2E] dark:to-[#0F0F1A]">
+      {/* Search Bar - Premium Apple Style */}
+      <div className="mb-10">
         <div className="relative max-w-2xl mx-auto">
-          <FaSearch className="absolute left-5 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
+          <FaSearch className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm z-10" />
           <input
             type="text"
             placeholder="Search tasks, goals, and more..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-14 pr-5 py-4 rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/20 focus:border-[var(--accent-primary)]/30 transition-all duration-300 shadow-sm hover:shadow-md"
-            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
+            className="w-full pl-14 pr-5 py-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-200/80 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)]/50 transition-all duration-300 shadow-sm dark:shadow-lg hover:shadow-md dark:hover:shadow-xl backdrop-blur-xl"
+            style={{ 
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(255, 255, 255, 0.8) inset'
+            }}
           />
         </div>
       </div>
 
-      {/* Top Section: Today's Plan, Pending, Goals - Apple Premium Cards */}
-      <div className="flex md:grid md:grid-cols-3 gap-5 mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-        {/* Today's Plan Card - Premium Glassmorphism */}
+      {/* Top Section: Today's Plan, Pending, Goals - Premium Elegant Cards */}
+      <div className="flex md:grid md:grid-cols-3 gap-6 mb-10 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+        {/* Today's Plan Card - Premium */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto group"
+          className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto group overflow-hidden"
           style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
           }}
         >
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] tracking-tight uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
-              Today's Plan
-            </h3>
-            <button
-              onClick={() => setTodaysPlanExpanded(!todaysPlanExpanded)}
-              className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
-            >
-              {todaysPlanExpanded ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
-            </button>
-          </div>
-          <div className="flex items-center gap-5">
-            {/* Circular Progress - Apple Style */}
-            <div className="relative w-20 h-20 flex-shrink-0">
-              <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 72 72">
-                <defs>
-                  <linearGradient id="planGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#6366f1" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                </defs>
-                <circle
-                  cx="36"
-                  cy="36"
-                  r="32"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  fill="none"
-                  className="text-gray-100 dark:text-white/5"
-                />
-                <circle
-                  cx="36"
-                  cy="36"
-                  r="32"
-                  stroke="url(#planGradient)"
-                  strokeWidth="3"
-                  fill="none"
-                  strokeDasharray={`${todaysPlanProgress * 2.01} 201`}
-                  strokeLinecap="round"
-                  className="transition-all duration-700 ease-out"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                {todaysPlanProgress === 100 ? (
-                  <span className="text-[var(--accent-primary)] text-2xl font-medium">✓</span>
+          {/* Subtle gradient overlay */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 dark:from-indigo-500/5 dark:to-purple-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.1em' }}>
+                Today's Plan
+              </h3>
+              <button
+                onClick={() => setTodaysPlanExpanded(!todaysPlanExpanded)}
+                className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+              >
+                {todaysPlanExpanded ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
+              </button>
+            </div>
+            <div className="flex items-center gap-6">
+              {/* Circular Progress - Premium Style */}
+              <div className="relative w-24 h-24 flex-shrink-0">
+                <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 80 80">
+                  <defs>
+                    <linearGradient id="planGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="36"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                    className="text-gray-100 dark:text-white/5"
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="36"
+                    stroke="url(#planGradient)"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeDasharray={`${todaysPlanProgress * 2.26} 226`}
+                    strokeLinecap="round"
+                    className="transition-all duration-700 ease-out drop-shadow-sm"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {todaysPlanProgress === 100 ? (
+                    <span className="text-indigo-600 dark:text-indigo-400 text-3xl font-semibold">✓</span>
+                  ) : (
+                    <span className="text-gray-900 dark:text-white text-base font-bold" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                      {todaysPlanProgress}%
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                {nextTask ? (
+                  <>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white truncate mb-1.5" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                      {nextTask.title}
+                    </p>
+                    {nextTask.dueDate && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        {format(new Date(nextTask.dueDate), 'h:mm a')}
+                      </p>
+                    )}
+                  </>
                 ) : (
-                  <span className="text-[var(--text-primary)] text-sm font-semibold" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-                    {todaysPlanProgress}%
-                  </span>
+                  <p className="text-base text-gray-500 dark:text-gray-400 font-medium">No tasks for today</p>
                 )}
               </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              {nextTask ? (
-                <>
-                  <p className="text-base font-semibold text-[var(--text-primary)] truncate mb-1" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-                    {nextTask.title}
-                  </p>
-                  {nextTask.dueDate && (
-                    <p className="text-xs text-[var(--text-tertiary)] font-medium">
-                      {format(new Date(nextTask.dueDate), 'h:mm a')}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-[var(--text-tertiary)] font-medium">No tasks for today</p>
-              )}
             </div>
           </div>
         </motion.div>
@@ -198,19 +203,23 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto group"
+          className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto group overflow-hidden"
           style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
           }}
         >
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-5 tracking-tight uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
-            Pending
-          </h3>
-          <div>
-            <p className="text-4xl font-bold text-[var(--text-primary)] mb-2 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-              {pendingTasks.length}
-            </p>
-            <p className="text-xs text-[var(--text-tertiary)] font-medium">{format(new Date(), 'h:mm a')}</p>
+          {/* Subtle gradient overlay */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50/50 to-cyan-50/30 dark:from-blue-500/5 dark:to-cyan-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          <div className="relative z-10">
+            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-6 tracking-wider uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.1em' }}>
+              Pending
+            </h3>
+            <div>
+              <p className="text-5xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                {pendingTasks.length}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{format(new Date(), 'h:mm a')}</p>
+            </div>
           </div>
         </motion.div>
 
@@ -219,149 +228,161 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto group"
+          className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto group overflow-hidden"
           style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
           }}
         >
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] tracking-tight uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
-              Goals
-            </h3>
-            <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-semibold">
-              {activeGoals.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/20">
-              <FaBullseye className="text-white text-lg" />
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+          {/* Subtle gradient overlay */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-50/50 to-green-50/30 dark:from-emerald-500/5 dark:to-green-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.1em' }}>
+                Goals
+              </h3>
+              <span className="px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
                 {activeGoals.length}
-              </p>
-              <p className="text-xs text-[var(--text-tertiary)] font-medium">Active</p>
+              </span>
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-xl shadow-emerald-500/30">
+                <FaBullseye className="text-white text-xl" />
+              </div>
+              <div>
+                <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-1" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                  {activeGoals.length}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Active</p>
+              </div>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* Middle Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-5 mb-8">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 mb-10">
         {/* Today's Plan List Card - Premium */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="lg:col-span-2 relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300"
+          className="lg:col-span-2 relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 overflow-hidden"
           style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
           }}
         >
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] tracking-tight uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
-                Today's Plan
-              </h3>
-              {!todaysPlanExpanded && (
-                <button
-                  onClick={() => setTodaysPlanExpanded(true)}
-                  className="w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
-                >
-                  <FaChevronDown className="text-xs" />
-                </button>
-              )}
-              {todaysPlanExpanded && (
-                <button
-                  onClick={() => setTodaysPlanExpanded(false)}
-                  className="w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
-                >
-                  <FaChevronUp className="text-xs" />
-                </button>
-              )}
-            </div>
-            <button className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200">
-              <FaEllipsisV className="text-sm" />
-            </button>
-          </div>
-          {todaysPlanExpanded && (
-            <div className="space-y-2">
-              {todaysTasks.length > 0 ? (
-                todaysTasks.slice(0, 3).map((task) => (
-                  <div
-                    key={task._id}
-                    className="flex items-center gap-3 p-3.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200 group"
+          {/* Subtle gradient overlay */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-50/30 to-purple-50/20 dark:from-indigo-500/5 dark:to-purple-500/5 rounded-full blur-3xl -mr-20 -mt-20" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.1em' }}>
+                  Today's Plan
+                </h3>
+                {!todaysPlanExpanded && (
+                  <button
+                    onClick={() => setTodaysPlanExpanded(true)}
+                    className="w-7 h-7 rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
                   >
-                    <input
-                      type="checkbox"
-                      checked={task.status === 'completed'}
-                      onChange={() => onToggleTask(task._id)}
-                      className="w-5 h-5 rounded-md border-2 border-gray-300 dark:border-gray-600 text-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/30 cursor-pointer transition-all"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${task.status === 'completed' ? 'line-through text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]'}`} style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-                        {task.title}
-                      </p>
-                      {task.dueDate && (
-                        <p className="text-xs text-[var(--text-tertiary)] mt-0.5 font-medium">
-                          {format(new Date(task.dueDate), 'h:mm a')}
-                        </p>
-                      )}
-                    </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                        task.priority === 'high'
-                          ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                          : task.priority === 'medium'
-                          ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
-                          : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                      }`}
-                    >
-                      {task.priority || 'Low'}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-[var(--text-tertiary)] text-center py-6 font-medium">No tasks for today</p>
-              )}
-              <button
-                onClick={() => {
-                  setEditingTask(null);
-                  setIsTaskModalOpen(true);
-                }}
-                className="w-full mt-4 py-3 px-4 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-[var(--text-primary)] font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
-                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
-              >
-                <FaPlus className="text-xs" />
-                <span>Smart Task</span>
+                    <FaChevronDown className="text-xs" />
+                  </button>
+                )}
+                {todaysPlanExpanded && (
+                  <button
+                    onClick={() => setTodaysPlanExpanded(false)}
+                    className="w-7 h-7 rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+                  >
+                    <FaChevronUp className="text-xs" />
+                  </button>
+                )}
+              </div>
+              <button className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200">
+                <FaEllipsisV className="text-sm" />
               </button>
             </div>
-          )}
+            {todaysPlanExpanded && (
+              <div className="space-y-2">
+                {todaysTasks.length > 0 ? (
+                  todaysTasks.slice(0, 3).map((task) => (
+                    <div
+                      key={task._id}
+                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200 group border border-transparent hover:border-gray-100 dark:hover:border-white/10"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={task.status === 'completed'}
+                        onChange={() => onToggleTask(task._id)}
+                        className="w-5 h-5 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-indigo-600 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500/30 cursor-pointer transition-all"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-base font-semibold ${task.status === 'completed' ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}`} style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                          {task.title}
+                        </p>
+                        {task.dueDate && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
+                            {format(new Date(task.dueDate), 'h:mm a')}
+                          </p>
+                        )}
+                      </div>
+                      <span
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
+                          task.priority === 'high'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                            : task.priority === 'medium'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                        }`}
+                      >
+                        {task.priority || 'Low'}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-base text-gray-500 dark:text-gray-400 text-center py-8 font-medium">No tasks for today</p>
+                )}
+                <button
+                  onClick={() => {
+                    setEditingTask(null);
+                    setIsTaskModalOpen(true);
+                  }}
+                  className="w-full mt-5 py-3.5 px-5 rounded-2xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-900 dark:text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
+                >
+                  <FaPlus className="text-sm" />
+                  <span>Smart Task</span>
+                </button>
+              </div>
+            )}
+          </div>
         </motion.div>
 
         {/* Right Side: Streak and Consistency */}
-        <div className="flex lg:flex-col gap-5 lg:space-y-5 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
+        <div className="flex lg:flex-col gap-6 lg:space-y-6 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
           {/* Streak Card - Premium */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[240px] lg:w-auto"
+            className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[260px] lg:w-auto overflow-hidden"
             style={{
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
             }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                <FaFire className="text-white text-sm" />
+            {/* Subtle gradient overlay */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-50/50 to-red-50/30 dark:from-orange-500/5 dark:to-red-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-xl shadow-orange-500/30">
+                  <FaFire className="text-white text-base" />
+                </div>
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.1em' }}>
+                  Streak
+                </h3>
               </div>
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] tracking-tight uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
-                Streak
-              </h3>
+              <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                {user?.streak || 0} <span className="text-xl font-semibold text-gray-500 dark:text-gray-400">days</span>
+              </p>
             </div>
-            <p className="text-3xl font-bold text-[var(--text-primary)] tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-              {user?.streak || 0} <span className="text-lg font-semibold text-[var(--text-tertiary)]">days</span>
-            </p>
           </motion.div>
 
           {/* Consistency Card - Premium */}
@@ -369,49 +390,54 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[240px] lg:w-auto"
+            className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[260px] lg:w-auto overflow-hidden"
             style={{
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
             }}
           >
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-              Stay consistent!
-            </h3>
-            <p className="text-xs text-[var(--text-secondary)] mb-4 font-medium">
-              You've done {consistencyPercentage}% of your week's plan
-            </p>
-            <div className="w-full bg-black/5 dark:bg-white/10 rounded-full h-2.5 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-[var(--accent-primary)] to-purple-500 h-2.5 rounded-full transition-all duration-700 ease-out shadow-sm"
-                style={{ width: `${consistencyPercentage}%` }}
-              />
+            {/* Subtle gradient overlay */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 dark:from-indigo-500/5 dark:to-purple-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+            <div className="relative z-10">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                Stay consistent!
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 font-medium">
+                You've done {consistencyPercentage}% of your week's plan
+              </p>
+              <div className="w-full bg-gray-100 dark:bg-white/10 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
+                  style={{ width: `${consistencyPercentage}%` }}
+                />
+              </div>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* Lower Middle Section: Focus Mode and Consistency */}
-      <div className="flex md:grid md:grid-cols-2 gap-5 mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex md:grid md:grid-cols-2 gap-6 mb-10 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Focus Mode Card - Premium Gradient */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative p-7 rounded-3xl bg-gradient-to-br from-purple-500 via-indigo-600 to-blue-600 text-white flex-shrink-0 w-[320px] md:w-auto overflow-hidden shadow-2xl shadow-purple-500/30"
+          className="relative p-8 rounded-3xl bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 text-white flex-shrink-0 w-[340px] md:w-auto overflow-hidden shadow-2xl shadow-purple-500/40"
         >
           <div className="relative z-10">
-            <h3 className="text-lg font-semibold mb-5 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+            <h3 className="text-xl font-bold mb-6 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
               Focus mode ready
             </h3>
             <button
               onClick={() => navigate('/dashboard/focus')}
-              className="w-full py-3.5 px-5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-xl text-white font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full py-4 px-6 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-xl text-white font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
               style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
             >
               Start 25 min session
             </button>
           </div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/20 rounded-full blur-3xl -mr-20 -mt-20" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -ml-16 -mb-16" />
         </motion.div>
 
         {/* Consistency Card with Lightbulb - Premium */}
@@ -419,63 +445,71 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative p-7 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[320px] md:w-auto"
+          className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[340px] md:w-auto overflow-hidden"
           style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
           }}
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
-              <FaLightbulb className="text-white text-lg" />
+          {/* Subtle gradient overlay */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-50/50 to-orange-50/30 dark:from-yellow-500/5 dark:to-orange-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center shadow-xl shadow-yellow-500/30">
+                <FaLightbulb className="text-white text-xl" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+                Stay consistent
+              </h3>
             </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-              Stay consistent
-            </h3>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)] mb-4 font-medium">
-            You've done {consistencyPercentage}% of your week's plan
-          </p>
-          <div className="w-full bg-black/5 dark:bg-white/10 rounded-full h-3 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-yellow-400 to-orange-500 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
-              style={{ width: `${consistencyPercentage}%` }}
-            />
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 font-medium">
+              You've done {consistencyPercentage}% of your week's plan
+            </p>
+            <div className="w-full bg-gray-100 dark:bg-white/10 rounded-full h-3 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-yellow-500 to-orange-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
+                style={{ width: `${consistencyPercentage}%` }}
+              />
+            </div>
           </div>
         </motion.div>
       </div>
 
       {/* Bottom Section: Today's Spend and Quick Note */}
-      <div className="flex md:grid md:grid-cols-2 gap-5 mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex md:grid md:grid-cols-2 gap-6 mb-10 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Today's Spend Card - Premium */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto"
+          className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto overflow-hidden"
           style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
           }}
         >
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <FaDollarSign className="text-white text-lg" />
+          {/* Subtle gradient overlay */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50/50 to-cyan-50/30 dark:from-blue-500/5 dark:to-cyan-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-xl shadow-blue-500/30">
+                  <FaDollarSign className="text-white text-xl" />
+                </div>
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.1em' }}>
+                  Today's Spend
+                </h3>
               </div>
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] tracking-tight uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
-                Today's Spend
-              </h3>
+              <button
+                onClick={() => navigate('/dashboard/finance')}
+                className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+              >
+                <FaPlus className="text-sm" />
+              </button>
             </div>
-            <button
-              onClick={() => navigate('/dashboard/finance')}
-              className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
-            >
-              <FaPlus className="text-sm" />
-            </button>
+            <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+              ${todaysSpend.toFixed(2)}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Track your expenses</p>
           </div>
-          <p className="text-3xl font-bold text-[var(--text-primary)] mb-2 tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-            ${todaysSpend.toFixed(2)}
-          </p>
-          <p className="text-xs text-[var(--text-tertiary)] font-medium">Track your expenses</p>
         </motion.div>
 
         {/* Quick Note Card - Premium */}
@@ -483,21 +517,25 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative p-6 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto"
+          className="relative p-7 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 flex-shrink-0 w-[300px] md:w-auto overflow-hidden"
           style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
           }}
         >
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-5 tracking-tight uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
-            Quick Note
-          </h3>
-          <input
-            type="text"
-            placeholder="Add text..."
-            className="w-full px-4 py-3 rounded-xl bg-black/5 dark:bg-white/10 border border-white/20 dark:border-white/10 text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/20 focus:border-[var(--accent-primary)]/30 transition-all duration-300 shadow-sm hover:shadow-md"
-            onClick={() => navigate('/dashboard/notes')}
-            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
-          />
+          {/* Subtle gradient overlay */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-gray-500/5 dark:to-gray-500/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          <div className="relative z-10">
+            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-6 tracking-wider uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.1em' }}>
+              Quick Note
+            </h3>
+            <input
+              type="text"
+              placeholder="Add text..."
+              className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all duration-300 shadow-sm hover:shadow-md"
+              onClick={() => navigate('/dashboard/notes')}
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
+            />
+          </div>
         </motion.div>
       </div>
 
@@ -506,41 +544,47 @@ export const DashboardHome = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.0, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative p-7 rounded-3xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-lg hover:shadow-xl transition-all duration-300"
+        className="relative p-8 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-lg dark:shadow-2xl hover:shadow-xl dark:hover:shadow-2xl transition-all duration-300 overflow-hidden"
         style={{
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.5) inset',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02) inset',
         }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)] tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
-            Analytics
-          </h3>
-          <button
-            onClick={() => navigate('/dashboard/analytics')}
-            className="text-sm font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--accent-primary)]/10"
-            style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
-          >
-            View Full →
-          </button>
-        </div>
-        <div>
-          <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-4">Weekly Task Completion</h4>
-          {analytics?.weeklyCompletion ? (
-            <GraphCard
-              title=""
-              data={analytics.weeklyCompletion.map((item, index) => ({
-                name: item.week || `Week ${index + 1}`,
-                completed: item.completed || 0,
-                total: item.total || 0,
-              }))}
-              type="line"
-              dataKey="completed"
-            />
-          ) : (
-            <div className="h-64 flex items-center justify-center">
-              <p className="text-[var(--text-tertiary)] text-sm">No analytics data available</p>
-            </div>
-          )}
+        {/* Subtle gradient overlay */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-50/30 to-purple-50/20 dark:from-indigo-500/5 dark:to-purple-500/5 rounded-full blur-3xl -mr-20 -mt-20" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-7">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}>
+              Analytics
+            </h3>
+            <button
+              onClick={() => navigate('/dashboard/analytics')}
+              className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors px-4 py-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
+            >
+              View Full →
+            </button>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-5 uppercase tracking-wider" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '0.05em' }}>
+              Weekly Task Completion
+            </h4>
+            {analytics?.weeklyCompletion ? (
+              <GraphCard
+                title=""
+                data={analytics.weeklyCompletion.map((item, index) => ({
+                  name: item.week || `Week ${index + 1}`,
+                  completed: item.completed || 0,
+                  total: item.total || 0,
+                }))}
+                type="line"
+                dataKey="completed"
+              />
+            ) : (
+              <div className="h-64 flex items-center justify-center">
+                <p className="text-gray-500 dark:text-gray-400 text-base font-medium">No analytics data available</p>
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>
