@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -27,6 +27,7 @@ export const DashboardHome = ({
   pendingTasks,
   completedTasks,
   activeGoals,
+  activeChallenges = [],
   onToggleTask,
   onDeleteTask,
   onEditTask,
@@ -92,7 +93,7 @@ export const DashboardHome = ({
   const todaysSpend = 0;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 bg-[var(--bg-primary)] min-h-screen">
+    <div className="p-4 md:p-6 lg:p-8 xl:p-10 bg-[var(--bg-primary)] min-h-screen max-w-[1920px] mx-auto">
       {/* Search Bar */}
       <div className="mb-6">
         <div className="relative">
@@ -107,21 +108,31 @@ export const DashboardHome = ({
         </div>
       </div>
 
-      {/* Top Section: Today's Plan, Pending, Goals - Horizontal scroll on mobile */}
-      <div className="flex md:grid md:grid-cols-3 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      {/* Top Section: Today's Plan, Pending, Goals, Challenges - Improved desktop grid */}
+      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Today's Plan Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
+          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
+<<<<<<< HEAD
             <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
+=======
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Plan</h3>
+            <button
+              onClick={() => setTodaysPlanExpanded(!todaysPlanExpanded)}
+              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              {todaysPlanExpanded ? <FaChevronUp /> : <FaChevronDown />}
+            </button>
+>>>>>>> 92aca2b (Add challenges card to dashboard and improve desktop design - Added challenges card with progress tracking and check-in status - Improved desktop layout with 4-column grid, better spacing, and responsive typography - Enhanced visual hierarchy with shadows and hover effects)
             </div>
           <div className="flex items-center gap-4">
             {/* Circular Progress */}
-            <div className="relative w-16 h-16 flex-shrink-0">
-              <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
+            <div className="relative w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0">
+              <svg className="w-16 h-16 lg:w-20 lg:h-20 transform -rotate-90" viewBox="0 0 64 64">
                 <circle
                   cx="32"
                   cy="32"
@@ -144,16 +155,16 @@ export const DashboardHome = ({
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
                 {todaysPlanProgress === 100 ? (
-                  <span className="text-white text-xl">✓</span>
+                  <span className="text-white text-xl lg:text-2xl">✓</span>
                 ) : (
-                  <span className="text-[var(--text-primary)] text-xs font-semibold">{todaysPlanProgress}%</span>
+                  <span className="text-[var(--text-primary)] text-xs lg:text-sm font-semibold">{todaysPlanProgress}%</span>
                 )}
               </div>
             </div>
             <div className="flex-1 min-w-0">
               {nextTask ? (
                 <>
-                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
+                  <p className="text-sm lg:text-base font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
                   {nextTask.dueDate && (
                     <p className="text-xs text-[var(--text-tertiary)] mt-1">
                       {format(new Date(nextTask.dueDate), 'h:mm a')}
@@ -172,11 +183,11 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
+          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">Pending</h3>
+          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Pending</h3>
             <div>
-            <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
+            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
             <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
           </div>
         </motion.div>
@@ -186,32 +197,93 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
+          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Goals</h3>
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Goals</h3>
             <span className="text-sm font-semibold text-green-600 dark:text-green-400">{activeGoals.length}</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <FaBullseye className="text-green-600 dark:text-green-400" />
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <FaBullseye className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
+              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
               <p className="text-xs text-[var(--text-tertiary)]">Active</p>
             </div>
           </div>
         </motion.div>
+
+        {/* Challenges Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate('/dashboard/challenges')}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Challenges</h3>
+            <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">{activeChallenges.length}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 flex items-center justify-center">
+              <FaTrophy className="text-yellow-600 dark:text-yellow-400 text-lg lg:text-xl" />
+            </div>
+            <div className="flex-1">
+              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">{activeChallenges.length}</p>
+              <p className="text-xs text-[var(--text-tertiary)]">Active</p>
+            </div>
+          </div>
+          {activeChallenges.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
+              <div className="space-y-2">
+                {activeChallenges.slice(0, 2).map((challenge) => {
+                  const progress = challenge.progress || 0;
+                  const isCheckedInToday = challenge.checkIns?.some((checkIn) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const checkInDate = new Date(checkIn.date);
+                    checkInDate.setHours(0, 0, 0, 0);
+                    return checkInDate.getTime() === today.getTime() && checkIn.completed;
+                  });
+                  
+                  return (
+                    <div key={challenge._id} className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-[var(--text-primary)] truncate">{challenge.name}</p>
+                        <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden mt-1">
+                          <div
+                            className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full transition-all duration-500"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </div>
+                      {isCheckedInToday && (
+                        <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {activeChallenges.length > 2 && (
+                <p className="text-xs text-[var(--text-tertiary)] mt-2">
+                  +{activeChallenges.length - 2} more
+                </p>
+              )}
+            </div>
+          )}
+        </motion.div>
       </div>
 
       {/* Middle Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 mb-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
         {/* Today's Plan List Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="lg:col-span-2 card p-5 rounded-2xl"
+          className="lg:col-span-2 card p-5 lg:p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -276,19 +348,19 @@ export const DashboardHome = ({
         </motion.div>
 
         {/* Right Side: Streak and Consistency */}
-        <div className="flex lg:flex-col gap-4 lg:space-y-4 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
+        <div className="flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
           {/* Streak Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="card p-5 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto"
+            className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="flex items-center gap-2 mb-3">
-              <FaFire className="text-orange-500" />
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Streak</h3>
+            <div className="flex items-center gap-2 mb-3 lg:mb-4">
+              <FaFire className="text-orange-500 text-lg lg:text-xl" />
+              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Streak</h3>
             </div>
-            <p className="text-3xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
+            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
           </motion.div>
 
           {/* Consistency Card */}
@@ -296,15 +368,15 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="card p-5 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto"
+            className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
           >
-            <h3 className="text-base font-semibold text-[var(--text-primary)] mb-2">Stay consistent!</h3>
-            <p className="text-sm text-[var(--text-secondary)] mb-3">
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-2 lg:mb-3">Stay consistent!</h3>
+            <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
               You've done {consistencyPercentage}% of your week's plan
             </p>
-            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2">
+            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 lg:h-2.5">
               <div
-                className="bg-[var(--accent-primary)] h-2 rounded-full transition-all duration-500"
+                className="bg-[var(--accent-primary)] h-2 lg:h-2.5 rounded-full transition-all duration-500"
                 style={{ width: `${consistencyPercentage}%` }}
               />
             </div>
@@ -313,18 +385,18 @@ export const DashboardHome = ({
       </div>
 
       {/* Lower Middle Section: Focus Mode and Consistency */}
-      <div className="flex md:grid md:grid-cols-2 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Focus Mode Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="card p-6 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex-shrink-0 w-[300px] md:w-auto"
+          className="card p-6 lg:p-8 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex-shrink-0 w-[300px] md:w-auto shadow-lg hover:shadow-xl transition-shadow"
         >
-          <h3 className="text-lg font-semibold mb-4">Focus mode ready</h3>
+          <h3 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">Focus mode ready</h3>
           <button
             onClick={() => navigate('/dashboard/focus')}
-            className="w-full py-3 px-4 rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 lg:py-4 px-4 rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium transition-all flex items-center justify-center gap-2 text-base lg:text-lg"
           >
             Start 25 min session
           </button>
@@ -335,18 +407,18 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="card p-6 rounded-2xl flex-shrink-0 w-[300px] md:w-auto"
+          className="card p-6 lg:p-8 rounded-2xl flex-shrink-0 w-[300px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <FaLightbulb className="text-yellow-500 text-xl" />
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Stay consistent</h3>
+          <div className="flex items-center gap-3 mb-3 lg:mb-4">
+            <FaLightbulb className="text-yellow-500 text-xl lg:text-2xl" />
+            <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Stay consistent</h3>
             </div>
-          <p className="text-sm text-[var(--text-secondary)] mb-3">
+          <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
             You've done {consistencyPercentage}% of your week's plan
           </p>
-          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2">
+          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 lg:h-2.5">
             <div
-              className="bg-yellow-500 h-2 rounded-full transition-all duration-500"
+              className="bg-yellow-500 h-2 lg:h-2.5 rounded-full transition-all duration-500"
               style={{ width: `${consistencyPercentage}%` }}
             />
             </div>
@@ -354,30 +426,30 @@ export const DashboardHome = ({
           </div>
 
       {/* Bottom Section: Today's Spend and Quick Note */}
-      <div className="flex md:grid md:grid-cols-2 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {/* Today's Spend Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
+          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 lg:mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <span className="text-blue-600 dark:text-blue-400 font-semibold">$</span>
+              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <span className="text-blue-600 dark:text-blue-400 font-semibold text-lg lg:text-xl">$</span>
         </div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Spend</h3>
+              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Spend</h3>
       </div>
             <button
               onClick={() => navigate('/dashboard/finance')}
-              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
             >
               <FaPlus />
             </button>
           </div>
-          <p className="text-2xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
-          <p className="text-xs text-[var(--text-tertiary)] mt-2">Track your expenses</p>
+          <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
+          <p className="text-xs lg:text-sm text-[var(--text-tertiary)] mt-2">Track your expenses</p>
         </motion.div>
 
         {/* Quick Note Card */}
@@ -385,13 +457,13 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
+          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">Quick Note</h3>
+          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 lg:mb-5">Quick Note</h3>
           <input
             type="text"
             placeholder="Add text..."
-            className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
+            className="w-full px-4 py-2 lg:py-3 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all text-sm lg:text-base"
             onClick={() => navigate('/dashboard/notes')}
           />
         </motion.div>
@@ -402,19 +474,19 @@ export const DashboardHome = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.0 }}
-        className="card p-6 rounded-2xl"
+        className="card p-6 lg:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Analytics</h3>
+        <div className="flex items-center justify-between mb-4 lg:mb-6">
+          <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Analytics</h3>
           <button
             onClick={() => navigate('/dashboard/analytics')}
-            className="text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors"
+            className="text-sm lg:text-base font-medium text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors"
           >
             View Full Analytics →
           </button>
         </div>
         <div>
-          <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-4">Weekly Task Completion</h4>
+          <h4 className="text-sm lg:text-base font-medium text-[var(--text-secondary)] mb-4 lg:mb-6">Weekly Task Completion</h4>
           {analytics?.weeklyCompletion ? (
             <GraphCard
               title=""
@@ -427,8 +499,8 @@ export const DashboardHome = ({
               dataKey="completed"
             />
           ) : (
-            <div className="h-64 flex items-center justify-center">
-              <p className="text-[var(--text-tertiary)] text-sm">No analytics data available</p>
+            <div className="h-64 lg:h-80 flex items-center justify-center">
+              <p className="text-[var(--text-tertiary)] text-sm lg:text-base">No analytics data available</p>
             </div>
           )}
         </div>

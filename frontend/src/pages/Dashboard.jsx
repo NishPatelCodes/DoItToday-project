@@ -21,6 +21,7 @@ import {
   analyticsAPI,
   habitsAPI,
   authAPI,
+  challengesAPI,
 } from '../services/api';
 import TaskModal from '../components/TaskModal';
 import GoalModal from '../components/GoalModal';
@@ -74,6 +75,7 @@ const Dashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [editingGoal, setEditingGoal] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeChallenges, setActiveChallenges] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -104,13 +106,14 @@ const Dashboard = () => {
       // Load other data in parallel (non-critical)
       // Stagger requests slightly to avoid overwhelming server on cold start
       const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-      const [goalsRes, friendsRes, analyticsRes, leaderboardRes, habitsRes, authRes] =
+      const [goalsRes, friendsRes, analyticsRes, leaderboardRes, habitsRes, challengesRes, authRes] =
         await Promise.allSettled([
           goalsAPI.getAll(),
           delay(100).then(() => friendsAPI.getAll()),
           delay(200).then(() => analyticsAPI.getDashboard()),
           delay(300).then(() => friendsAPI.getLeaderboard()),
           delay(400).then(() => habitsAPI.getAll()),
+          delay(450).then(() => challengesAPI.getActive()),
           delay(500).then(() => authAPI.getMe()),
         ]);
 
@@ -155,6 +158,12 @@ const Dashboard = () => {
         setHabits(habitsRes.value.data || []);
       } else {
         setHabits([]);
+      }
+
+      if (challengesRes.status === 'fulfilled') {
+        setActiveChallenges(challengesRes.value.data || []);
+      } else {
+        setActiveChallenges([]);
       }
 
       if (authRes.status === 'fulfilled' && authRes.value?.data?.user) {
@@ -657,6 +666,7 @@ const Dashboard = () => {
                 pendingTasks={pendingTasks}
                 completedTasks={completedTasks}
                 activeGoals={activeGoals}
+                activeChallenges={activeChallenges}
                 onToggleTask={handleToggleTask}
                 onDeleteTask={handleDeleteTask}
                 onEditTask={handleEditTask}
