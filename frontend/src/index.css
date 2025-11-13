@@ -42,12 +42,12 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
-  /* Dark Theme - Pure Black with Enhanced Contrast */
+  /* Dark Theme - Dark Gray with Enhanced Contrast */
   html[data-theme='dark'] {
-    --bg-primary: #000000; /* Pure black background */
-    --bg-secondary: #0a0a0a; /* Slightly lighter for card background */
-    --bg-tertiary: #141414; /* Even lighter for inputs and elevated elements */
-    --border-color: #1f1f1f; /* Visible but subtle borders */
+    --bg-primary: #121212; /* Dark gray background - lighter than pure black */
+    --bg-secondary: #1a1a1a; /* Slightly lighter for card background */
+    --bg-tertiary: #242424; /* Even lighter for inputs and elevated elements */
+    --border-color: #2d2d2d; /* Visible but subtle borders */
     --text-primary: #F5F5F5; /* High contrast white for headings and primary text */
     --text-secondary: #D1D5DB; /* Light gray for secondary text - improved contrast */
     --text-tertiary: #9CA3AF; /* Medium gray for placeholders and tertiary text */
@@ -217,7 +217,7 @@
   }
 
   html[data-theme='dark'] .glass-card {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(18, 18, 18, 0.8);
     border-color: var(--border-color);
   }
 
