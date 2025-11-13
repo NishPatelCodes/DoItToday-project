@@ -117,9 +117,6 @@ export const DashboardHome = ({
           className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
-<<<<<<< HEAD
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-=======
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Plan</h3>
             <button
               onClick={() => setTodaysPlanExpanded(!todaysPlanExpanded)}
@@ -127,7 +124,6 @@ export const DashboardHome = ({
             >
               {todaysPlanExpanded ? <FaChevronUp /> : <FaChevronDown />}
             </button>
->>>>>>> 92aca2b (Add challenges card to dashboard and improve desktop design - Added challenges card with progress tracking and check-in status - Improved desktop layout with 4-column grid, better spacing, and responsive typography - Enhanced visual hierarchy with shadows and hover effects)
             </div>
           <div className="flex items-center gap-4">
             {/* Circular Progress */}
