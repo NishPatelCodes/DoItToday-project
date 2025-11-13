@@ -333,9 +333,7 @@ const FocusModePage = () => {
   return (
     <div 
       ref={containerRef}
-      className={`min-h-screen bg-[var(--bg-primary)] relative transition-all duration-500 ${
-        isFullscreen ? 'overflow-y-auto' : 'overflow-hidden'
-      }`}
+      className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden transition-all duration-500"
     >
       {/* Professional Background with smooth transitions */}
       <AnimatePresence mode="wait">
@@ -412,20 +410,6 @@ const FocusModePage = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Fullscreen Exit Button */}
-      {isFullscreen && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.1 }}
-          onClick={handleFullscreen}
-          className="fixed top-4 right-4 z-50 p-3 bg-[var(--bg-secondary)]/80 backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all shadow-lg"
-          aria-label="Exit fullscreen"
-        >
-          <FaCompress />
-        </motion.button>
-      )}
-
       {/* Completion Animation */}
       <AnimatePresence>
         {showCompletionAnimation && (
@@ -440,28 +424,7 @@ const FocusModePage = () => {
         )}
       </AnimatePresence>
 
-      <div className={`relative z-10 flex flex-col items-center justify-center p-4 md:p-8 ${
-        isFullscreen ? 'min-h-full py-8' : 'min-h-screen'
-      }`}>
-        {/* Header with Fullscreen Button - Only show when timer is active */}
-        {isActive && !isFullscreen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute top-4 right-4 z-20"
-          >
-            <motion.button
-              onClick={handleFullscreen}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-3 bg-[var(--bg-secondary)]/80 backdrop-blur-md border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all shadow-lg"
-              aria-label="Go fullscreen"
-            >
-              <FaExpand />
-            </motion.button>
-          </motion.div>
-        )}
-
+      <div className="relative z-10 flex flex-col items-center justify-center p-4 md:p-8 min-h-screen">
         {/* Motivational Quote */}
         <AnimatePresence mode="wait">
           {currentQuote && (
