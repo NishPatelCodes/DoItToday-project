@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -15,8 +15,9 @@ import FriendStatus from '../components/FriendStatus';
 import DashboardSummary from '../components/DashboardSummary';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
+import { useNavigate } from 'react-router-dom';
 
-// Dashboard Home View
+// Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
   user,
   tasks,
@@ -39,187 +40,421 @@ export const DashboardHome = ({
   setEditingTask,
   setEditingGoal,
 }) => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [todaysPlanExpanded, setTodaysPlanExpanded] = useState(true);
+
+  // Get today's tasks
+  const todaysTasks = useMemo(() => {
+    return pendingTasks.filter(task => {
+      if (!task.dueDate) return false;
+      return isToday(new Date(task.dueDate));
+    });
+  }, [pendingTasks]);
+
+  // Calculate today's plan progress
+  const todaysPlanProgress = useMemo(() => {
+    if (todaysTasks.length === 0) return 0;
+    const completed = todaysTasks.filter(t => t.status === 'completed').length;
+    return Math.round((completed / todaysTasks.length) * 100);
+  }, [todaysTasks]);
+
+  // Get next task
+  const nextTask = useMemo(() => {
+    const sorted = [...todaysTasks]
+      .filter(t => t.status !== 'completed')
+      .sort((a, b) => {
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      });
+    return sorted[0];
+  }, [todaysTasks]);
+
+  // Calculate consistency percentage
+  const consistencyPercentage = useMemo(() => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
+    const weekTasks = tasks.filter(task => {
+      if (!task.completedAt) return false;
+      const completedDate = new Date(task.completedAt);
+      return completedDate >= weekStart;
+    });
+    const totalWeekTasks = tasks.filter(task => {
+      if (!task.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      return dueDate >= weekStart;
+    });
+    if (totalWeekTasks.length === 0) return 0;
+    return Math.round((weekTasks.length / totalWeekTasks.length) * 100);
+  }, [tasks]);
+
+  // Get today's spend (placeholder - would come from finance API)
+  const todaysSpend = 0;
+
   return (
-    <div className="p-4 md:p-8">
-      {/* Header */}
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">
-          Welcome back, {user?.name || 'User'}!
-        </h1>
-        <p className="text-sm md:text-base text-[var(--text-secondary)]">
-          Here's your productivity overview for today
-        </p>
+    <div className="p-4 md:p-6 lg:p-8 bg-[var(--bg-primary)] min-h-screen">
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
+          />
+        </div>
       </div>
 
-      {/* Dashboard Summary */}
-      <DashboardSummary user={user} streak={user?.streak || 0} />
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+      {/* Top Section: Today's Plan, Pending, Goals - Horizontal scroll on mobile */}
+      <div className="flex md:grid md:grid-cols-3 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+        {/* Today's Plan Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-3 md:p-4"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-              <FaTasks className="text-indigo-600 text-base md:text-lg" />
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
+            <button
+              onClick={() => setTodaysPlanExpanded(!todaysPlanExpanded)}
+              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              {todaysPlanExpanded ? <FaChevronUp /> : <FaChevronDown />}
+            </button>
             </div>
-            <div>
-              <p className="text-xs text-[var(--text-secondary)]">Pending</p>
-              <p className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">{pendingTasks.length}</p>
+          <div className="flex items-center gap-4">
+            {/* Circular Progress */}
+            <div className="relative w-16 h-16 flex-shrink-0">
+              <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  className="text-gray-200 dark:text-gray-700"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeDasharray={`${todaysPlanProgress * 1.76} 176`}
+                  className="text-[var(--accent-primary)] transition-all duration-500"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                {todaysPlanProgress === 100 ? (
+                  <span className="text-white text-xl">✓</span>
+                ) : (
+                  <span className="text-[var(--text-primary)] text-xs font-semibold">{todaysPlanProgress}%</span>
+                )}
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              {nextTask ? (
+                <>
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
+                  {nextTask.dueDate && (
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                      {format(new Date(nextTask.dueDate), 'h:mm a')}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-[var(--text-tertiary)]">No tasks for today</p>
+              )}
             </div>
           </div>
         </motion.div>
 
+        {/* Pending Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card p-4"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <FaBullseye className="text-green-600 text-lg" />
-            </div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">Pending</h3>
             <div>
-              <p className="text-xs text-[var(--text-secondary)]">Active Goals</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">{activeGoals.length}</p>
-            </div>
+            <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
+            <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
           </div>
         </motion.div>
 
+        {/* Goals Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-4"
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-              <FaFire className="text-orange-600 text-lg" />
-            </div>
-            <div>
-              <p className="text-xs text-[var(--text-secondary)]">Streak</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">{user?.streak || 0} days</p>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">Goals</h3>
+            <span className="text-sm font-semibold text-green-600 dark:text-green-400">{activeGoals.length}</span>
           </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card p-4"
-        >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-              <FaTasks className="text-purple-600 text-lg" />
+            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <FaBullseye className="text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-xs text-[var(--text-secondary)]">Completed</p>
-              <p className="text-xl font-semibold text-[var(--text-primary)]">{completedTasks.length}</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
+              <p className="text-xs text-[var(--text-tertiary)]">Active</p>
             </div>
           </div>
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          {/* Smart Planner */}
-          <SmartPlanner />
-
-          {/* Quick Actions */}
-          <div className="card p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Quick Actions</h2>
-            </div>
-            <div className="grid grid-cols-2 gap-2 md:gap-3">
+      {/* Middle Section */}
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 mb-6">
+        {/* Today's Plan List Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="lg:col-span-2 card p-5 rounded-2xl"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
+              {!todaysPlanExpanded && (
               <button
-                onClick={() => {
-                  setEditingTask(null);
-                  setIsTaskModalOpen(true);
-                }}
-                className="btn-primary flex items-center justify-center gap-2"
-              >
-                <FaPlus />
-                <span>New Task</span>
+                  onClick={() => setTodaysPlanExpanded(true)}
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+                >
+                  <FaChevronDown />
               </button>
+              )}
+              {todaysPlanExpanded && (
               <button
-                onClick={() => {
-                  setEditingGoal(null);
-                  setIsGoalModalOpen(true);
-                }}
-                className="btn-secondary flex items-center justify-center gap-2"
-              >
-                <FaPlus />
-                <span>New Goal</span>
+                  onClick={() => setTodaysPlanExpanded(false)}
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+                >
+                  <FaChevronUp />
               </button>
+              )}
             </div>
+            <button className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+              <FaEllipsisV />
+            </button>
           </div>
-
-          {/* Recent Tasks */}
-          <div className="card p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Recent Tasks</h2>
-            </div>
-            <div className="space-y-2">
-              {pendingTasks.length > 0 ? (
-                pendingTasks.slice(0, 5).map((task) => (
-                  <TaskCard
+          {todaysPlanExpanded && (
+            <div className="space-y-3">
+              {todaysTasks.length > 0 ? (
+                todaysTasks.slice(0, 3).map((task) => (
+                  <div
                     key={task._id}
-                    task={task}
-                    onToggle={onToggleTask}
-                    onDelete={onDeleteTask}
-                    onEdit={onEditTask}
-                  />
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={task.status === 'completed'}
+                      onChange={() => onToggleTask(task._id)}
+                      className="w-5 h-5 rounded border-[var(--border-color)] text-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]'}`}>
+                        {task.title}
+                      </p>
+                      {task.dueDate && (
+                        <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                          {format(new Date(task.dueDate), 'h:mm a')}
+                        </p>
+                      )}
+                    </div>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        task.priority === 'high'
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                          : task.priority === 'medium'
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                      }`}
+                    >
+                      {task.priority || 'Low'}
+                    </span>
+                  </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <FaTasks className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
-                  <p className="text-[var(--text-secondary)] mb-2 font-medium">No pending tasks</p>
-                  <p className="text-sm text-[var(--text-tertiary)] mb-4">Create one to get started!</p>
+                <p className="text-sm text-[var(--text-tertiary)] text-center py-4">No tasks for today</p>
+              )}
                   <button
                     onClick={() => {
                       setEditingTask(null);
                       setIsTaskModalOpen(true);
                     }}
-                    className="btn-primary text-sm"
+                className="w-full mt-4 py-2 px-4 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] font-medium transition-colors flex items-center justify-center gap-2"
                   >
-                    <FaPlus className="inline mr-2" />
-                    Create Task
+                <FaPlus className="text-xs" />
+                <span>Smart Task</span>
                   </button>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
+        </motion.div>
 
-        {/* Sidebar */}
-        <div className="space-y-4 md:space-y-6">
-          {/* Discipline Points */}
-          <DisciplinePoints xp={user?.xp || 0} level={user?.level || 1} streak={user?.streak || 0} />
+        {/* Right Side: Streak and Consistency */}
+        <div className="flex lg:flex-col gap-4 lg:space-y-4 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
+          {/* Streak Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="card p-5 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <FaFire className="text-orange-500" />
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Streak</h3>
+            </div>
+            <p className="text-3xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
+          </motion.div>
 
-          {/* Active Goals */}
-          <div className="card p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Goals</h2>
+          {/* Consistency Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="card p-5 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto"
+          >
+            <h3 className="text-base font-semibold text-[var(--text-primary)] mb-2">Stay consistent!</h3>
+            <p className="text-sm text-[var(--text-secondary)] mb-3">
+              You've done {consistencyPercentage}% of your week's plan
+            </p>
+            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2">
+              <div
+                className="bg-[var(--accent-primary)] h-2 rounded-full transition-all duration-500"
+                style={{ width: `${consistencyPercentage}%` }}
+              />
             </div>
-            <div className="space-y-3">
-              {Array.isArray(goals) && goals.slice(0, 3).map((goal) => (
-                <GoalTracker
-                  key={goal._id}
-                  goal={goal}
-                  onUpdate={onUpdateGoalProgress}
-                  onDelete={onDeleteGoal}
-                  onEdit={onEditGoal}
-                />
-              ))}
-            </div>
-          </div>
+          </motion.div>
         </div>
       </div>
+
+      {/* Lower Middle Section: Focus Mode and Consistency */}
+      <div className="flex md:grid md:grid-cols-2 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+        {/* Focus Mode Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="card p-6 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex-shrink-0 w-[300px] md:w-auto"
+        >
+          <h3 className="text-lg font-semibold mb-4">Focus mode ready</h3>
+          <button
+            onClick={() => navigate('/dashboard/focus')}
+            className="w-full py-3 px-4 rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium transition-all flex items-center justify-center gap-2"
+          >
+            Start 25 min session
+          </button>
+        </motion.div>
+
+        {/* Consistency Card with Lightbulb */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="card p-6 rounded-2xl flex-shrink-0 w-[300px] md:w-auto"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <FaLightbulb className="text-yellow-500 text-xl" />
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Stay consistent</h3>
+            </div>
+          <p className="text-sm text-[var(--text-secondary)] mb-3">
+            You've done {consistencyPercentage}% of your week's plan
+          </p>
+          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2">
+            <div
+              className="bg-yellow-500 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${consistencyPercentage}%` }}
+            />
+            </div>
+        </motion.div>
+          </div>
+
+      {/* Bottom Section: Today's Spend and Quick Note */}
+      <div className="flex md:grid md:grid-cols-2 gap-4 mb-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+        {/* Today's Spend Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <span className="text-blue-600 dark:text-blue-400 font-semibold">$</span>
+        </div>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Spend</h3>
+      </div>
+            <button
+              onClick={() => navigate('/dashboard/finance')}
+              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+            >
+              <FaPlus />
+            </button>
+          </div>
+          <p className="text-2xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
+          <p className="text-xs text-[var(--text-tertiary)] mt-2">Track your expenses</p>
+        </motion.div>
+
+        {/* Quick Note Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="card p-5 rounded-2xl flex-shrink-0 w-[280px] md:w-auto"
+        >
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-4">Quick Note</h3>
+          <input
+            type="text"
+            placeholder="Add text..."
+            className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
+            onClick={() => navigate('/dashboard/notes')}
+          />
+        </motion.div>
+      </div>
+
+      {/* Analytics Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.0 }}
+        className="card p-6 rounded-2xl"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Analytics</h3>
+          <button
+            onClick={() => navigate('/dashboard/analytics')}
+            className="text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors"
+          >
+            View Full Analytics →
+          </button>
+        </div>
+        <div>
+          <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-4">Weekly Task Completion</h4>
+          {analytics?.weeklyCompletion ? (
+            <GraphCard
+              title=""
+              data={analytics.weeklyCompletion.map((item, index) => ({
+                name: item.week || `Week ${index + 1}`,
+                completed: item.completed || 0,
+                total: item.total || 0,
+              }))}
+              type="line"
+              dataKey="completed"
+            />
+          ) : (
+            <div className="h-64 flex items-center justify-center">
+              <p className="text-[var(--text-tertiary)] text-sm">No analytics data available</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 };
@@ -309,10 +544,11 @@ export const DashboardTasks = ({
           tasks: [],
         };
       }
+
       dateGroups[dateKey].tasks.push(task);
     });
 
-    // Sort date keys in descending order (newest first)
+    // Sort by date (most recent first)
     return Object.keys(dateGroups)
       .sort((a, b) => new Date(b) - new Date(a))
       .reduce((acc, key) => {
@@ -503,12 +739,13 @@ export const DashboardGoals = ({
   tasks = [],
 }) => {
   const [selectedGoalForAnalytics, setSelectedGoalForAnalytics] = useState(null);
+
   return (
     <div className="p-4 md:p-8 overflow-x-hidden">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Goals</h1>
-          <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your long-term objectives</p>
+          <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your progress and achievements</p>
         </div>
         <button
           onClick={() => {
@@ -522,22 +759,25 @@ export const DashboardGoals = ({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {Array.isArray(goals) && goals.map((goal) => (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Goals List */}
+        <div className="lg:col-span-2 space-y-4">
+          {goals && goals.length > 0 ? (
+            goals.map((goal) => (
           <GoalTracker
             key={goal._id}
             goal={goal}
             onUpdate={onUpdateGoalProgress}
             onDelete={onDeleteGoal}
             onEdit={onEditGoal}
-            onViewAnalytics={(goal) => setSelectedGoalForAnalytics(goal)}
-          />
-        ))}
-        {(!Array.isArray(goals) || goals.length === 0) && (
-          <div className="col-span-2 card p-12 text-center">
+                onViewAnalytics={() => setSelectedGoalForAnalytics(goal)}
+              />
+            ))
+          ) : (
+            <div className="card p-12 text-center">
             <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
             <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
-            <p className="text-sm text-[var(--text-tertiary)] mb-6">Set your first goal to start tracking your progress</p>
+              <p className="text-sm text-[var(--text-tertiary)] mb-6">Create your first goal to get started!</p>
             <button
               onClick={() => {
                 setEditingGoal(null);
@@ -552,716 +792,119 @@ export const DashboardGoals = ({
         )}
       </div>
       
-      {/* Goal Analytics Modal */}
-      {selectedGoalForAnalytics && (
-        <GoalAnalytics
-          goal={selectedGoalForAnalytics}
-          tasks={tasks}
-          onClose={() => setSelectedGoalForAnalytics(null)}
-        />
-      )}
+        {/* Analytics Sidebar */}
+        <div className="space-y-6">
+          {selectedGoalForAnalytics ? (
+            <GoalAnalytics goal={selectedGoalForAnalytics} tasks={tasks} />
+          ) : (
+            <div className="card p-6">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Goal Analytics</h3>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Select a goal to view detailed analytics and progress insights.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
 // Analytics View
-export const DashboardAnalytics = ({ analytics, user, tasks = [], goals = [] }) => {
-  const [timeFilter, setTimeFilter] = useState('7d'); // 7d, 30d, all
-  
-  // Calculate additional stats from tasks and goals
-  const stats = useMemo(() => {
-    const allTasks = tasks || [];
-    const completedTasks = allTasks.filter(t => t.status === 'completed');
-    const pendingTasks = allTasks.filter(t => t.status === 'pending');
-    const highPriorityTasks = allTasks.filter(t => t.priority === 'high');
-    const overdueTasks = allTasks.filter(t => {
-      if (!t.dueDate) return false;
-      return new Date(t.dueDate) < new Date() && t.status !== 'completed';
-    });
-    
-    const allGoals = goals || [];
-    const completedGoals = allGoals.filter(g => g.progress === 100);
-    const inProgressGoals = allGoals.filter(g => g.progress > 0 && g.progress < 100);
-    const avgGoalProgress = allGoals.length > 0
-      ? Math.round(allGoals.reduce((sum, g) => sum + (g.progress || 0), 0) / allGoals.length)
-      : 0;
-    
-    const completionRate = allTasks.length > 0
-      ? Math.round((completedTasks.length / allTasks.length) * 100)
-      : 0;
-    
-    return {
-      totalTasks: allTasks.length,
-      completedTasks: completedTasks.length,
-      pendingTasks: pendingTasks.length,
-      completionRate,
-      highPriorityTasks: highPriorityTasks.length,
-      overdueTasks: overdueTasks.length,
-      totalGoals: allGoals.length,
-      completedGoals: completedGoals.length,
-      inProgressGoals: inProgressGoals.length,
-      avgGoalProgress,
-    };
-  }, [tasks, goals]);
-  
-  // Filter analytics data based on time filter
-  const filteredAnalytics = useMemo(() => {
-    if (!analytics) return null;
-    
-    const now = new Date();
-    let cutoffDate = new Date();
-    
-    switch (timeFilter) {
-      case '7d':
-        cutoffDate.setDate(now.getDate() - 7);
-        break;
-      case '30d':
-        cutoffDate.setDate(now.getDate() - 30);
-        break;
-      case 'all':
-      default:
-        cutoffDate = new Date(0); // Beginning of time
-        break;
-    }
-    
-    // Filter daily productivity
-    const filteredDaily = analytics.dailyProductivity
-      ? analytics.dailyProductivity.filter(item => {
-          const itemDate = new Date(item.date);
-          return itemDate >= cutoffDate;
-        })
-      : [];
-    
-    return {
-      ...analytics,
-      dailyProductivity: filteredDaily,
-      weeklyCompletion: analytics.weeklyCompletion || [],
-    };
-  }, [analytics, timeFilter]);
-  
-  // Calculate trends
-  const trends = useMemo(() => {
-    if (!filteredAnalytics?.dailyProductivity || filteredAnalytics.dailyProductivity.length < 2) {
-      return null;
-    }
-    
-    const recent = filteredAnalytics.dailyProductivity.slice(-3);
-    const previous = filteredAnalytics.dailyProductivity.slice(-6, -3);
-    
-    const recentAvg = recent.reduce((sum, item) => sum + (item.productivity || 0), 0) / recent.length;
-    const previousAvg = previous.length > 0
-      ? previous.reduce((sum, item) => sum + (item.productivity || 0), 0) / previous.length
-      : recentAvg;
-    
-    const productivityTrend = recentAvg - previousAvg;
-    const completionTrend = recent.reduce((sum, item) => sum + (item.completed || 0), 0) -
-      (previous.reduce((sum, item) => sum + (item.completed || 0), 0) || 0);
-    
-    return {
-      productivityTrend: Math.round(productivityTrend),
-      completionTrend,
-      isImproving: productivityTrend > 0,
-    };
-  }, [filteredAnalytics]);
-  
+export const DashboardAnalytics = ({ analytics, tasks, goals, habits }) => {
   return (
-    <div className="p-4 md:p-8">
-      {/* Header */}
-      <div className="mb-6 md:mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
-            <p className="text-sm md:text-base text-[var(--text-secondary)]">Your productivity insights and trends</p>
+    <div className="p-4 md:p-8 overflow-x-hidden">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
+        <p className="text-[var(--text-secondary)]">Track your productivity and progress</p>
           </div>
           
-          {/* Time Filter */}
-          <div className="flex items-center gap-2 bg-[var(--bg-secondary)] p-1 rounded-lg border border-[var(--border-color)]">
-            {['7d', '30d', 'all'].map((period) => (
-              <button
-                key={period}
-                onClick={() => setTimeFilter(period)}
-                className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-md transition-all ${
-                  timeFilter === period
-                    ? 'bg-[var(--accent-primary)] text-white shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                {period === '7d' ? '7 Days' : period === '30d' ? '30 Days' : 'All Time'}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Overview Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card p-4 md:p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs md:text-sm text-[var(--text-secondary)]">Completion Rate</p>
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-              <FaChartLine className="text-indigo-600 text-base md:text-lg" />
-            </div>
-          </div>
-          <p className="text-xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
-            {stats.completionRate}%
-          </p>
-          <p className="text-xs text-[var(--text-tertiary)]">
-            {stats.completedTasks} of {stats.totalTasks} tasks
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-[var(--text-secondary)]">Pending Tasks</p>
-            <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-              <FaTasks className="text-orange-600 text-lg" />
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
-            {stats.pendingTasks}
-          </p>
-          <p className="text-xs text-[var(--text-tertiary)]">
-            {stats.overdueTasks > 0 && `${stats.overdueTasks} overdue`}
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-[var(--text-secondary)]">Goals Progress</p>
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <FaBullseye className="text-green-600 text-lg" />
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
-            {stats.avgGoalProgress}%
-          </p>
-          <p className="text-xs text-[var(--text-tertiary)]">
-            {stats.completedGoals} of {stats.totalGoals} completed
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-[var(--text-secondary)]">Streak</p>
-            <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-              <FaFire className="text-red-600 text-lg" />
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-[var(--text-primary)] mb-1">
-            {user?.streak || 0}
-          </p>
-          <p className="text-xs text-[var(--text-tertiary)]">days in a row</p>
-        </motion.div>
-      </div>
-
-      {/* Trends Section */}
-      {trends && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card p-6 mb-6"
-        >
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Trends</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] rounded-lg">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                trends.isImproving ? 'bg-green-500/10' : 'bg-red-500/10'
-              }`}>
-                <FaChartLine className={`text-lg ${
-                  trends.isImproving ? 'text-green-600' : 'text-red-600'
-                }`} />
-              </div>
-              <div>
-                <p className="text-sm text-[var(--text-secondary)]">Productivity Trend</p>
-                <p className={`text-xl font-bold ${
-                  trends.isImproving ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {trends.isImproving ? '+' : ''}{trends.productivityTrend}%
-                </p>
-                <p className="text-xs text-[var(--text-tertiary)]">
-                  {trends.isImproving ? 'Improving' : 'Declining'}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] rounded-lg">
-              <div className="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                <FaTasks className="text-indigo-600 text-lg" />
-              </div>
-              <div>
-                <p className="text-sm text-[var(--text-secondary)]">Completion Trend</p>
-                <p className="text-xl font-bold text-[var(--text-primary)]">
-                  {trends.completionTrend > 0 ? '+' : ''}{trends.completionTrend}
-                </p>
-                <p className="text-xs text-[var(--text-tertiary)]">tasks completed</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Charts */}
-      {filteredAnalytics ? (
-        <div className="space-y-6">
-          {filteredAnalytics.dailyProductivity && filteredAnalytics.dailyProductivity.length > 0 && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {analytics?.taskCompletion && (
             <GraphCard
-              title={`Daily Productivity (${timeFilter === '7d' ? 'Last 7 Days' : timeFilter === '30d' ? 'Last 30 Days' : 'All Time'})`}
-              data={filteredAnalytics.dailyProductivity}
+            title="Task Completion Over Time"
+            data={analytics.taskCompletion}
               type="line"
+            dataKey="completed"
             />
           )}
-          {filteredAnalytics.weeklyCompletion && filteredAnalytics.weeklyCompletion.length > 0 && (
+
+        {analytics?.weeklyCompletion && (
             <GraphCard
               title="Weekly Task Completion"
-              data={filteredAnalytics.weeklyCompletion}
+            data={analytics.weeklyCompletion.map((item, index) => ({
+              name: item.week || `Week ${index + 1}`,
+              completed: item.completed || 0,
+              total: item.total || 0,
+            }))}
               type="bar"
-            />
-          )}
-        </div>
-      ) : (
-        <div className="card p-12 text-center">
-          <FaChartLine className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
-          <p className="text-[var(--text-secondary)] mb-2">No analytics data available</p>
-          <p className="text-sm text-[var(--text-tertiary)]">
-            Complete some tasks to see your productivity insights
-          </p>
-        </div>
-      )}
+            dataKey="completed"
+          />
+        )}
+
+        {analytics?.goalProgress && (
+          <GraphCard
+            title="Goal Progress"
+            data={analytics.goalProgress}
+            type="area"
+            dataKey="progress"
+          />
+        )}
+
+        {analytics?.habitStreak && (
+          <GraphCard
+            title="Habit Streak"
+            data={analytics.habitStreak}
+            type="line"
+            dataKey="streak"
+          />
+        )}
+      </div>
     </div>
   );
 };
 
 // Team View
-export const DashboardTeam = ({ 
-  friends, 
-  friendRequests = [],
-  sentFriendRequests = [],
-  leaderboard, 
-  tasks,
-  onAddFriend, 
-  onRemoveFriend,
-  onAcceptFriendRequest,
-  onDeclineFriendRequest,
-  onCancelFriendRequest,
-  onToggleTask,
-  onDeleteTask,
-  onEditTask,
-  setIsTaskModalOpen,
-  setEditingTask,
-  currentUser,
-}) => {
-  const { user } = useAuthStore();
-  const currentUserId = currentUser?.id || currentUser?._id || user?.id || user?._id;
-  
-  // Safety check: ensure all required props have defaults
-  const safeFriends = friends || [];
-  const safeFriendRequests = friendRequests || [];
-  const safeSentFriendRequests = sentFriendRequests || [];
-  const safeLeaderboard = leaderboard || [];
-  const safeTasks = tasks || [];
-  
-  // Debug logging (commented out for production)
-  // console.log('🔍 Filtering shared tasks. Total tasks:', safeTasks.length);
-  // console.log('🔍 Current user ID:', user?.id || user?._id);
-  
-  // Get shared tasks (tasks shared with you or tasks you shared)
-  const sharedTasks = safeTasks.filter(task => {
-    if (!task) return false;
-    
-    const taskUserId = task.userId?._id || task.userId || task.userId;
-    const currentUserId = user?.id || user?._id;
-    const isOwnTask = taskUserId?.toString() === currentUserId?.toString();
-    
-    // Check if task is shared with me (I'm in sharedWith array)
-    const isSharedWithMe = task.sharedWith?.some(f => {
-      const friendId = f?._id || f?.id || f;
-      return friendId?.toString() === currentUserId?.toString();
-    });
-    
-    // Check if it's my task that I shared with others
-    const isMySharedTask = isOwnTask && task.sharedWith && Array.isArray(task.sharedWith) && task.sharedWith.length > 0;
-    
-    // Also check if it's marked as shared (legacy support)
-    const isMarkedShared = task.isShared === true;
-    
-    const result = isSharedWithMe || isMySharedTask || (isMarkedShared && !isOwnTask);
-    
-    // Debug logging disabled for production
-    
-    return result;
-  });
-
+export const DashboardTeam = ({ friends, friendRequests, sentFriendRequests, leaderboard }) => {
   return (
-    <div className="p-4 md:p-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Team</h1>
-          <p className="text-sm md:text-base text-[var(--text-secondary)]">Connect with friends and track progress together</p>
-        </div>
-        <button onClick={onAddFriend} className="btn-primary flex items-center justify-center gap-2 w-full md:w-auto">
-          <FaPlus />
-          <span>Add Friend</span>
-        </button>
+    <div className="p-4 md:p-8 overflow-x-hidden">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Team</h1>
+        <p className="text-[var(--text-secondary)]">Connect with friends and compete on the leaderboard</p>
       </div>
 
-      {/* Friend Requests Section */}
-      {((safeFriendRequests && safeFriendRequests.length > 0) || (safeSentFriendRequests && safeSentFriendRequests.length > 0)) && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card p-6 mb-6"
-        >
-          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <FaUserFriends />
-            Friend Requests
-          </h2>
-          
-          {/* Incoming Requests */}
-          {safeFriendRequests && safeFriendRequests.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Incoming Requests</h3>
-              <div className="space-y-2">
-                {safeFriendRequests.map((request) => {
-                  if (!request) return null;
-                  // Handle case where request might be just an ID string
-                  if (typeof request === 'string') {
-                    return (
-                      <div
-                        key={request}
-                        className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                            U
-                          </div>
-                          <div>
-                            <p className="font-medium text-[var(--text-primary)]">
-                              Loading...
-                            </p>
-                            <p className="text-xs text-[var(--text-secondary)]">
-                              Wants to be friends
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              if (onAcceptFriendRequest) {
-                                onAcceptFriendRequest(request);
-                              }
-                            }}
-                            className="px-3 py-1.5 text-sm font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (onDeclineFriendRequest) {
-                                onDeclineFriendRequest(request);
-                              }
-                            }}
-                            className="px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                          >
-                            Decline
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }
-                  const requestId = request._id || request.id || request;
-                  const requestName = request?.name || request?.email || 'Unknown';
-                  const requestEmail = request?.email || '';
-                  return (
-                  <div
-                    key={requestId}
-                    className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                        {(requestName || 'U')[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium text-[var(--text-primary)]">
-                          {requestName}
-                        </p>
-                        <p className="text-xs text-[var(--text-secondary)]">
-                          Wants to be friends
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          if (onAcceptFriendRequest) {
-                            onAcceptFriendRequest(requestId);
-                          }
-                        }}
-                        className="px-3 py-1.5 text-sm font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (onDeclineFriendRequest) {
-                            onDeclineFriendRequest(requestId);
-                          }
-                        }}
-                        className="px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Sent Requests */}
-          {safeSentFriendRequests && safeSentFriendRequests.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Sent Requests</h3>
-              <div className="space-y-2">
-                {safeSentFriendRequests.map((request) => {
-                  if (!request) return null;
-                  // Handle case where request might be just an ID string
-                  if (typeof request === 'string') {
-                    return (
-                      <div
-                        key={request}
-                        className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                            U
-                          </div>
-                          <div>
-                            <p className="font-medium text-[var(--text-primary)]">
-                              Loading...
-                            </p>
-                            <p className="text-xs text-[var(--text-secondary)]">
-                              Request pending
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            if (onCancelFriendRequest) {
-                              onCancelFriendRequest(request);
-                            }
-                          }}
-                          className="px-3 py-1.5 text-sm font-medium bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    );
-                  }
-                  const requestId = request._id || request.id || request;
-                  const requestName = request?.name || request?.email || 'Unknown';
-                  return (
-                  <div
-                    key={requestId}
-                    className="flex items-center justify-between p-3 bg-[var(--bg-tertiary)] rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                        {(requestName || 'U')[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium text-[var(--text-primary)]">
-                          {requestName}
-                        </p>
-                        <p className="text-xs text-[var(--text-secondary)]">
-                          Request pending
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (onCancelFriendRequest) {
-                          onCancelFriendRequest(requestId);
-                        }
-                      }}
-                      className="px-3 py-1.5 text-sm font-medium bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </motion.div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
-        {/* Friends List */}
-        <div className="card p-4 md:p-6">
-          <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">Friends ({safeFriends.length})</h2>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {safeFriends.length === 0 ? (
-              <p className="text-center text-[var(--text-secondary)] py-8 text-sm">
-                No friends yet. Add friends to see their progress!
-              </p>
-            ) : (
-              safeFriends.map((friend, index) => {
-                if (!friend) return null;
-                return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <FriendStatus
-                    key={friend._id || friend.id || index}
-                    friend={friend}
-                    onRemove={onRemoveFriend}
-                    rank={index + 1}
-                  />
-                );
-              })
-            )}
-          </div>
-        </div>
+          friends={friends}
+          friendRequests={friendRequests}
+          sentFriendRequests={sentFriendRequests}
+        />
 
-        {/* Leaderboard */}
-        <div className="card p-4 md:p-6">
-          <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-3 md:mb-4">Leaderboard</h2>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {safeLeaderboard.length === 0 ? (
-              <p className="text-center text-[var(--text-secondary)] py-4 text-sm">
-                No leaderboard data yet
-              </p>
-            ) : (
-              safeLeaderboard.map((leaderboardUser, index) => {
-                if (!leaderboardUser) return null;
-                const userId = leaderboardUser._id || leaderboardUser.id;
-                const isCurrentUser = userId?.toString() === currentUserId?.toString();
-                
-                return (
-                  <div
-                    key={userId || index}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                      index === 0
-                        ? 'bg-indigo-500/5 border border-indigo-500/20'
-                        : isCurrentUser
-                        ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30'
-                        : 'hover:bg-[var(--bg-tertiary)]'
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      index === 0
-                        ? 'bg-indigo-500/10 text-indigo-600'
-                        : isCurrentUser
-                        ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
-                        : 'bg-indigo-500/10 text-indigo-600'
-                    }`}>
+        {leaderboard && leaderboard.length > 0 && (
+          <div className="card p-6">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
+            <div className="space-y-3">
+              {leaderboard.map((user, index) => (
+                <div
+                  key={user._id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center font-semibold">
                       {index + 1}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-[var(--text-primary)]">
-                          {leaderboardUser.name || leaderboardUser.email || 'Unknown'}
-                        </p>
-                        {isCurrentUser && (
-                          <span className="text-xs px-2 py-0.5 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] rounded-full font-medium">
-                            You
-                          </span>
-                        )}
+                    <div>
+                      <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
+                      <p className="text-sm text-[var(--text-secondary)]">{user.xp || 0} XP</p>
                       </div>
-                      <p className="text-xs text-[var(--text-secondary)]">
-                        {leaderboardUser.streak || 0} streak • {leaderboardUser.totalTasksCompleted || 0} tasks • {leaderboardUser.xp || 0} DP • Level {leaderboardUser.level || 1}
-                      </p>
                     </div>
+                  {index === 0 && <FaTrophy className="text-yellow-500" />}
                   </div>
-                );
-              })
-            )}
+              ))}
           </div>
         </div>
-      </div>
-
-      {/* Shared Tasks Section - Always visible */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card p-6 mt-6"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
-              <FaUserFriends />
-              Shared Tasks ({(sharedTasks || []).length})
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
-              Tasks you've shared with friends or tasks shared with you
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              if (setEditingTask) setEditingTask(null);
-              if (setIsTaskModalOpen) setIsTaskModalOpen(true);
-            }}
-            className="btn-primary flex items-center gap-2"
-          >
-            <FaPlus />
-            <span>Create Shared Task</span>
-          </button>
-        </div>
-
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {!sharedTasks || sharedTasks.length === 0 ? (
-            <div className="text-center py-8">
-              <FaUserFriends className="text-4xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
-              <p className="text-[var(--text-secondary)] mb-2">
-                No shared tasks yet
-              </p>
-              <p className="text-sm text-[var(--text-tertiary)] mb-4">
-                Create a task and share it with your friends to collaborate!
-              </p>
-              <button
-                onClick={() => {
-                  setEditingTask(null);
-                  setIsTaskModalOpen(true);
-                }}
-                className="btn-primary"
-              >
-                Create Your First Shared Task
-              </button>
-            </div>
-          ) : (
-            sharedTasks.map((task) => (
-              <TaskCard
-                key={task._id}
-                task={task}
-                onToggle={onToggleTask}
-                onDelete={onDeleteTask}
-                onEdit={onEditTask}
-              />
-            ))
           )}
         </div>
-      </motion.div>
     </div>
   );
 };
-
-
-
