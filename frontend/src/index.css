@@ -481,5 +481,43 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
   }
+
+  /* Apple Premium Card Styles */
+  .apple-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.5) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.05) inset;
+  }
+
+  html[data-theme='dark'] .apple-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  }
+
+  /* Smooth Apple-like transitions */
+  .apple-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Premium button hover effect */
+  .apple-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .apple-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .apple-button:active {
+    transform: translateY(0);
+  }
 }
 
