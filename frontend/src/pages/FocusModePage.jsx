@@ -315,7 +315,9 @@ const FocusModePage = () => {
   return (
     <div 
       ref={containerRef}
-      className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden transition-all duration-500"
+      className={`min-h-screen bg-[var(--bg-primary)] relative transition-all duration-500 ${
+        isFullscreen ? 'overflow-y-auto' : 'overflow-hidden'
+      }`}
     >
       {/* Professional Background with smooth transitions */}
       <AnimatePresence mode="wait">
@@ -420,7 +422,9 @@ const FocusModePage = () => {
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+      <div className={`relative z-10 flex flex-col items-center justify-center p-4 md:p-8 ${
+        isFullscreen ? 'min-h-full py-8' : 'min-h-screen'
+      }`}>
         {/* Header with Fullscreen Button */}
         {!isActive && !isFullscreen && (
           <motion.div
