@@ -224,7 +224,7 @@ const Login = () => {
             repeat: Infinity,
             ease: 'easeInOut',
           }}
-          className="absolute top-1/4 left-1/4 w-72 h-72 md:w-96 md:h-96 bg-gradient-to-br from-primary-500/8 dark:from-primary-500/15 via-purple-500/8 dark:via-purple-500/15 to-transparent rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/4 w-72 h-72 md:w-96 md:h-96 bg-gradient-to-br from-primary-500/8 dark:from-primary-500/10 via-purple-500/8 dark:via-transparent to-transparent rounded-full blur-3xl"
         />
         <motion.div
           animate={{
@@ -238,7 +238,7 @@ const Login = () => {
             ease: 'easeInOut',
             delay: 1.5,
           }}
-          className="absolute bottom-1/4 right-1/4 w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-purple-500/8 dark:from-purple-500/12 via-pink-500/8 dark:via-pink-500/12 to-transparent rounded-full blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-purple-500/8 dark:from-transparent via-pink-500/8 dark:via-transparent to-transparent rounded-full blur-3xl"
         />
         {/* Additional dark mode accent orb */}
         <motion.div
@@ -417,11 +417,11 @@ const Login = () => {
             >
               {/* Enhanced Glassmorphism Card - Futuristic dark mode styling */}
               <div 
-                className="relative backdrop-blur-2xl bg-white/90 dark:bg-[var(--bg-secondary)]/85 dark:backdrop-blur-3xl border border-white/50 dark:border-[var(--border-color)]/70 dark:border-[rgba(129,140,248,0.15)] rounded-2xl p-5 sm:p-6 lg:p-6 transition-all duration-300 login-card"
+                className="relative backdrop-blur-2xl bg-white/90 dark:bg-[var(--bg-secondary)]/85 dark:backdrop-blur-3xl border border-white/50 dark:border-[var(--border-color)]/70 rounded-2xl p-5 sm:p-6 lg:p-6 transition-all duration-300 login-card"
               >
                 {/* Enhanced glow effect - More prominent in dark mode with animated pulse */}
                 <motion.div 
-                  className="absolute -inset-1 bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-pink-500/10 dark:from-primary-500/30 dark:via-purple-500/30 dark:to-pink-500/30 rounded-2xl blur-2xl -z-10"
+                  className="absolute -inset-1 bg-gradient-to-r from-primary-500/10 via-purple-500/10 to-pink-500/10 dark:from-primary-500/10 dark:via-transparent dark:to-transparent rounded-2xl blur-2xl -z-10"
                   animate={{
                     opacity: [0.4, 0.6, 0.4],
                   }}

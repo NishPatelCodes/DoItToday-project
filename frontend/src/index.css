@@ -42,27 +42,26 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
-  /* Dark Theme - Futuristic Deep Dark with Enhanced Contrast */
+  /* Dark Theme - Pure Black with Enhanced Contrast */
   html[data-theme='dark'] {
-    --bg-primary: #0F0F1A; /* Deep dark blue-black for futuristic feel */
-    --bg-secondary: #1A1A2E; /* Slightly lighter for card background */
-    --bg-tertiary: #16213E; /* Even lighter for inputs and elevated elements */
-    --border-color: #2D3748; /* Visible but subtle borders */
+    --bg-primary: #000000; /* Pure black background */
+    --bg-secondary: #0a0a0a; /* Slightly lighter for card background */
+    --bg-tertiary: #141414; /* Even lighter for inputs and elevated elements */
+    --border-color: #1f1f1f; /* Visible but subtle borders */
     --text-primary: #F5F5F5; /* High contrast white for headings and primary text */
     --text-secondary: #D1D5DB; /* Light gray for secondary text - improved contrast */
     --text-tertiary: #9CA3AF; /* Medium gray for placeholders and tertiary text */
-    --accent-primary: #818CF8; /* Bright indigo for accents and buttons */
-    --accent-hover: #6366F1; /* Slightly darker indigo on hover */
+    --accent-primary: #6366f1; /* Indigo for accents and buttons */
+    --accent-hover: #4f46e5; /* Slightly darker indigo on hover */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(129, 140, 248, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 0 20px rgba(129, 140, 248, 0.15);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
   }
 
   /* Enhanced login card shadow for dark mode */
   html[data-theme='dark'] .login-card {
-    box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.6), 
-                0 0 0 1px rgba(129, 140, 248, 0.1),
-                0 0 40px rgba(129, 140, 248, 0.05) !important;
+    box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.8), 
+                0 0 0 1px rgba(255, 255, 255, 0.05) !important;
   }
 
   /* Light mode login card shadow */
@@ -93,7 +92,7 @@
   }
 
   html[data-theme='dark'] * {
-    scrollbar-color: rgba(129, 140, 248, 0.5) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
 
   /* Webkit (Chrome, Safari, Edge) - Premium Styling */
@@ -124,13 +123,8 @@
 
   /* Dark mode scrollbar thumb */
   html[data-theme='dark'] *::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      180deg,
-      rgba(129, 140, 248, 0.4) 0%,
-      rgba(139, 92, 246, 0.5) 100%
-    );
+    background: rgba(255, 255, 255, 0.2);
     background-clip: padding-box;
-    box-shadow: 0 0 8px rgba(129, 140, 248, 0.2);
   }
 
   /* Hover state - More vibrant */
@@ -145,13 +139,8 @@
   }
 
   html[data-theme='dark'] *::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(129, 140, 248, 0.7) 0%,
-      rgba(139, 92, 246, 0.8) 100%
-    );
+    background: rgba(255, 255, 255, 0.3);
     background-clip: padding-box;
-    box-shadow: 0 0 12px rgba(129, 140, 248, 0.4);
   }
 
   /* Active state - When dragging */
@@ -165,13 +154,8 @@
   }
 
   html[data-theme='dark'] *::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(
-      180deg,
-      rgba(129, 140, 248, 0.9) 0%,
-      rgba(139, 92, 246, 1) 100%
-    );
+    background: rgba(255, 255, 255, 0.4);
     background-clip: padding-box;
-    box-shadow: 0 0 16px rgba(129, 140, 248, 0.6);
   }
 
   /* Corner - Where vertical and horizontal scrollbars meet */
@@ -200,11 +184,7 @@
   }
 
   html[data-theme='dark'] .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      180deg,
-      rgba(129, 140, 248, 0.5) 0%,
-      rgba(139, 92, 246, 0.6) 100%
-    );
+    background: rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -237,7 +217,7 @@
   }
 
   html[data-theme='dark'] .glass-card {
-    background: rgba(17, 17, 17, 0.8);
+    background: rgba(0, 0, 0, 0.8);
     border-color: var(--border-color);
   }
 
