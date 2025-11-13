@@ -219,6 +219,15 @@ const FocusModePage = () => {
         console.error('Error completing session:', error);
       }
     }
+    // Exit fullscreen when timer stops
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      } catch (error) {
+        console.error('Error exiting fullscreen:', error);
+      }
+    }
     setIsActive(false);
     setIsPaused(false);
     setTimeLeft(customDuration * 60);
@@ -259,7 +268,16 @@ const FocusModePage = () => {
       }
     }
     
-    setTimeout(() => {
+    setTimeout(async () => {
+      // Exit fullscreen when timer completes
+      if (document.fullscreenElement) {
+        try {
+          await document.exitFullscreen();
+          setIsFullscreen(false);
+        } catch (error) {
+          console.error('Error exiting fullscreen:', error);
+        }
+      }
       setIsActive(false);
       setIsPaused(false);
       setTimeLeft(customDuration * 60);
