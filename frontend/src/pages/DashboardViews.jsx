@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic, FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -820,8 +820,12 @@ export const DashboardTasks = ({
   setIsTaskModalOpen,
   setEditingTask,
   onCreateMultipleTasks,
+  onBulkCompleteTasks,
+  onBulkDeleteTasks,
 }) => {
   const [isMultipleTasksModalOpen, setIsMultipleTasksModalOpen] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState(new Set());
   // Group completed tasks by date segments
   const groupedCompletedTasks = useMemo(() => {
     if (!completedTasks || completedTasks.length === 0) return {};
@@ -956,9 +960,100 @@ export const DashboardTasks = ({
       <div className="space-y-6">
         {/* Pending Tasks */}
         <div className="card p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
-            Pending ({pendingTasks.length})
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+              Pending ({pendingTasks.length})
+            </h2>
+            {pendingTasks.length > 0 && (
+              <div className="flex items-center gap-3">
+                {isSelectMode && (
+                  <div className="flex items-center gap-2">
+                    {selectedTasks.size > 0 && (
+                      <>
+                        <span className="text-sm text-[var(--text-secondary)]">
+                          {selectedTasks.size} selected
+                        </span>
+                        <button
+                          onClick={async () => {
+                            if (onBulkCompleteTasks) {
+                              await onBulkCompleteTasks(Array.from(selectedTasks));
+                            }
+                            setSelectedTasks(new Set());
+                            setIsSelectMode(false);
+                          }}
+                          className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
+                        >
+                          <FaCheckCircle />
+                          Complete ({selectedTasks.size})
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (window.confirm(`Are you sure you want to delete ${selectedTasks.size} task${selectedTasks.size !== 1 ? 's' : ''}? This action cannot be undone.`)) {
+                              if (onBulkDeleteTasks) {
+                                await onBulkDeleteTasks(Array.from(selectedTasks));
+                              }
+                              setSelectedTasks(new Set());
+                              setIsSelectMode(false);
+                            }
+                          }}
+                          className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
+                        >
+                          <FaTimes />
+                          Delete ({selectedTasks.size})
+                        </button>
+                      </>
+                    )}
+                    {selectedTasks.size === 0 && (
+                      <button
+                        onClick={() => {
+                          const allTaskIds = new Set(pendingTasks.map(task => task._id));
+                          setSelectedTasks(allTaskIds);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium transition-colors"
+                      >
+                        Select All
+                      </button>
+                    )}
+                    {selectedTasks.size === pendingTasks.length && selectedTasks.size > 0 && (
+                      <button
+                        onClick={() => {
+                          setSelectedTasks(new Set());
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium transition-colors"
+                      >
+                        Deselect All
+                      </button>
+                    )}
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    setIsSelectMode(!isSelectMode);
+                    if (isSelectMode) {
+                      setSelectedTasks(new Set());
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    isSelectMode
+                      ? 'bg-[var(--accent-primary)] text-white hover:opacity-90'
+                      : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--border-color)]'
+                  }`}
+                >
+                  {isSelectMode ? (
+                    <>
+                      <FaCheckSquare />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <FaSquare />
+                      Select
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
           <div className="space-y-2">
             {pendingTasks.length > 0 ? (
               pendingTasks.map((task) => (
@@ -968,6 +1063,17 @@ export const DashboardTasks = ({
                   onToggle={onToggleTask}
                   onDelete={onDeleteTask}
                   onEdit={onEditTask}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedTasks.has(task._id)}
+                  onSelect={(taskId) => {
+                    const newSelected = new Set(selectedTasks);
+                    if (newSelected.has(taskId)) {
+                      newSelected.delete(taskId);
+                    } else {
+                      newSelected.add(taskId);
+                    }
+                    setSelectedTasks(newSelected);
+                  }}
                 />
               ))
             ) : (

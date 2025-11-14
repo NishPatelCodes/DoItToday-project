@@ -5,7 +5,7 @@ import { format, isPast, isToday } from 'date-fns';
 import { useAuthStore } from '../store/authStore';
 import ConfirmationModal from './ConfirmationModal';
 
-const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
+const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSelected = false, onSelect }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const { user } = useAuthStore();
@@ -36,45 +36,79 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
       }`}
     >
       <div className="flex items-start gap-3">
-        <button
-          onClick={() => {
-            if (isCompleted) {
-              // Uncomplete - no confirmation needed
-              onToggle(task._id);
-            } else {
-              // Complete - show confirmation
-              setShowCompleteConfirm(true);
-            }
-          }}
-          className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
-            isCompleted
-              ? 'bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/40 scale-100'
-              : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 hover:scale-105'
-          }`}
-          aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
-        >
-          {isCompleted && (
-            <motion.svg
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              className="w-4 h-4 text-white"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="3"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <motion.path
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-                d="M5 13l4 4L19 7"
-              />
-            </motion.svg>
-          )}
-        </button>
+        {isSelectMode && !isCompleted ? (
+          <button
+            onClick={() => onSelect && onSelect(task._id)}
+            className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded border-2 transition-all duration-300 flex items-center justify-center ${
+              isSelected
+                ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
+                : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)]'
+            }`}
+            aria-label={isSelected ? 'Deselect task' : 'Select task'}
+          >
+            {isSelected && (
+              <motion.svg
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className="w-4 h-4 text-white"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <motion.path
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.2 }}
+                  d="M5 13l4 4L19 7"
+                />
+              </motion.svg>
+            )}
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              if (isCompleted) {
+                // Uncomplete - no confirmation needed
+                onToggle(task._id);
+              } else {
+                // Complete - show confirmation
+                setShowCompleteConfirm(true);
+              }
+            }}
+            className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
+              isCompleted
+                ? 'bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/40 scale-100'
+                : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 hover:scale-105'
+            }`}
+            aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
+          >
+            {isCompleted && (
+              <motion.svg
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className="w-4 h-4 text-white"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <motion.path
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                  d="M5 13l4 4L19 7"
+                />
+              </motion.svg>
+            )}
+          </button>
+        )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -161,24 +195,26 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {!isCompleted && onEdit && (
+        {!isSelectMode && (
+          <div className="flex items-center gap-2">
+            {!isCompleted && onEdit && (
+              <button
+                onClick={() => onEdit(task)}
+                className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+                aria-label={`Edit task: ${task.title}`}
+              >
+                <FaEdit />
+              </button>
+            )}
             <button
-              onClick={() => onEdit(task)}
-              className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
-              aria-label={`Edit task: ${task.title}`}
+              onClick={() => setShowDeleteConfirm(true)}
+              className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+              aria-label={`Delete task: ${task.title}`}
             >
-              <FaEdit />
+              <FaTrash />
             </button>
-          )}
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
-            aria-label={`Delete task: ${task.title}`}
-          >
-            <FaTrash />
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       <ConfirmationModal

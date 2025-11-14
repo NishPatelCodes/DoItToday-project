@@ -297,6 +297,92 @@ const Dashboard = () => {
     }
   };
 
+  const handleBulkCompleteTasks = async (taskIds) => {
+    try {
+      // Complete all selected tasks
+      const promises = taskIds.map(taskId => tasksAPI.update(taskId, { status: 'completed' }));
+      await Promise.all(promises);
+      
+      // Reload all tasks
+      await loadData();
+      
+      // Reload analytics
+      try {
+        const analyticsRes = await analyticsAPI.getDashboard();
+        setAnalytics(analyticsRes.data || {});
+      } catch (e) {
+        // Silently handle analytics reload failure
+      }
+      
+      // Refresh user data and leaderboard
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
+      }
+      
+      toast.success(`Successfully completed ${taskIds.length} task${taskIds.length !== 1 ? 's' : ''}!`);
+    } catch (error) {
+      console.error('Error completing tasks:', error);
+      toast.error('Failed to complete tasks. Please try again.');
+    }
+  };
+
+  const handleBulkDeleteTasks = async (taskIds) => {
+    try {
+      // Delete all selected tasks
+      const promises = taskIds.map(taskId => tasksAPI.delete(taskId));
+      await Promise.all(promises);
+      
+      // Remove tasks from store immediately
+      const { deleteTask } = useDataStore.getState();
+      taskIds.forEach(taskId => deleteTask(taskId));
+      
+      // Reload all tasks
+      await loadData();
+      
+      // Reload analytics
+      try {
+        const analyticsRes = await analyticsAPI.getDashboard();
+        setAnalytics(analyticsRes.data || {});
+      } catch (e) {
+        // Silently handle analytics reload failure
+      }
+      
+      // Refresh user data and leaderboard
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
+      }
+      
+      toast.success(`Successfully deleted ${taskIds.length} task${taskIds.length !== 1 ? 's' : ''}!`);
+    } catch (error) {
+      console.error('Error deleting tasks:', error);
+      toast.error('Failed to delete tasks. Please try again.');
+    }
+  };
+
   const handleEditTask = (task) => {
     setEditingTask(task);
     setIsTaskModalOpen(true);
@@ -718,6 +804,8 @@ const Dashboard = () => {
                 setIsTaskModalOpen={setIsTaskModalOpen}
                 setEditingTask={setEditingTask}
                 onCreateMultipleTasks={handleCreateMultipleTasks}
+                onBulkCompleteTasks={handleBulkCompleteTasks}
+                onBulkDeleteTasks={handleBulkDeleteTasks}
               />
             }
           />
