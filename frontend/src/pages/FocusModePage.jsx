@@ -647,6 +647,19 @@ const FocusModePage = () => {
                   <FaStop />
                   End Session
                 </motion.button>
+                {/* Fullscreen Button - Only visible when timer is running (not paused) */}
+                {isActive && !isPaused && (
+                  <motion.button
+                    onClick={handleFullscreen}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-secondary flex items-center gap-3 px-6 py-3 text-lg shadow-md"
+                    title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                  >
+                    {isFullscreen ? <FaCompress /> : <FaExpand />}
+                    {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                  </motion.button>
+                )}
               </>
             )}
           </div>
