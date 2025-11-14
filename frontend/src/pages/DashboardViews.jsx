@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -13,6 +13,7 @@ import GraphCard from '../components/GraphCard';
 import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
 import DashboardSummary from '../components/DashboardSummary';
+import MultipleTasksModal from '../components/MultipleTasksModal';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -818,7 +819,9 @@ export const DashboardTasks = ({
   onEditTask,
   setIsTaskModalOpen,
   setEditingTask,
+  onCreateMultipleTasks,
 }) => {
+  const [isMultipleTasksModalOpen, setIsMultipleTasksModalOpen] = useState(false);
   // Group completed tasks by date segments
   const groupedCompletedTasks = useMemo(() => {
     if (!completedTasks || completedTasks.length === 0) return {};
@@ -920,17 +923,35 @@ export const DashboardTasks = ({
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Tasks</h1>
           <p className="text-sm md:text-base text-[var(--text-secondary)]">Manage your daily tasks</p>
         </div>
-        <button
-          onClick={() => {
-            setEditingTask(null);
-            setIsTaskModalOpen(true);
-          }}
-          className="btn-primary flex items-center gap-2"
-        >
-          <FaPlus />
-          <span>New Task</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setIsMultipleTasksModalOpen(true);
+            }}
+            className="btn-secondary flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+          >
+            <FaMagic />
+            <span>Multiple Tasks</span>
+          </button>
+          <button
+            onClick={() => {
+              setEditingTask(null);
+              setIsTaskModalOpen(true);
+            }}
+            className="btn-primary flex items-center gap-2"
+          >
+            <FaPlus />
+            <span>New Task</span>
+          </button>
+        </div>
       </div>
+
+      {/* Multiple Tasks Modal */}
+      <MultipleTasksModal
+        isOpen={isMultipleTasksModalOpen}
+        onClose={() => setIsMultipleTasksModalOpen(false)}
+        onGenerateTasks={onCreateMultipleTasks}
+      />
 
       <div className="space-y-6">
         {/* Pending Tasks */}

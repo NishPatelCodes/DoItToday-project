@@ -185,6 +185,7 @@ export const tasksAPI = {
   update: (id, data) => api.put(`/tasks/${id}`, data),
   delete: (id) => api.delete(`/tasks/${id}`),
   getShared: () => api.get('/tasks/shared'),
+  parseMultiple: (text) => api.post('/tasks/parse-multiple', { text }),
 };
 
 // Goals API

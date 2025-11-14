@@ -302,6 +302,65 @@ const Dashboard = () => {
     setIsTaskModalOpen(true);
   };
 
+  const handleCreateMultipleTasks = async (textInput) => {
+    try {
+      // Call API to parse text and generate tasks
+      const response = await tasksAPI.parseMultiple(textInput);
+      const parsedTasks = response.data.tasks || [];
+
+      if (parsedTasks.length === 0) {
+        toast.error('No tasks could be extracted from the text. Please try with different content.');
+        return;
+      }
+
+      // Create each task individually
+      const createdTasks = [];
+      for (const taskData of parsedTasks) {
+        try {
+          const response = await tasksAPI.create(taskData);
+          createdTasks.push(response.data);
+        } catch (error) {
+          console.error('Error creating task:', error);
+          // Continue with other tasks even if one fails
+        }
+      }
+
+      // Reload all tasks
+      await loadData();
+
+      // Reload analytics
+      try {
+        const analyticsRes = await analyticsAPI.getDashboard();
+        setAnalytics(analyticsRes.data || {});
+      } catch (e) {
+        // Silently handle analytics reload failure
+      }
+
+      // Refresh user data and leaderboard
+      try {
+        const [userRes, leaderboardRes] = await Promise.all([
+          authAPI.getMe(),
+          friendsAPI.getLeaderboard()
+        ]);
+        const { updateUser } = useAuthStore.getState();
+        updateUser({
+          ...userRes.data.user,
+          xp: userRes.data.user.xp || 0,
+          level: userRes.data.user.level || 1,
+        });
+        setLeaderboard(leaderboardRes.data || []);
+      } catch (e) {
+        // Silently handle reload failure
+      }
+
+      toast.success(`Successfully created ${createdTasks.length} task${createdTasks.length !== 1 ? 's' : ''}!`);
+    } catch (error) {
+      console.error('Error creating multiple tasks:', error);
+      toast.error('Failed to create tasks. Please try again.');
+      throw error;
+    }
+  };
+
   const handleCreateTask = async (taskData) => {
     try {
       let newTask;
@@ -658,6 +717,7 @@ const Dashboard = () => {
                 onEditTask={handleEditTask}
                 setIsTaskModalOpen={setIsTaskModalOpen}
                 setEditingTask={setEditingTask}
+                onCreateMultipleTasks={handleCreateMultipleTasks}
               />
             }
           />

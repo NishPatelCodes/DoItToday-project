@@ -295,5 +295,44 @@ router.get('/shared', authenticate, async (req, res) => {
   }
 });
 
+// @route   POST /api/tasks/parse-multiple
+// @desc    Parse text into multiple tasks using AI
+router.post('/parse-multiple', authenticate, async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return res.status(400).json({ message: 'Text is required' });
+    }
+
+    // Import task parser
+    const { parseTextToTasksWithAI } = await import('../utils/taskParser.js');
+
+    // Parse text into tasks
+    const tasks = await parseTextToTasksWithAI(text);
+
+    if (!tasks || tasks.length === 0) {
+      return res.status(400).json({ 
+        message: 'No tasks could be extracted from the text',
+        tasks: [] 
+      });
+    }
+
+    // Limit to 20 tasks max
+    const limitedTasks = tasks.slice(0, 20);
+
+    res.json({
+      message: `Successfully extracted ${limitedTasks.length} task${limitedTasks.length !== 1 ? 's' : ''}`,
+      tasks: limitedTasks,
+    });
+  } catch (error) {
+    console.error('Error parsing tasks:', error);
+    res.status(500).json({ 
+      message: 'Server error while parsing tasks', 
+      error: error.message 
+    });
+  }
+});
+
 export default router;
 
