@@ -17,7 +17,8 @@ const FocusModePage = () => {
   });
   const [customDuration, setCustomDuration] = useState(25);
   const [showCustomInput, setShowCustomInput] = useState(false);
-  const [customMinutes, setCustomMinutes] = useState('');
+  const [customHours, setCustomHours] = useState(0);
+  const [customMinutes, setCustomMinutes] = useState(25);
   const [currentQuote, setCurrentQuote] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [focusStats, setFocusStats] = useState({ totalSessions: 0, totalMinutes: 0, totalDP: 0 });
@@ -318,11 +319,22 @@ const FocusModePage = () => {
 
   const handleCustomDurationSubmit = (e) => {
     e.preventDefault();
-    const minutes = parseInt(customMinutes);
-    if (minutes > 0 && minutes <= 240) {
-      handleSetDuration(minutes);
+    const totalMinutes = customHours * 60 + customMinutes;
+    if (totalMinutes > 0 && totalMinutes <= 240) {
+      handleSetDuration(totalMinutes);
+      setShowCustomInput(false);
     } else {
-      toast.error('Please enter a duration between 1 and 240 minutes');
+      toast.error('Please set a duration between 1 and 240 minutes (4 hours)');
+    }
+  };
+
+  const handleTimePickerConfirm = () => {
+    const totalMinutes = customHours * 60 + customMinutes;
+    if (totalMinutes > 0 && totalMinutes <= 240) {
+      handleSetDuration(totalMinutes);
+      setShowCustomInput(false);
+    } else {
+      toast.error('Please set a duration between 1 and 240 minutes (4 hours)');
     }
   };
 
@@ -436,7 +448,7 @@ const FocusModePage = () => {
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 flex flex-col items-center justify-center p-4 md:p-8 min-h-screen">
+      <div className="relative z-10 flex flex-col items-center justify-center pt-2 pb-4 px-4 md:pt-8 md:pb-8 md:px-8 min-h-screen">
         {/* Motivational Quote */}
         <AnimatePresence mode="wait">
           {currentQuote && (
@@ -448,7 +460,7 @@ const FocusModePage = () => {
               transition={{ duration: 0.6 }}
               className="text-center mb-8 md:mb-12 max-w-3xl px-4"
             >
-              <p className="text-xl md:text-2xl lg:text-3xl font-medium text-[var(--text-primary)] italic leading-relaxed tracking-wide" style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', 'Georgia', serif", letterSpacing: '0.03em', fontWeight: 500 }}>
+              <p className="text-xl md:text-2xl lg:text-3xl font-medium text-[var(--text-primary)] leading-relaxed tracking-wide" style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', 'Georgia', serif", letterSpacing: '0.03em', fontWeight: 500 }}>
                 "{currentQuote}"
               </p>
             </motion.div>
@@ -568,7 +580,16 @@ const FocusModePage = () => {
                   </motion.button>
                 ))}
                 <motion.button
-                  onClick={() => setShowCustomInput(!showCustomInput)}
+                  onClick={() => {
+                    if (!showCustomInput) {
+                      // Initialize with current duration when opening
+                      const hours = Math.floor(customDuration / 60);
+                      const minutes = customDuration % 60;
+                      setCustomHours(hours);
+                      setCustomMinutes(minutes);
+                    }
+                    setShowCustomInput(!showCustomInput);
+                  }}
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
@@ -581,47 +602,115 @@ const FocusModePage = () => {
                 </motion.button>
               </div>
               
-              {/* Custom Duration Input */}
+              {/* Custom Time Picker */}
               <AnimatePresence>
                 {showCustomInput && (
-                  <motion.form
+                  <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    onSubmit={handleCustomDurationSubmit}
-                    className="mt-4 flex gap-2 justify-center"
+                    className="mt-6 w-full max-w-md mx-auto"
                   >
-                    <input
-                      type="number"
-                      min="1"
-                      max="240"
-                      value={customMinutes}
-                      onChange={(e) => setCustomMinutes(e.target.value)}
-                      placeholder="Minutes (1-240)"
-                      className="input-field w-32 text-center"
-                      autoFocus
-                    />
-                    <motion.button
-                      type="submit"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="btn-primary px-4"
-                    >
-                      Set
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      onClick={() => {
-                        setShowCustomInput(false);
-                        setCustomMinutes('');
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="btn-secondary px-4"
-                    >
-                      <FaTimes />
-                    </motion.button>
-                  </motion.form>
+                    <div className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-color)] shadow-lg">
+                      <div className="text-center mb-4">
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Set Custom Duration</h3>
+                        <p className="text-sm text-[var(--text-secondary)]">Select hours and minutes</p>
+                      </div>
+                      
+                      {/* Time Picker Columns */}
+                      <div className="flex items-center justify-center gap-4 mb-6">
+                        {/* Hours Column */}
+                        <div className="flex flex-col items-center">
+                          <label className="text-xs font-medium text-[var(--text-secondary)] mb-2">Hours</label>
+                          <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
+                            <div className="h-full overflow-y-auto scrollbar-hide snap-y snap-mandatory">
+                              {[0, 1, 2, 3, 4].map((hour) => (
+                                <button
+                                  key={hour}
+                                  type="button"
+                                  onClick={() => setCustomHours(hour)}
+                                  className={`w-full h-12 flex items-center justify-center text-lg font-medium transition-all snap-center ${
+                                    customHours === hour
+                                      ? 'bg-[var(--accent-primary)] text-white scale-105'
+                                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                                  }`}
+                                >
+                                  {hour}
+                                </button>
+                              ))}
+                            </div>
+                            {/* Selection indicator */}
+                            <div className="absolute top-1/2 left-0 right-0 h-12 -translate-y-1/2 border-t-2 border-b-2 border-[var(--accent-primary)]/30 pointer-events-none rounded" />
+                          </div>
+                        </div>
+
+                        {/* Separator */}
+                        <div className="text-2xl font-bold text-[var(--text-primary)] mt-8">:</div>
+
+                        {/* Minutes Column */}
+                        <div className="flex flex-col items-center">
+                          <label className="text-xs font-medium text-[var(--text-secondary)] mb-2">Minutes</label>
+                          <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
+                            <div className="h-full overflow-y-auto scrollbar-hide snap-y snap-mandatory">
+                              {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                                <button
+                                  key={minute}
+                                  type="button"
+                                  onClick={() => setCustomMinutes(minute)}
+                                  className={`w-full h-8 flex items-center justify-center text-base font-medium transition-all snap-center ${
+                                    customMinutes === minute
+                                      ? 'bg-[var(--accent-primary)] text-white scale-105'
+                                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                                  }`}
+                                >
+                                  {String(minute).padStart(2, '0')}
+                                </button>
+                              ))}
+                            </div>
+                            {/* Selection indicator */}
+                            <div className="absolute top-1/2 left-0 right-0 h-8 -translate-y-1/2 border-t-2 border-b-2 border-[var(--accent-primary)]/30 pointer-events-none rounded" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Selected Time Display */}
+                      <div className="text-center mb-4">
+                        <p className="text-sm text-[var(--text-secondary)]">Selected Duration</p>
+                        <p className="text-2xl font-bold text-[var(--accent-primary)]">
+                          {customHours > 0 ? `${customHours}h ` : ''}{customMinutes}m
+                        </p>
+                        <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                          ({customHours * 60 + customMinutes} minutes total)
+                        </p>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 justify-center">
+                        <motion.button
+                          type="button"
+                          onClick={handleTimePickerConfirm}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="btn-primary px-6 py-2 flex-1"
+                        >
+                          Set Duration
+                        </motion.button>
+                        <motion.button
+                          type="button"
+                          onClick={() => {
+                            setShowCustomInput(false);
+                            setCustomHours(0);
+                            setCustomMinutes(25);
+                          }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="btn-secondary px-4 py-2"
+                        >
+                          <FaTimes />
+                        </motion.button>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>
