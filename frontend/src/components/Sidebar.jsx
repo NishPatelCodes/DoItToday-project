@@ -79,10 +79,10 @@ const Sidebar = ({ isOpen, onClose }) => {
             <h1 className="text-lg md:text-xl font-bold gradient-text">DoItToday</h1>
             <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">Task Manager</p>
           </div>
-          {/* Close button for mobile */}
+          {/* Close button */}
           <button
             onClick={onClose}
-            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Close navigation menu"
           >
             <FaTimes className="text-lg" />
@@ -101,6 +101,8 @@ const Sidebar = ({ isOpen, onClose }) => {
               if (window.innerWidth < 768) {
                 onClose();
               }
+              // Optionally close on desktop too - comment out if you want sidebar to stay open
+              // onClose();
             }}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 ${
@@ -140,8 +142,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         sidebar-mobile
         w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
         transform transition-transform duration-300 ease-in-out
-        md:translate-x-0
-        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {sidebarContent}
       </aside>
