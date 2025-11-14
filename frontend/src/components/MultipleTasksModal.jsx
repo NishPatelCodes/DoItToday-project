@@ -47,7 +47,24 @@ const MultipleTasksModal = ({ isOpen, onClose, onGenerateTasks }) => {
         return;
       }
 
-      setParsedTasks(tasks);
+      // Set default due date to today and priority to medium for each task
+      const today = new Date();
+      // Get local date string (YYYY-MM-DD)
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+      // Create date at end of day (23:59:00) in local timezone, then convert to ISO
+      const todayDate = new Date(todayStr + 'T23:59:00');
+      const todayISO = todayDate.toISOString();
+
+      const tasksWithDefaults = tasks.map(task => ({
+        ...task,
+        priority: task.priority || 'medium',
+        dueDate: task.dueDate || todayISO,
+      }));
+
+      setParsedTasks(tasksWithDefaults);
       setShowPreview(true);
       toast.success(`Successfully extracted ${tasks.length} task${tasks.length !== 1 ? 's' : ''}`);
     } catch (error) {
@@ -73,6 +90,24 @@ const MultipleTasksModal = ({ isOpen, onClose, onGenerateTasks }) => {
     setParsedTasks(updatedTasks);
     setEditingIndex(null);
     setEditTitle('');
+  };
+
+  const handleUpdatePriority = (index, priority) => {
+    const updatedTasks = [...parsedTasks];
+    updatedTasks[index] = { ...updatedTasks[index], priority };
+    setParsedTasks(updatedTasks);
+  };
+
+  const handleUpdateDueDate = (index, dateString) => {
+    const updatedTasks = [...parsedTasks];
+    if (dateString) {
+      // Create ISO string with time set to 23:59:00 to avoid timezone issues
+      const dateISO = new Date(dateString + 'T23:59:00').toISOString();
+      updatedTasks[index] = { ...updatedTasks[index], dueDate: dateISO };
+    } else {
+      updatedTasks[index] = { ...updatedTasks[index], dueDate: null };
+    }
+    setParsedTasks(updatedTasks);
   };
 
   const handleCancelEdit = () => {
@@ -257,42 +292,61 @@ const MultipleTasksModal = ({ isOpen, onClose, onGenerateTasks }) => {
                               </button>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-3">
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-[var(--text-primary)]">
-                                  {index + 1}. {task.title}
-                                </p>
-                                {task.description && (
-                                  <p className="text-xs text-[var(--text-secondary)] mt-1">{task.description}</p>
-                                )}
-                                <div className="flex items-center gap-3 mt-2">
-                                  {task.priority && (
-                                    <span className="text-xs px-2 py-1 rounded bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
-                                      {task.priority}
-                                    </span>
-                                  )}
-                                  {task.dueDate && (
-                                    <span className="text-xs text-[var(--text-tertiary)]">
-                                      Due: {new Date(task.dueDate).toLocaleDateString()}
-                                    </span>
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-[var(--text-primary)]">
+                                    {index + 1}. {task.title}
+                                  </p>
+                                  {task.description && (
+                                    <p className="text-xs text-[var(--text-secondary)] mt-1">{task.description}</p>
                                   )}
                                 </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleEditTask(index)}
+                                    className="p-2 text-[var(--text-tertiary)] hover:text-blue-500 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
+                                    title="Edit Title"
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                  <button
+                                    onClick={() => handleRemoveTask(index)}
+                                    className="p-2 text-[var(--text-tertiary)] hover:text-red-500 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
+                                    title="Remove"
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleEditTask(index)}
-                                  className="p-2 text-[var(--text-tertiary)] hover:text-blue-500 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
-                                  title="Edit"
-                                >
-                                  <FaEdit />
-                                </button>
-                                <button
-                                  onClick={() => handleRemoveTask(index)}
-                                  className="p-2 text-[var(--text-tertiary)] hover:text-red-500 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
-                                  title="Remove"
-                                >
-                                  <FaTrash />
-                                </button>
+                              <div className="flex items-center gap-3 pt-2 border-t border-[var(--border-color)]">
+                                <div className="flex-1 flex items-center gap-3">
+                                  <div className="flex-1">
+                                    <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                                      Priority
+                                    </label>
+                                    <select
+                                      value={task.priority || 'medium'}
+                                      onChange={(e) => handleUpdatePriority(index, e.target.value)}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                                    >
+                                      <option value="low">Low</option>
+                                      <option value="medium">Medium</option>
+                                      <option value="high">High</option>
+                                    </select>
+                                  </div>
+                                  <div className="flex-1">
+                                    <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                                      Due Date
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''}
+                                      onChange={(e) => handleUpdateDueDate(index, e.target.value)}
+                                      className="w-full px-2 py-1.5 text-xs rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           )}
