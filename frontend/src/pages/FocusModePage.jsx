@@ -448,7 +448,7 @@ const FocusModePage = () => {
               transition={{ duration: 0.6 }}
               className="text-center mb-8 md:mb-12 max-w-3xl px-4"
             >
-              <p className="text-xl md:text-2xl lg:text-3xl font-light text-[var(--text-primary)] italic leading-relaxed">
+              <p className="text-xl md:text-2xl lg:text-3xl font-medium text-[var(--text-primary)] italic leading-relaxed tracking-wide" style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', 'Georgia', serif", letterSpacing: '0.03em', fontWeight: 500 }}>
                 "{currentQuote}"
               </p>
             </motion.div>
