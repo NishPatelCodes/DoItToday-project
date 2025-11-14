@@ -23,7 +23,7 @@ import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { logout } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
 
@@ -73,24 +73,25 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   const sidebarContent = (
     <>
       {/* Logo */}
-      <div className={`p-4 md:p-6 border-b border-[var(--border-color)] ${isCollapsed ? 'px-2' : ''}`}>
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-          {!isCollapsed && (
-            <div>
-              <h1 className="text-lg md:text-xl font-bold gradient-text">DoItToday</h1>
-              <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">Task Manager</p>
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="text-center">
-              <h1 className="text-xl font-bold gradient-text">D</h1>
-            </div>
-          )}
+      <div className="p-4 md:p-6 border-b border-[var(--border-color)]">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg md:text-xl font-bold gradient-text">DoItToday</h1>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">Task Manager</p>
+          </div>
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Close navigation menu"
+          >
+            <FaTimes className="text-lg" />
+          </button>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className={`flex-1 overflow-y-auto space-y-1 ${isCollapsed ? 'p-2' : 'p-3 md:p-4'}`}>
+      <nav className="flex-1 overflow-y-auto p-3 md:p-4 space-y-1">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -100,20 +101,19 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
               if (window.innerWidth < 768) {
                 onClose();
               }
+              // Optionally close on desktop too - comment out if you want sidebar to stay open
+              // onClose();
             }}
             className={({ isActive }) =>
-              `flex items-center ${isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5 md:py-2'} rounded-lg transition-all duration-200 ${
+              `flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 ${
                 isActive
                   ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
               }`
             }
-            title={isCollapsed ? item.label : ''}
           >
-            <item.icon className={`${isCollapsed ? 'text-xl' : 'text-base md:text-base'}`} />
-            {!isCollapsed && (
-              <span className="text-sm md:text-sm font-medium">{item.label}</span>
-            )}
+            <item.icon className="text-base md:text-base" />
+            <span className="text-sm md:text-sm font-medium">{item.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -140,9 +140,9 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       {/* Sidebar */}
       <aside className={`
         sidebar-mobile
-        ${isCollapsed ? 'w-16 md:w-16' : 'w-64'} bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
-        transform transition-all duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {sidebarContent}
       </aside>
