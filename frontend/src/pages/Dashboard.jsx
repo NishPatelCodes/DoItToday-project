@@ -699,7 +699,7 @@ const Dashboard = () => {
     return (
       <div className="flex min-h-screen bg-[var(--bg-primary)]">
         <Sidebar isOpen={false} onClose={() => {}} />
-        <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0 flex items-center justify-center" tabIndex="-1">
+        <main id="main-content" className="flex-1 w-full md:ml-64 flex items-center justify-center min-h-screen" tabIndex="-1">
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div>
             <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
