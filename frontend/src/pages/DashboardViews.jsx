@@ -14,6 +14,7 @@ import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
 import DashboardSummary from '../components/DashboardSummary';
 import MultipleTasksModal from '../components/MultipleTasksModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -826,6 +827,7 @@ export const DashboardTasks = ({
   const [isMultipleTasksModalOpen, setIsMultipleTasksModalOpen] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState(new Set());
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   // Group completed tasks by date segments
   const groupedCompletedTasks = useMemo(() => {
     if (!completedTasks || completedTasks.length === 0) return {};
@@ -957,6 +959,25 @@ export const DashboardTasks = ({
         onGenerateTasks={onCreateMultipleTasks}
       />
 
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showBulkDeleteConfirm}
+        onClose={() => setShowBulkDeleteConfirm(false)}
+        onConfirm={async () => {
+          if (onBulkDeleteTasks) {
+            await onBulkDeleteTasks(Array.from(selectedTasks));
+          }
+          setSelectedTasks(new Set());
+          setIsSelectMode(false);
+          setShowBulkDeleteConfirm(false);
+        }}
+        title="Delete Multiple Tasks"
+        message={`Are you sure you want to delete ${selectedTasks.size} task${selectedTasks.size !== 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
+
       <div className="space-y-6">
         {/* Pending Tasks */}
         <div className="card p-6">
@@ -987,15 +1008,7 @@ export const DashboardTasks = ({
                           Complete ({selectedTasks.size})
                         </button>
                         <button
-                          onClick={async () => {
-                            if (window.confirm(`Are you sure you want to delete ${selectedTasks.size} task${selectedTasks.size !== 1 ? 's' : ''}? This action cannot be undone.`)) {
-                              if (onBulkDeleteTasks) {
-                                await onBulkDeleteTasks(Array.from(selectedTasks));
-                              }
-                              setSelectedTasks(new Set());
-                              setIsSelectMode(false);
-                            }
-                          }}
+                          onClick={() => setShowBulkDeleteConfirm(true)}
                           className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
                         >
                           <FaTimes />
