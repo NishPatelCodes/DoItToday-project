@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaUser, FaStickyNote, FaCopy, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaChevronUp, FaChevronDown, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -212,7 +212,7 @@ export const DashboardHome = ({
                       <div
                         key={task._id}
                         onClick={() => {
-                          onEditTask(task);
+                          navigate('/dashboard/tasks', { state: { highlightTaskId: task._id } });
                           setSearchQuery('');
                           setShowSearchResults(false);
                         }}
@@ -238,7 +238,7 @@ export const DashboardHome = ({
                       <div
                         key={goal._id}
                         onClick={() => {
-                          onEditGoal(goal);
+                          navigate('/dashboard/goals', { state: { highlightGoalId: goal._id } });
                           setSearchQuery('');
                           setShowSearchResults(false);
                         }}
@@ -264,7 +264,7 @@ export const DashboardHome = ({
                       <div
                         key={note._id}
                         onClick={() => {
-                          navigate('/dashboard/notes');
+                          navigate('/dashboard/notes', { state: { highlightNoteId: note._id } });
                           setSearchQuery('');
                           setShowSearchResults(false);
                         }}
@@ -398,7 +398,7 @@ export const DashboardHome = ({
                       </div>
                       <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
+                          className="h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
@@ -574,12 +574,20 @@ export const DashboardHome = ({
                       key={task._id}
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
                     >
-                      <input
-                        type="checkbox"
-                        checked={task.status === 'completed'}
-                        onChange={() => onToggleTask(task._id)}
-                        className="w-5 h-5 rounded border-[var(--border-color)] text-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/30"
-                      />
+                      <button
+                        type="button"
+                        onClick={() => onToggleTask(task._id)}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                          task.status === 'completed'
+                            ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white'
+                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-transparent hover:border-[var(--accent-primary)]/50 hover:bg-[var(--bg-tertiary)]'
+                        }`}
+                        aria-label={task.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
+                      >
+                        {task.status === 'completed' && (
+                          <FaCheck className="w-3 h-3 text-white" />
+                        )}
+                      </button>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[var(--text-primary)]">
                           {task.title}

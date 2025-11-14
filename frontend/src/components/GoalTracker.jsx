@@ -11,14 +11,7 @@ const GoalTracker = ({ goal, onUpdate, onDelete, onEdit, onViewAnalytics }) => {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customProgress, setCustomProgress] = useState('');
 
-  const progressColor =
-    progress >= 100
-      ? 'bg-green-500'
-      : progress >= 75
-      ? 'bg-blue-500'
-      : progress >= 50
-      ? 'bg-yellow-500'
-      : 'bg-red-500';
+  const progressColor = 'bg-sky-500';
 
   const handleCustomProgress = () => {
     const value = parseInt(customProgress);
