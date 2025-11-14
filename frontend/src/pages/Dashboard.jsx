@@ -388,14 +388,11 @@ const Dashboard = () => {
     setIsTaskModalOpen(true);
   };
 
-  const handleCreateMultipleTasks = async (textInput) => {
+  const handleCreateMultipleTasks = async (parsedTasks) => {
     try {
-      // Call API to parse text and generate tasks
-      const response = await tasksAPI.parseMultiple(textInput);
-      const parsedTasks = response.data.tasks || [];
-
-      if (parsedTasks.length === 0) {
-        toast.error('No tasks could be extracted from the text. Please try with different content.');
+      // parsedTasks is now an array of task objects from the preview
+      if (!Array.isArray(parsedTasks) || parsedTasks.length === 0) {
+        toast.error('No tasks to create');
         return;
       }
 

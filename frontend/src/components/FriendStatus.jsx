@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaUser, FaTrash, FaTrophy, FaFire, FaEye } from 'react-icons/fa';
-import RankFrame from './RankFrame';
 
 const FriendStatus = ({ friend, onRemove, rank }) => {
   const navigate = useNavigate();
@@ -13,11 +12,9 @@ const FriendStatus = ({ friend, onRemove, rank }) => {
       className="card p-4 mb-3"
     >
       <div className="flex items-center gap-3">
-        <RankFrame rank={rank} size="small">
-          <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
-            {friend.name?.charAt(0).toUpperCase() || 'U'}
-          </div>
-        </RankFrame>
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
+          {friend.name?.charAt(0).toUpperCase() || 'U'}
+        </div>
 
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-[var(--text-primary)] truncate">{friend.name}</h4>
