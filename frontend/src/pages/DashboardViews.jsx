@@ -1046,23 +1046,13 @@ export const DashboardTasks = ({
                       setSelectedTasks(new Set());
                     }
                   }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isSelectMode
                       ? 'bg-[var(--accent-primary)] text-white hover:opacity-90'
                       : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--border-color)]'
                   }`}
                 >
-                  {isSelectMode ? (
-                    <>
-                      <FaCheckSquare />
-                      Cancel
-                    </>
-                  ) : (
-                    <>
-                      <FaSquare />
-                      Select
-                    </>
-                  )}
+                  {isSelectMode ? 'Cancel' : 'Select'}
                 </button>
               </div>
             )}
