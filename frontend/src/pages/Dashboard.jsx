@@ -74,7 +74,7 @@ const Dashboard = () => {
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [editingGoal, setEditingGoal] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChallenges, setActiveChallenges] = useState([]);
 
   useEffect(() => {
@@ -566,11 +566,11 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-primary)]">
-      {/* Hamburger Menu Button - Mobile & Desktop */}
+      {/* Mobile Menu Button */}
       <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-[var(--text-primary)] shadow-lg hover:bg-[var(--bg-tertiary)] transition-colors"
-        aria-label={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
+        onClick={() => setIsSidebarOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-[var(--text-primary)] shadow-lg"
+        aria-label="Open navigation menu"
         aria-expanded={isSidebarOpen}
       >
         <FaBars className="text-lg" />
@@ -580,7 +580,7 @@ const Dashboard = () => {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main id="main-content" className={`flex-1 w-full pt-14 transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-0'}`} tabIndex="-1">
+      <main id="main-content" className="flex-1 w-full md:ml-64 pt-14 md:pt-0" tabIndex="-1">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
