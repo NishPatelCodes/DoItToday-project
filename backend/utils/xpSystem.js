@@ -4,39 +4,44 @@
  */
 
 /**
- * Calculate level from total XP
- * Formula: Level = floor(sqrt(XP / 100)) + 1
+ * Calculate level from total XP (Discipline Points)
+ * Formula: Level = min(10, floor(XP / 1000) + 1)
  * This creates a progressive leveling system where:
- * - Level 1: 0-99 XP (100 XP needed)
- * - Level 2: 100-399 XP (300 XP needed, total 400)
- * - Level 3: 400-899 XP (500 XP needed, total 900)
- * - Level 4: 900-1599 XP (700 XP needed, total 1600)
- * - And so on...
- * 
- * Alternative simpler formula: Level = floor(XP / 100) + 1
- * - Level 1: 0-99 XP
- * - Level 2: 100-199 XP
- * - Level 3: 200-299 XP
- * This is simpler and more predictable
+ * - Level 1: 0-999 XP (1000 XP needed for level 2)
+ * - Level 2: 1000-1999 XP (2000 XP needed for level 3)
+ * - Level 3: 2000-2999 XP (3000 XP needed for level 4)
+ * - Level 4: 3000-3999 XP (4000 XP needed for level 5)
+ * - ...
+ * - Level 10: 9000+ XP (MAX LEVEL)
+ * Maximum level is capped at 10
  */
 export const calculateLevelFromXP = (xp) => {
   if (!xp || xp < 0) return 1;
-  return Math.floor(xp / 100) + 1;
+  const calculatedLevel = Math.floor(xp / 1000) + 1;
+  return Math.min(10, calculatedLevel); // Cap at level 10
 };
 
 /**
  * Calculate XP needed for a specific level
+ * Level 2: 1000 XP
+ * Level 3: 2000 XP
+ * Level 4: 3000 XP
+ * ...
+ * Level 10: 9000 XP
  */
 export const getXPForLevel = (level) => {
   if (level <= 1) return 0;
-  return (level - 1) * 100;
+  if (level > 10) return 9000; // Max level
+  return (level - 1) * 1000;
 };
 
 /**
  * Calculate XP needed for next level
+ * Returns null if already at max level (10)
  */
 export const getXPForNextLevel = (currentLevel) => {
-  return currentLevel * 100;
+  if (currentLevel >= 10) return null; // Max level reached
+  return currentLevel * 1000;
 };
 
 /**
@@ -49,10 +54,13 @@ export const getCurrentLevelXP = (xp, level) => {
 
 /**
  * Calculate progress percentage to next level
+ * Returns 100 if at max level (10)
  */
 export const getLevelProgress = (xp, level) => {
+  if (level >= 10) return 100; // Max level - show 100% progress
   const currentLevelXP = getCurrentLevelXP(xp, level);
   const xpNeededForNext = getXPForNextLevel(level);
+  if (!xpNeededForNext) return 100; // Max level
   return Math.min(100, (currentLevelXP / xpNeededForNext) * 100);
 };
 

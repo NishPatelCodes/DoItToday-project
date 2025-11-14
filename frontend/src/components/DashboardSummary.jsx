@@ -186,7 +186,7 @@ const DashboardSummary = ({ user, streak }) => {
           <p className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
             {user?.xp || 0}
           </p>
-          <p className="text-xs text-[var(--text-tertiary)] mt-1">Level {user?.level || 1}</p>
+          <p className="text-xs text-[var(--text-tertiary)] mt-1">{(user?.level || 1) >= 10 ? 'Max Level' : `Level ${user?.level || 1}`}</p>
         </motion.div>
       </div>
     </div>

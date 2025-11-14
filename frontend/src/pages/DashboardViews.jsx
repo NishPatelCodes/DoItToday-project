@@ -1431,7 +1431,7 @@ export const DashboardTeam = ({
                             {user.name} {isCurrentUser && '(You)'}
                           </p>
                           <p className="text-sm text-[var(--text-secondary)]">
-                            {user.xp || 0} XP • Level {user.level || 1}
+                            {user.xp || 0} XP • {(user.level || 1) >= 10 ? 'Max Level' : `Level ${user.level || 1}`}
                           </p>
                         </div>
                       </div>
@@ -1462,7 +1462,7 @@ export const DashboardTeam = ({
                   {currentUser?.xp || 0} XP
                 </p>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Level {currentUser?.level || 1}
+                  {(currentUser?.level || 1) >= 10 ? 'Max Level' : `Level ${currentUser?.level || 1}`}
                 </p>
               </div>
             </div>
