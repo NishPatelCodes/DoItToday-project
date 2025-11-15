@@ -785,6 +785,9 @@ const Dashboard = () => {
                   setEditingTask(null);
                   setIsTaskModalOpen(true);
                 }}
+                onToggleTask={handleToggleTask}
+                onDeleteTask={handleDeleteTask}
+                onEditTask={handleEditTask}
               />
             }
           />

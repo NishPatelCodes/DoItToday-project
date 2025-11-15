@@ -783,7 +783,7 @@ export const DashboardHome = ({
 };
 
 // Calendar View
-export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask }) => {
+export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask, onToggleTask, onDeleteTask, onEditTask }) => {
   return (
     <div className="p-4 md:p-8 overflow-x-hidden">
       <div className="mb-8">
@@ -795,6 +795,9 @@ export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask }) =
         goals={goals}
         onDateClick={onDateClick}
         onCreateTask={onCreateTask}
+        onTaskToggle={onToggleTask}
+        onTaskDelete={onDeleteTask}
+        onTaskEdit={onEditTask}
       />
     </div>
   );
