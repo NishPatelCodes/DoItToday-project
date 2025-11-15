@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaClock } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaClock, FaTasks } from 'react-icons/fa';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import TaskCard from './TaskCard';
 
@@ -131,20 +131,26 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask, onTaskToggle, o
                   {format(day, 'd')}
                 </div>
 
-                {/* Task Count - Mobile Optimized */}
-                <div className={`text-[10px] sm:text-xs md:text-sm font-medium leading-tight ${
-                  !isCurrentMonth
-                    ? 'text-[var(--text-tertiary)]'
-                    : totalTasks > 0
-                    ? 'text-[var(--accent-primary)]'
-                    : 'text-[var(--text-secondary)]'
-                }`}>
-                  {totalTasks > 0 && (
-                    <span className="block truncate">
-                      {totalTasks} {totalTasks === 1 ? 'task' : 'tasks'}
+                {/* Task Count - Mobile Optimized with Icon */}
+                {totalTasks > 0 && (
+                  <div className={`flex items-center gap-1 ${
+                    !isCurrentMonth
+                      ? 'text-[var(--text-tertiary)]'
+                      : 'text-[var(--accent-primary)]'
+                  }`}>
+                    {/* Icon with count for mobile, text for larger screens */}
+                    <div className="flex items-center gap-1">
+                      <FaTasks className="text-[10px] sm:text-xs md:text-sm" />
+                      <span className="text-[10px] sm:text-xs md:text-sm font-semibold">
+                        {totalTasks}
+                      </span>
+                    </div>
+                    {/* Show "tasks" text only on larger screens */}
+                    <span className="hidden md:inline text-[10px] sm:text-xs md:text-sm font-medium ml-0.5">
+                      {totalTasks === 1 ? 'task' : 'tasks'}
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </motion.button>
             );
           })}
