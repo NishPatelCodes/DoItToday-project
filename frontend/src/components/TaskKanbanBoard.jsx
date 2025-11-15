@@ -58,21 +58,10 @@ const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit
   const displayTasks = showLimit && !showAll ? tasks.slice(0, limit) : tasks;
   const hasMore = showLimit && tasks.length > limit;
 
-  // Calculate dynamic height based on number of tasks
-  const getColumnHeight = () => {
-    const taskCount = displayTasks.length;
-    if (taskCount === 0) return 'min-h-[150px]';
-    if (taskCount === 1) return 'min-h-[250px]';
-    if (taskCount <= 3) return 'min-h-[400px]';
-    if (taskCount <= 5) return 'min-h-[500px]';
-    // For more than 5 tasks, use fixed max height with scroll
-    return 'min-h-[500px] max-h-[700px]';
-  };
-
   return (
-    <div className={`flex flex-col ${getColumnHeight()}`}>
+    <div className="flex flex-col">
       {/* Column Header */}
-      <div className={`sticky top-0 z-10 bg-[var(--bg-secondary)] border-b-2 ${color} pb-3 mb-4 rounded-t-lg p-4`}>
+      <div className={`bg-[var(--bg-secondary)] border-b-2 ${color} pb-3 mb-4 rounded-t-lg p-4`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h3>
@@ -84,7 +73,7 @@ const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit
       </div>
 
       {/* Tasks List */}
-      <div className={`flex-1 space-y-2 ${displayTasks.length > 5 ? 'overflow-y-auto' : ''} px-2 pb-4`}>
+      <div className={`space-y-2 ${displayTasks.length > 5 ? 'max-h-[700px] overflow-y-auto' : ''} px-2 pb-4`}>
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           <AnimatePresence mode="popLayout">
             {displayTasks.map((task) => (
@@ -256,7 +245,7 @@ const TaskKanbanBoard = memo(({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
         <KanbanColumn
           id="todo"
           title="To Do"
