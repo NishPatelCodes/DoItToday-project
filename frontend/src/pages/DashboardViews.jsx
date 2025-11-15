@@ -831,11 +831,7 @@ export const DashboardTasks = ({
   const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'list'
   const [filteredTasks, setFilteredTasks] = useState(tasks);
   const [showCompleted, setShowCompleted] = useState(false);
-  const [dateFilter, setDateFilter] = useState('today'); // 'today', 'custom', 'all'
-  const [customDate, setCustomDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  });
+  const [dateFilter, setDateFilter] = useState('today'); // 'today', 'past3', 'past5', 'past7', 'all'
 
   // Apply date filter to tasks
   const dateFilteredTasks = useMemo(() => {
@@ -843,17 +839,33 @@ export const DashboardTasks = ({
       return tasks;
     }
     
-    const targetDate = dateFilter === 'today' 
-      ? new Date() 
-      : new Date(customDate + 'T00:00:00');
+    const now = new Date();
+    now.setHours(23, 59, 59, 999); // End of today
     
-    targetDate.setHours(0, 0, 0, 0);
+    let startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Determine start date based on filter (all periods include today)
+    if (dateFilter === 'today') {
+      // Today only
+      startDate = new Date(now);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (dateFilter === 'past3') {
+      // Past 3 days (including today = today + 2 days ago)
+      startDate.setDate(startDate.getDate() - 2);
+    } else if (dateFilter === 'past5') {
+      // Past 5 days (including today = today + 4 days ago)
+      startDate.setDate(startDate.getDate() - 4);
+    } else if (dateFilter === 'past7') {
+      // Past 7 days / week (including today = today + 6 days ago)
+      startDate.setDate(startDate.getDate() - 6);
+    }
     
     return tasks.filter(task => {
       if (task.status === 'completed') {
         const completedDate = new Date(task.completedAt || task.updatedAt || task.createdAt);
         completedDate.setHours(0, 0, 0, 0);
-        return completedDate.getTime() === targetDate.getTime();
+        return completedDate >= startDate && completedDate <= now;
       } else {
         // For pending tasks, check due date
         if (!task.dueDate) {
@@ -862,10 +874,10 @@ export const DashboardTasks = ({
         }
         const dueDate = new Date(task.dueDate);
         dueDate.setHours(0, 0, 0, 0);
-        return dueDate.getTime() === targetDate.getTime();
+        return dueDate >= startDate && dueDate <= now;
       }
     });
-  }, [tasks, dateFilter, customDate]);
+  }, [tasks, dateFilter]);
   
   // Update filtered tasks when date filter changes (search filter will further refine)
   useEffect(() => {
@@ -1050,7 +1062,7 @@ export const DashboardTasks = ({
       />
 
       {/* Main Task Board/List */}
-      <div className="card p-6 mb-6 min-h-[600px]">
+      <div className="card p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -1065,18 +1077,11 @@ export const DashboardTasks = ({
                 aria-label="Filter by date"
               >
                 <option value="today">Today</option>
-                <option value="custom">Custom Date</option>
+                <option value="past3">Past 3 Days</option>
+                <option value="past5">Past 5 Days</option>
+                <option value="past7">Past Week</option>
                 <option value="all">All Tasks</option>
               </select>
-              {dateFilter === 'custom' && (
-                <input
-                  type="date"
-                  value={customDate}
-                  onChange={(e) => setCustomDate(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 text-sm"
-                  aria-label="Select custom date"
-                />
-              )}
             </div>
           </div>
           {pendingFilteredTasks.length > 0 && (

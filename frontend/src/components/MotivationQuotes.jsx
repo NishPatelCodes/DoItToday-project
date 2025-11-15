@@ -55,8 +55,8 @@ const MotivationQuotes = memo(({
       quotes.push({
         text: `Amazing progress! ${totalCompleted} tasks done and counting! 🔥`,
         icon: FaFire,
-        color: "text-red-500",
-        bgColor: "bg-red-50 dark:bg-red-900/20"
+        color: "text-green-500",
+        bgColor: "bg-green-50 dark:bg-green-900/20"
       });
     }
 
