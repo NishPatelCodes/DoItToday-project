@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronLeft, FaChevronRight, FaPlus, FaSearch, FaTimes, FaClock } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaClock } from 'react-icons/fa';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import TaskCard from './TaskCard';
 
@@ -146,29 +146,6 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask, onTaskToggle, o
               })}
             </div>
           </div>
-
-          {/* People Section */}
-          <div className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] p-4">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">People</h3>
-            <div className="relative mb-3">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
-              <input
-                type="text"
-                placeholder="Search for People"
-                className="w-full pl-9 pr-3 py-2 text-sm bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/20 focus:border-[var(--accent-primary)]"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="text-xs text-[var(--text-tertiary)] text-center py-4">
-                No people added yet
-              </div>
-            </div>
-          </div>
-
-          {/* My Schedule Button */}
-          <button className="w-full px-4 py-2 rounded-lg bg-[var(--bg-tertiary)] text-[var(--accent-primary)] font-medium hover:bg-[var(--bg-secondary)] transition-colors border border-[var(--border-color)]">
-            My Schedule
-          </button>
         </motion.div>
 
         {/* Main Calendar Area */}
