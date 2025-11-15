@@ -37,22 +37,22 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
   if (viewMode === 'weekly') {
     return (
       <div className="space-y-4">
-        {/* View Toggle - Optimized */}
-        <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)]">
+        {/* View Toggle - Clean Modern Style */}
+        <div className="flex items-center justify-between gap-2 p-3 bg-white dark:bg-[var(--bg-secondary)] rounded-lg border border-gray-200 dark:border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode('monthly')}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-[var(--bg-tertiary)] text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-200 dark:hover:bg-[var(--bg-tertiary)] transition-all text-sm font-medium"
             >
               <FaCalendarAlt />
-              <span className="text-sm font-medium">Monthly</span>
+              <span>Monthly</span>
             </button>
             <button
               onClick={() => setViewMode('weekly')}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white transition-all shadow-md"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white transition-all shadow-sm text-sm font-medium"
             >
               <FaCalendarWeek />
-              <span className="text-sm font-medium">Weekly</span>
+              <span>Weekly</span>
             </button>
           </div>
           <button

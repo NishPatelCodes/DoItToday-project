@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FaChevronLeft, FaChevronRight, FaPlus, FaClock } from 'react-icons/fa';
-import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, isSameDay, isWithinInterval } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, isSameDay, addMinutes, differenceInMinutes } from 'date-fns';
 
 const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
@@ -10,31 +10,34 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
   
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
   
-  // Time slots from 12 AM to 11 PM (24 hours)
-  const timeSlots = Array.from({ length: 24 }, (_, i) => i);
+  // Time slots every 30 minutes from 8 AM to 8 PM (work hours focus)
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 8; hour < 20; hour++) {
+      slots.push({ hour, minute: 0 });
+      slots.push({ hour, minute: 30 });
+    }
+    return slots;
+  };
+  
+  const timeSlots = generateTimeSlots();
   
   const prevWeek = () => {
     setCurrentWeekStart(subWeeks(currentWeekStart, 1));
     hasScrolledRef.current = false;
   };
+  
   const nextWeek = () => {
     setCurrentWeekStart(addWeeks(currentWeekStart, 1));
     hasScrolledRef.current = false;
   };
+  
   const goToToday = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
     hasScrolledRef.current = false;
   };
   
-  const getTasksForTimeSlot = (day, hour) => {
-    return tasks.filter((task) => {
-      if (!task.dueDate) return false;
-      const taskDate = new Date(task.dueDate);
-      const taskHour = taskDate.getHours();
-      return isSameDay(taskDate, day) && taskHour === hour;
-    });
-  };
-  
+  // Get tasks for a specific day
   const getTasksForDay = (day) => {
     return tasks.filter((task) => {
       if (!task.dueDate) return false;
@@ -42,24 +45,62 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
     });
   };
   
-  const formatTime = (hour) => {
-    if (hour === 0) return '12 AM';
-    if (hour < 12) return `${hour} AM`;
-    if (hour === 12) return '12 PM';
-    return `${hour - 12} PM`;
+  // Calculate event position and height based on start time and duration
+  const getEventPosition = (task, day) => {
+    if (!task.dueDate) return null;
+    
+    const taskDate = new Date(task.dueDate);
+    if (!isSameDay(taskDate, day)) return null;
+    
+    const startHour = taskDate.getHours();
+    const startMinute = taskDate.getMinutes();
+    
+    // Default duration: 1 hour (60 minutes)
+    const duration = task.duration || 60;
+    const endTime = addMinutes(taskDate, duration);
+    
+    // Calculate position from 8 AM (start of our time slots)
+    const dayStart = new Date(day);
+    dayStart.setHours(8, 0, 0, 0);
+    
+    const minutesFromStart = differenceInMinutes(taskDate, dayStart);
+    const topPercent = (minutesFromStart / (12 * 60)) * 100; // 12 hours (8 AM to 8 PM)
+    const heightPercent = (duration / (12 * 60)) * 100;
+    
+    return {
+      top: `${topPercent}%`,
+      height: `${heightPercent}%`,
+      startTime: taskDate,
+      endTime: endTime,
+    };
   };
   
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-500/90 hover:bg-red-600 border-red-600';
-      case 'medium':
-        return 'bg-yellow-500/90 hover:bg-yellow-600 border-yellow-600';
-      case 'low':
-        return 'bg-blue-500/90 hover:bg-blue-600 border-blue-600';
-      default:
-        return 'bg-gray-500/90 hover:bg-gray-600 border-gray-600';
-    }
+  const formatTime = (hour, minute = 0) => {
+    const date = new Date();
+    date.setHours(hour, minute, 0, 0);
+    return format(date, 'h:mm a');
+  };
+  
+  const formatTimeRange = (start, end) => {
+    return `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`;
+  };
+  
+  // Color scheme matching the image style
+  const getEventColor = (task, index) => {
+    // Use a consistent color based on task properties or index
+    const colors = [
+      { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-600' },
+      { bg: 'bg-blue-400', text: 'text-white', border: 'border-blue-500' },
+      { bg: 'bg-green-500', text: 'text-white', border: 'border-green-600' },
+      { bg: 'bg-indigo-500', text: 'text-white', border: 'border-indigo-600' },
+    ];
+    
+    // Use priority or index to determine color
+    if (task.priority === 'high') return colors[0]; // Purple
+    if (task.priority === 'medium') return colors[1]; // Light blue
+    if (task.priority === 'low') return colors[2]; // Green
+    
+    return colors[index % colors.length];
   };
   
   const isToday = (day) => isSameDay(day, new Date());
@@ -78,12 +119,10 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
     });
     
     if (Object.keys(hourCounts).length === 0) {
-      // If no tasks, scroll to current hour or 9 AM
       const currentHour = new Date().getHours();
       return currentHour >= 8 && currentHour <= 20 ? currentHour : 9;
     }
     
-    // Find hour with max tasks
     const maxHour = Object.keys(hourCounts).reduce((a, b) => 
       hourCounts[a] > hourCounts[b] ? a : b
     );
@@ -95,15 +134,13 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
   useEffect(() => {
     if (!hasScrolledRef.current && timetableRef.current) {
       const targetHour = findMostPopulatedHour();
-      const hourElement = document.getElementById(`time-slot-${targetHour}`);
+      const hourElement = document.getElementById(`time-slot-${targetHour}-0`);
       
       if (hourElement && timetableRef.current) {
         setTimeout(() => {
-          // Calculate scroll position relative to the container
           const container = timetableRef.current;
           const element = hourElement;
           
-          // Scroll to center the element in the container
           const scrollTop = element.offsetTop - (container.clientHeight / 2) + (element.clientHeight / 2);
           
           container.scrollTo({
@@ -123,42 +160,42 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-4 md:p-6 bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)]"
+      className="card p-4 md:p-6 bg-white dark:bg-[var(--bg-primary)]"
     >
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4 pb-4 border-b border-[var(--border-color)]">
+      {/* Header - Clean Modern Style */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4 pb-4 border-b border-gray-200 dark:border-[var(--border-color)]">
         <div className="flex items-center gap-4">
           <button
             onClick={prevWeek}
-            className="p-2.5 rounded-xl hover:bg-[var(--bg-tertiary)] transition-all hover:scale-105 active:scale-95 shadow-sm"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[var(--bg-tertiary)] transition-all"
             title="Previous Week"
           >
-            <FaChevronLeft className="text-[var(--text-secondary)] text-lg" />
+            <FaChevronLeft className="text-gray-600 dark:text-[var(--text-secondary)]" />
           </button>
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--text-primary)]">
               {format(currentWeekStart, 'MMM d')} - {format(addDays(currentWeekStart, 6), 'MMM d, yyyy')}
             </h2>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">Weekly Schedule</p>
+            <p className="text-xs text-gray-500 dark:text-[var(--text-secondary)] mt-0.5">Weekly Schedule</p>
           </div>
           <button
             onClick={nextWeek}
-            className="p-2.5 rounded-xl hover:bg-[var(--bg-tertiary)] transition-all hover:scale-105 active:scale-95 shadow-sm"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[var(--bg-tertiary)] transition-all"
             title="Next Week"
           >
-            <FaChevronRight className="text-[var(--text-secondary)] text-lg" />
+            <FaChevronRight className="text-gray-600 dark:text-[var(--text-secondary)]" />
           </button>
         </div>
         <div className="flex gap-2">
           <button
             onClick={goToToday}
-            className="btn-secondary text-sm px-4 py-2 rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-lg hover:bg-gray-200 dark:hover:bg-[var(--bg-tertiary)] transition-all"
           >
             Today
           </button>
           <button
             onClick={onCreateTask}
-            className="btn-primary flex items-center gap-2 text-sm px-4 py-2 rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
+            className="btn-primary flex items-center gap-2 text-sm px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all"
           >
             <FaPlus />
             <span>New Task</span>
@@ -166,45 +203,44 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
         </div>
       </div>
       
-      {/* Weekly Timetable - Horizontal Layout */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[75vh] rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-inner" ref={timetableRef}>
-        <div className="min-w-[900px]">
-          {/* Day Headers Row - Horizontal */}
-          <div className="grid grid-cols-8 gap-2 mb-2 sticky top-0 bg-gradient-to-b from-[var(--bg-primary)] to-[var(--bg-secondary)] z-20 p-3 border-b-2 border-[var(--border-color)] shadow-md backdrop-blur-sm">
-            {/* Time Column Header (Sticky) */}
-            <div className="flex items-center justify-center gap-2 text-sm font-bold text-[var(--text-primary)] p-2 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-color)] sticky left-2 -ml-2 pl-2 z-30 backdrop-blur-sm">
-              <FaClock className="text-[var(--accent-primary)]" />
-              <span className="hidden sm:inline">Time</span>
+      {/* Weekly Timetable - Modern Style */}
+      <div className="overflow-x-auto overflow-y-auto max-h-[75vh] rounded-lg border border-gray-200 dark:border-[var(--border-color)] bg-gray-50 dark:bg-[var(--bg-secondary)]" ref={timetableRef}>
+        <div className="min-w-[1000px]">
+          {/* Day Headers Row */}
+          <div className="grid grid-cols-8 gap-px mb-px sticky top-0 bg-white dark:bg-[var(--bg-primary)] z-20 border-b-2 border-gray-300 dark:border-[var(--border-color)]">
+            {/* Time Column Header */}
+            <div className="flex items-center justify-center p-3 bg-gray-100 dark:bg-[var(--bg-tertiary)] border-r border-gray-200 dark:border-[var(--border-color)] sticky left-0 z-30">
+              <FaClock className="text-gray-600 dark:text-[var(--text-secondary)] text-sm" />
             </div>
-            {/* Day Headers - Horizontal */}
+            {/* Day Headers */}
             {weekDays.map((day, index) => {
               const dayTaskCount = getTasksForDay(day).length;
               return (
                 <div
                   key={index}
-                  className={`text-center p-3 rounded-xl transition-all ${
+                  className={`text-center p-3 bg-white dark:bg-[var(--bg-primary)] ${
                     isToday(day) 
-                      ? 'bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)] shadow-md' 
-                      : 'bg-[var(--bg-tertiary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)]/50'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-500' 
+                      : ''
                   }`}
                 >
                   <div className={`text-xs font-semibold uppercase tracking-wider ${
-                    isToday(day) ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
+                    isToday(day) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-[var(--text-secondary)]'
                   }`}>
                     {format(day, 'EEE')}
                   </div>
-                  <div className={`text-xl md:text-2xl font-bold mt-1 ${
-                    isToday(day) ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                  <div className={`text-lg font-bold mt-1 ${
+                    isToday(day) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-[var(--text-primary)]'
                   }`}>
                     {format(day, 'd')}
                   </div>
                   {dayTaskCount > 0 && (
-                    <div className={`text-[10px] font-medium mt-1.5 px-2 py-0.5 rounded-full inline-block ${
+                    <div className={`text-[10px] font-medium mt-1 px-2 py-0.5 rounded-full inline-block ${
                       isToday(day) 
-                        ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' 
-                        : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
+                        ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' 
+                        : 'bg-gray-200 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)]'
                     }`}>
-                      {dayTaskCount} task{dayTaskCount !== 1 ? 's' : ''}
+                      {dayTaskCount}
                     </div>
                   )}
                 </div>
@@ -212,93 +248,129 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
             })}
           </div>
           
-          {/* Time Rows - Horizontal Layout */}
-          <div className="space-y-1 p-2">
-            {timeSlots.map((hour) => (
-              <div 
-                key={hour} 
-                id={`time-slot-${hour}`} 
-                className="grid grid-cols-8 gap-2 min-h-[80px] hover:bg-[var(--bg-tertiary)]/30 rounded-lg transition-colors"
-              >
-                {/* Time Label - Left Column (Sticky) */}
-                <div className="flex items-center justify-center sticky left-2 z-10 bg-[var(--bg-secondary)] rounded-lg -ml-2 pl-2">
-                  <div className="text-sm font-bold text-[var(--text-primary)] bg-[var(--bg-tertiary)] px-3 py-2.5 rounded-lg border border-[var(--border-color)] min-w-[75px] text-center shadow-sm backdrop-blur-sm">
-                    {formatTime(hour)}
-                  </div>
-                </div>
+          {/* Time Rows - 30 minute intervals with Event Containers */}
+          <div className="relative">
+            {/* Time labels column */}
+            <div className="absolute left-0 top-0 w-[80px] border-r border-gray-200 dark:border-[var(--border-color)] bg-white dark:bg-[var(--bg-primary)] sticky left-0 z-10" style={{ height: `${12 * 60 * 0.5}px` }}>
+              {timeSlots.map((slot, slotIndex) => {
+                const isHalfHour = slot.minute === 30;
+                const minutesFromStart = (slot.hour - 8) * 60 + slot.minute;
+                const topPercent = (minutesFromStart / (12 * 60)) * 100;
                 
-                {/* Day Columns - Horizontal */}
-                {weekDays.map((day, dayIndex) => {
-                  const tasksInSlot = getTasksForTimeSlot(day, hour);
-                  const isCurrentTime = isToday(day) && new Date().getHours() === hour;
-                  
+                if (isHalfHour) {
                   return (
-                    <div
-                      key={dayIndex}
-                      className={`min-h-[80px] p-2 rounded-lg border-2 transition-all relative ${
-                        isCurrentTime
-                          ? 'border-[var(--accent-primary)]/60 bg-[var(--accent-primary)]/8 shadow-md'
-                          : 'border-[var(--border-color)]/40 bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]/50 hover:border-[var(--border-color)]/60'
-                      }`}
+                    <div 
+                      key={`time-label-${slot.hour}-${slot.minute}`} 
+                      className="absolute left-0 right-0 flex items-center justify-center px-2"
+                      style={{ top: `${topPercent}%`, height: '30px' }}
                     >
-                      {/* Current Time Indicator */}
-                      {isCurrentTime && (
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--accent-primary)] rounded-t-lg"></div>
-                      )}
-                      
-                      {/* Tasks Container */}
-                      <div className="space-y-1.5 h-full">
-                        {tasksInSlot.length > 0 ? (
-                          tasksInSlot.map((task) => (
-                            <motion.button
-                              key={task._id}
-                              onClick={() => onTaskClick && onTaskClick(task)}
-                              className={`w-full text-left p-2.5 rounded-lg text-white text-xs font-semibold shadow-md border transition-all ${getPriorityColor(task.priority)} hover:shadow-lg hover:scale-[1.02]`}
-                              whileHover={{ scale: 1.02, y: -1 }}
-                              whileTap={{ scale: 0.98 }}
-                              title={`${task.title}\n${format(new Date(task.dueDate), 'h:mm a')}\nPriority: ${task.priority}`}
-                            >
-                              <div className="truncate font-bold text-sm mb-1">{task.title}</div>
-                              <div className="text-[10px] opacity-90 font-medium flex items-center gap-1">
-                                <FaClock className="text-[9px]" />
-                                {format(new Date(task.dueDate), 'h:mm a')}
-                              </div>
-                              {task.status === 'completed' && (
-                                <div className="text-[10px] mt-1 font-medium opacity-80 line-through">✓ Completed</div>
-                              )}
-                            </motion.button>
-                          ))
-                        ) : (
-                          <div className="h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                            <span className="text-[10px] text-[var(--text-tertiary)]">+</span>
-                          </div>
-                        )}
+                      <div className="text-[10px] text-gray-400 dark:text-[var(--text-tertiary)]">
+                        {formatTime(slot.hour, slot.minute)}
                       </div>
                     </div>
                   );
-                })}
-              </div>
-            ))}
+                }
+                return (
+                  <div 
+                    key={`time-label-${slot.hour}-${slot.minute}`} 
+                    id={`time-slot-${slot.hour}-${slot.minute}`} 
+                    className="absolute left-0 right-0 flex items-center justify-center px-3 border-b border-gray-200 dark:border-[var(--border-color)]/50"
+                    style={{ top: `${topPercent}%`, height: '60px' }}
+                  >
+                    <div className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)]">
+                      {formatTime(slot.hour, slot.minute)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Day columns with events */}
+            <div className="ml-[80px] grid grid-cols-7">
+              {weekDays.map((day, dayIndex) => {
+                const dayTasks = getTasksForDay(day);
+                const dayStart = new Date(day);
+                dayStart.setHours(8, 0, 0, 0);
+                const dayEnd = new Date(day);
+                dayEnd.setHours(20, 0, 0, 0);
+                const totalMinutes = 12 * 60; // 12 hours
+                
+                return (
+                  <div
+                    key={dayIndex}
+                    className="relative border-r border-gray-200 dark:border-[var(--border-color)]/50"
+                    style={{ minHeight: `${totalMinutes * 0.5}px`, height: `${totalMinutes * 0.5}px` }}
+                  >
+                    {/* Time slot grid lines */}
+                    {timeSlots.map((slot, slotIndex) => {
+                      const isHalfHour = slot.minute === 30;
+                      const minutesFromStart = (slot.hour - 8) * 60 + slot.minute;
+                      const topPercent = (minutesFromStart / totalMinutes) * 100;
+                      
+                      return (
+                        <div
+                          key={`grid-${slot.hour}-${slot.minute}`}
+                          className="absolute left-0 right-0 border-b border-gray-200 dark:border-[var(--border-color)]/30"
+                          style={{
+                            top: `${topPercent}%`,
+                            height: isHalfHour ? '30px' : '60px',
+                          }}
+                        />
+                      );
+                    })}
+                    
+                    {/* Events positioned absolutely */}
+                    {dayTasks.map((task, taskIndex) => {
+                      const position = getEventPosition(task, day);
+                      if (!position) return null;
+                      
+                      const colors = getEventColor(task, taskIndex);
+                      
+                      return (
+                        <motion.button
+                          key={task._id}
+                          onClick={() => onTaskClick && onTaskClick(task)}
+                          className={`absolute left-1 right-1 ${colors.bg} ${colors.text} ${colors.border} border rounded-lg p-2 shadow-sm hover:shadow-md transition-all cursor-pointer z-20`}
+                          style={{
+                            top: position.top,
+                            height: position.height,
+                            minHeight: '50px',
+                          }}
+                          whileHover={{ scale: 1.02, z: 30 }}
+                          whileTap={{ scale: 0.98 }}
+                          title={`${task.title}\n${formatTimeRange(position.startTime, position.endTime)}`}
+                        >
+                          <div className="text-xs font-semibold truncate mb-0.5">{task.title}</div>
+                          <div className="text-[10px] opacity-90 font-medium">
+                            {formatTimeRange(position.startTime, position.endTime)}
+                          </div>
+                          {task.status === 'completed' && (
+                            <div className="text-[9px] mt-1 font-medium opacity-80 line-through">✓ Completed</div>
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
       
       {/* Legend */}
-      <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-[var(--text-secondary)] border-t-2 border-[var(--border-color)] pt-4">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)]">
-          <div className="w-3 h-3 rounded-md bg-gradient-to-br from-red-500 to-red-600 border border-red-700 shadow-sm"></div>
+      <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-gray-600 dark:text-[var(--text-secondary)] border-t border-gray-200 dark:border-[var(--border-color)] pt-4">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border-color)]">
+          <div className="w-3 h-3 rounded bg-purple-500"></div>
           <span className="font-medium">High Priority</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)]">
-          <div className="w-3 h-3 rounded-md bg-gradient-to-br from-yellow-500 to-yellow-600 border border-yellow-700 shadow-sm"></div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border-color)]">
+          <div className="w-3 h-3 rounded bg-blue-400"></div>
           <span className="font-medium">Medium Priority</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)]">
-          <div className="w-3 h-3 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 border border-blue-700 shadow-sm"></div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border-color)]">
+          <div className="w-3 h-3 rounded bg-green-500"></div>
           <span className="font-medium">Low Priority</span>
-        </div>
-        <div className="ml-auto text-[var(--text-tertiary)] text-xs px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
-          <span className="font-medium">ℹ️</span> Tasks without times default to 11:59 PM
         </div>
       </div>
     </motion.div>
@@ -306,4 +378,3 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
 };
 
 export default WeeklyView;
-
