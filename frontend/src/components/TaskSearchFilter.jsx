@@ -94,6 +94,7 @@ const TaskSearchFilter = memo(({
   // Notify parent of filtered results
   useEffect(() => {
     if (onFilterChange) {
+      // onFilterChange receives the filtered tasks
       onFilterChange(filteredTasks);
     }
   }, [filteredTasks, onFilterChange]);

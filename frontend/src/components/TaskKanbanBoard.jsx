@@ -48,8 +48,15 @@ const SortableTaskCard = memo(({ task, onToggle, onDelete, onEdit, isSelectMode,
 SortableTaskCard.displayName = 'SortableTaskCard';
 
 // Kanban Column Component
-const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit, isSelectMode, selectedTasks, onSelect }) => {
-  const taskIds = useMemo(() => tasks.map(t => t._id), [tasks]);
+const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit, isSelectMode, selectedTasks, onSelect, showLimit = false, limit = 5 }) => {
+  const [showAll, setShowAll] = React.useState(false);
+  const taskIds = useMemo(() => {
+    const displayTasks = showLimit && !showAll ? tasks.slice(0, limit) : tasks;
+    return displayTasks.map(t => t._id);
+  }, [tasks, showLimit, showAll, limit]);
+  
+  const displayTasks = showLimit && !showAll ? tasks.slice(0, limit) : tasks;
+  const hasMore = showLimit && tasks.length > limit;
 
   return (
     <div className="flex flex-col h-full min-h-[500px]">
@@ -69,7 +76,7 @@ const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit
       <div className="flex-1 space-y-2 overflow-y-auto px-2 pb-4">
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           <AnimatePresence mode="popLayout">
-            {tasks.map((task) => (
+            {displayTasks.map((task) => (
               <SortableTaskCard
                 key={task._id}
                 task={task}
@@ -83,6 +90,15 @@ const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit
             ))}
           </AnimatePresence>
         </SortableContext>
+
+        {hasMore && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="w-full mt-2 px-3 py-2 text-sm font-medium text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors"
+          >
+            {showAll ? `Show Less` : `Show All (${tasks.length - limit} more)`}
+          </button>
+        )}
 
         {tasks.length === 0 && (
           <div className="text-center py-12 text-[var(--text-tertiary)]">
@@ -110,15 +126,14 @@ const TaskKanbanBoard = memo(({
 }) => {
   const { user } = useAuthStore();
 
-  // Categorize tasks into columns
-  const { todo, inProgress, dueSoon, completed } = useMemo(() => {
+  // Categorize tasks into columns (removed inProgress column)
+  const { todo, dueSoon, completed } = useMemo(() => {
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(23, 59, 59);
 
     const todo = [];
-    const inProgress = [];
     const dueSoon = [];
     const completed = [];
 
@@ -164,7 +179,6 @@ const TaskKanbanBoard = memo(({
 
     return {
       todo: sortTasks(todo),
-      inProgress: sortTasks(inProgress),
       dueSoon: sortTasks(dueSoon),
       completed: sortTasks(completed),
     };
@@ -204,10 +218,11 @@ const TaskKanbanBoard = memo(({
   }, [tasks, onTaskMove]);
 
   if (viewMode === 'list') {
-    // List view - simple vertical list
+    // List view - only show pending tasks (not completed)
+    const pendingTasks = tasks.filter(task => task.status !== 'completed');
     return (
       <div className="space-y-2">
-        {tasks.map((task) => (
+        {pendingTasks.map((task) => (
           <TaskCard
             key={task._id}
             task={task}
@@ -230,7 +245,7 @@ const TaskKanbanBoard = memo(({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
         <KanbanColumn
           id="todo"
           title="To Do"
@@ -256,18 +271,6 @@ const TaskKanbanBoard = memo(({
           onSelect={onSelect}
         />
         <KanbanColumn
-          id="in-progress"
-          title="In Progress"
-          tasks={inProgress}
-          color="border-purple-500"
-          onToggle={onToggle}
-          onDelete={onDelete}
-          onEdit={onEdit}
-          isSelectMode={isSelectMode}
-          selectedTasks={selectedTasks}
-          onSelect={onSelect}
-        />
-        <KanbanColumn
           id="completed"
           title="Completed"
           tasks={completed}
@@ -278,6 +281,8 @@ const TaskKanbanBoard = memo(({
           isSelectMode={isSelectMode}
           selectedTasks={selectedTasks}
           onSelect={onSelect}
+          showLimit={true}
+          limit={5}
         />
       </div>
     </DndContext>

@@ -806,6 +806,7 @@ const Dashboard = () => {
                 onCreateMultipleTasks={handleCreateMultipleTasks}
                 onBulkCompleteTasks={handleBulkCompleteTasks}
                 onBulkDeleteTasks={handleBulkDeleteTasks}
+                user={user}
               />
             }
           />

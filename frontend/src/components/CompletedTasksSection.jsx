@@ -1,8 +1,9 @@
 import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCheckCircle, FaChevronDown, FaChevronUp, FaChartLine, FaClock, FaFilter } from 'react-icons/fa';
+import { FaCheckCircle, FaChevronDown, FaChevronUp, FaChartLine, FaUserFriends, FaFilter } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, subDays, startOfDay, differenceInDays } from 'date-fns';
 import TaskCard from './TaskCard';
+import { useDataStore } from '../store/dataStore';
 
 const CompletedTasksSection = memo(({ 
   tasks, 
@@ -11,6 +12,7 @@ const CompletedTasksSection = memo(({
   onEdit,
   className = '' 
 }) => {
+  const { friends } = useDataStore();
   const [isExpanded, setIsExpanded] = useState(true);
   const [timeFilter, setTimeFilter] = useState('7'); // 7, 30, all days
 
@@ -59,15 +61,6 @@ const CompletedTasksSection = memo(({
 
     // Calculate stats
     const totalCompleted = filtered.length;
-    const avgCompletionTime = filtered.length > 0
-      ? filtered.reduce((sum, task) => {
-          if (!task.dueDate || !task.completedAt) return sum;
-          const dueDate = new Date(task.dueDate);
-          const completedDate = new Date(task.completedAt);
-          return sum + (completedDate - dueDate) / (1000 * 60 * 60); // hours
-        }, 0) / filtered.length
-      : 0;
-
     const onTimeCount = filtered.filter(task => {
       if (!task.dueDate || !task.completedAt) return false;
       const dueDate = new Date(task.dueDate);
@@ -77,13 +70,18 @@ const CompletedTasksSection = memo(({
 
     const completionRate = totalCompleted > 0 ? (onTimeCount / totalCompleted) * 100 : 0;
 
+    // Calculate friend tasks (tasks shared with friends)
+    const friendTasksCount = filtered.filter(task => {
+      return task.isShared && task.sharedWith && task.sharedWith.length > 0;
+    }).length;
+
     return {
       groupedTasks: groups,
       stats: {
         total: totalCompleted,
-        avgCompletionTime: avgCompletionTime,
         completionRate: completionRate,
         onTimeCount,
+        friendTasksCount,
       },
     };
   }, [tasks, timeFilter]);
@@ -157,14 +155,14 @@ const CompletedTasksSection = memo(({
           </div>
           <div className="bg-[var(--bg-secondary)] rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <FaClock className="text-blue-500 text-sm" />
-              <span className="text-sm font-medium text-[var(--text-secondary)]">Avg. Time</span>
+              <FaUserFriends className="text-blue-500 text-sm" />
+              <span className="text-sm font-medium text-[var(--text-secondary)]">Shared Tasks</span>
             </div>
             <p className="text-2xl font-bold text-[var(--text-primary)]">
-              {stats.avgCompletionTime >= 0 ? '+' : ''}{stats.avgCompletionTime.toFixed(1)}h
+              {stats.friendTasksCount}
             </p>
             <p className="text-xs text-[var(--text-tertiary)] mt-1">
-              vs due date
+              with friends
             </p>
           </div>
           <div className="bg-[var(--bg-secondary)] rounded-lg p-4">

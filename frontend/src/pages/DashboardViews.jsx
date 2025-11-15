@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic, FaCheckSquare, FaSquare, FaColumns, FaList } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
@@ -20,6 +20,7 @@ import TaskSearchFilter from '../components/TaskSearchFilter';
 import TaskFAB from '../components/TaskFAB';
 import TaskAlerts from '../components/TaskAlerts';
 import CompletedTasksSection from '../components/CompletedTasksSection';
+import MotivationQuotes from '../components/MotivationQuotes';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -821,6 +822,7 @@ export const DashboardTasks = ({
   onCreateMultipleTasks,
   onBulkCompleteTasks,
   onBulkDeleteTasks,
+  user,
 }) => {
   const [isMultipleTasksModalOpen, setIsMultipleTasksModalOpen] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -829,11 +831,46 @@ export const DashboardTasks = ({
   const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'list'
   const [filteredTasks, setFilteredTasks] = useState(tasks);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [dateFilter, setDateFilter] = useState('today'); // 'today', 'custom', 'all'
+  const [customDate, setCustomDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
 
-  // Update filtered tasks when tasks change
+  // Apply date filter to tasks
+  const dateFilteredTasks = useMemo(() => {
+    if (dateFilter === 'all') {
+      return tasks;
+    }
+    
+    const targetDate = dateFilter === 'today' 
+      ? new Date() 
+      : new Date(customDate + 'T00:00:00');
+    
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return tasks.filter(task => {
+      if (task.status === 'completed') {
+        const completedDate = new Date(task.completedAt || task.updatedAt || task.createdAt);
+        completedDate.setHours(0, 0, 0, 0);
+        return completedDate.getTime() === targetDate.getTime();
+      } else {
+        // For pending tasks, check due date
+        if (!task.dueDate) {
+          // Tasks without due date are shown only if viewing "all"
+          return dateFilter === 'all';
+        }
+        const dueDate = new Date(task.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate.getTime() === targetDate.getTime();
+      }
+    });
+  }, [tasks, dateFilter, customDate]);
+  
+  // Update filtered tasks when date filter changes (search filter will further refine)
   useEffect(() => {
-    setFilteredTasks(tasks);
-  }, [tasks]);
+    setFilteredTasks(dateFilteredTasks);
+  }, [dateFilteredTasks]);
 
   // Handle task move (for drag-and-drop reordering)
   const handleTaskMove = useCallback((taskId, targetId) => {
@@ -982,10 +1019,26 @@ export const DashboardTasks = ({
 
       {/* Search and Filter Bar */}
       <TaskSearchFilter
-        tasks={tasks}
+        tasks={dateFilteredTasks}
         onFilterChange={setFilteredTasks}
         className="mb-6"
       />
+
+      {/* Motivation Quotes */}
+      {(() => {
+        const completionRate = completedTasks.length > 0 && tasks.length > 0
+          ? (completedTasks.length / tasks.length) * 100
+          : 0;
+        return (
+          <MotivationQuotes
+            key={`${completionRate}-${completedTasks.length}-${user?.streak || 0}`}
+            completionRate={completionRate}
+            totalCompleted={completedTasks.length}
+            streak={user?.streak || 0}
+            className="mb-6"
+          />
+        );
+      })()}
 
       {/* Task Alerts (Overdue, Due Today, Due Tomorrow) */}
       <TaskAlerts
@@ -999,9 +1052,33 @@ export const DashboardTasks = ({
       {/* Main Task Board/List */}
       <div className="card p-6 mb-6 min-h-[600px]">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-            {viewMode === 'kanban' ? 'Kanban Board' : 'Task List'}
-          </h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+              {viewMode === 'kanban' ? 'Productivity Board' : 'Task List'}
+            </h2>
+            {/* Date Filter */}
+            <div className="flex items-center gap-2">
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 text-sm"
+                aria-label="Filter by date"
+              >
+                <option value="today">Today</option>
+                <option value="custom">Custom Date</option>
+                <option value="all">All Tasks</option>
+              </select>
+              {dateFilter === 'custom' && (
+                <input
+                  type="date"
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 text-sm"
+                  aria-label="Select custom date"
+                />
+              )}
+            </div>
+          </div>
           {pendingFilteredTasks.length > 0 && (
             <div className="flex items-center gap-3">
               {isSelectMode && (
