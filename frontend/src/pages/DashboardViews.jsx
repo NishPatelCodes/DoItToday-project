@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic, FaCheckSquare, FaSquare } from 'react-icons/fa';
+import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic, FaCheckSquare, FaSquare, FaColumns, FaList } from 'react-icons/fa';
 import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -15,6 +15,11 @@ import FriendStatus from '../components/FriendStatus';
 import DashboardSummary from '../components/DashboardSummary';
 import MultipleTasksModal from '../components/MultipleTasksModal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import TaskKanbanBoard from '../components/TaskKanbanBoard';
+import TaskSearchFilter from '../components/TaskSearchFilter';
+import TaskFAB from '../components/TaskFAB';
+import TaskAlerts from '../components/TaskAlerts';
+import CompletedTasksSection from '../components/CompletedTasksSection';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -803,7 +808,7 @@ export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask, onT
   );
 };
 
-// Tasks View
+// Tasks View - REDESIGNED
 export const DashboardTasks = ({
   tasks,
   pendingTasks,
@@ -821,7 +826,23 @@ export const DashboardTasks = ({
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
-  // Group completed tasks by date segments
+  const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'list'
+  const [filteredTasks, setFilteredTasks] = useState(tasks);
+  const [showCompleted, setShowCompleted] = useState(false);
+
+  // Update filtered tasks when tasks change
+  useEffect(() => {
+    setFilteredTasks(tasks);
+  }, [tasks]);
+
+  // Handle task move (for drag-and-drop reordering)
+  const handleTaskMove = useCallback((taskId, targetId) => {
+    // This would typically update task order or status
+    // For now, we'll just log it - you can extend this to update the backend
+    console.log('Task moved:', taskId, 'to', targetId);
+  }, []);
+
+  // Group completed tasks by date segments (keeping old logic for backward compatibility)
   const groupedCompletedTasks = useMemo(() => {
     if (!completedTasks || completedTasks.length === 0) return {};
 
@@ -915,35 +936,204 @@ export const DashboardTasks = ({
     );
   };
 
+  // Get pending tasks from filtered results
+  const pendingFilteredTasks = useMemo(() => {
+    return filteredTasks.filter(t => t.status !== 'completed');
+  }, [filteredTasks]);
+
   return (
-    <div className="p-4 md:p-8 overflow-x-hidden">
+    <div className="p-4 md:p-8 overflow-x-hidden relative min-h-screen pb-24">
+      {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Tasks</h1>
-          <p className="text-sm md:text-base text-[var(--text-secondary)]">Manage your daily tasks</p>
+          <p className="text-sm md:text-base text-[var(--text-secondary)]">Manage your daily tasks with ease</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setIsMultipleTasksModalOpen(true);
-            }}
-            className="btn-secondary flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-          >
-            <FaMagic />
-            <span>Multiple Tasks</span>
-          </button>
-          <button
-            onClick={() => {
-              setEditingTask(null);
-              setIsTaskModalOpen(true);
-            }}
-            className="btn-primary flex items-center gap-2"
-          >
-            <FaPlus />
-            <span>New Task</span>
-          </button>
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`p-2 rounded transition-all ${
+                viewMode === 'kanban'
+                  ? 'bg-[var(--accent-primary)] text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+              aria-label="Kanban view"
+              aria-pressed={viewMode === 'kanban'}
+            >
+              <FaColumns />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded transition-all ${
+                viewMode === 'list'
+                  ? 'bg-[var(--accent-primary)] text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+              aria-label="List view"
+              aria-pressed={viewMode === 'list'}
+            >
+              <FaList />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Search and Filter Bar */}
+      <TaskSearchFilter
+        tasks={tasks}
+        onFilterChange={setFilteredTasks}
+        className="mb-6"
+      />
+
+      {/* Task Alerts (Overdue, Due Today, Due Tomorrow) */}
+      <TaskAlerts
+        tasks={filteredTasks}
+        onToggle={onToggleTask}
+        onDelete={onDeleteTask}
+        onEdit={onEditTask}
+        className="mb-6"
+      />
+
+      {/* Main Task Board/List */}
+      <div className="card p-6 mb-6 min-h-[600px]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+            {viewMode === 'kanban' ? 'Kanban Board' : 'Task List'}
+          </h2>
+          {pendingFilteredTasks.length > 0 && (
+            <div className="flex items-center gap-3">
+              {isSelectMode && (
+                <div className="flex items-center gap-2">
+                  {selectedTasks.size > 0 && (
+                    <>
+                      <span className="text-sm text-[var(--text-secondary)]">
+                        {selectedTasks.size} selected
+                      </span>
+                      <button
+                        onClick={async () => {
+                          if (onBulkCompleteTasks) {
+                            await onBulkCompleteTasks(Array.from(selectedTasks));
+                          }
+                          setSelectedTasks(new Set());
+                          setIsSelectMode(false);
+                        }}
+                        className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
+                      >
+                        <FaCheckCircle />
+                        Complete ({selectedTasks.size})
+                      </button>
+                      <button
+                        onClick={() => setShowBulkDeleteConfirm(true)}
+                        className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
+                      >
+                        <FaTimes />
+                        Delete ({selectedTasks.size})
+                      </button>
+                    </>
+                  )}
+                  {selectedTasks.size === 0 && (
+                    <button
+                      onClick={() => {
+                        const allTaskIds = new Set(pendingFilteredTasks.map(task => task._id));
+                        setSelectedTasks(allTaskIds);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium transition-colors"
+                    >
+                      Select All
+                    </button>
+                  )}
+                  {selectedTasks.size === pendingFilteredTasks.length && selectedTasks.size > 0 && (
+                    <button
+                      onClick={() => {
+                        setSelectedTasks(new Set());
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium transition-colors"
+                    >
+                      Deselect All
+                    </button>
+                  )}
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  setIsSelectMode(!isSelectMode);
+                  if (isSelectMode) {
+                    setSelectedTasks(new Set());
+                  }
+                }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isSelectMode
+                    ? 'bg-[var(--accent-primary)] text-white hover:opacity-90'
+                    : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--border-color)]'
+                }`}
+              >
+                {isSelectMode ? 'Cancel' : 'Select'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Task Board/List */}
+        {pendingFilteredTasks.length > 0 || filteredTasks.filter(t => t.status === 'completed').length > 0 ? (
+          <TaskKanbanBoard
+            tasks={filteredTasks}
+            onToggle={onToggleTask}
+            onDelete={onDeleteTask}
+            onEdit={onEditTask}
+            onTaskMove={handleTaskMove}
+            isSelectMode={isSelectMode}
+            selectedTasks={selectedTasks}
+            onSelect={(taskId) => {
+              const newSelected = new Set(selectedTasks);
+              if (newSelected.has(taskId)) {
+                newSelected.delete(taskId);
+              } else {
+                newSelected.add(taskId);
+              }
+              setSelectedTasks(newSelected);
+            }}
+            viewMode={viewMode}
+          />
+        ) : (
+          <div className="text-center py-12">
+            <FaTasks className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
+            <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
+            <button
+              onClick={() => {
+                setEditingTask(null);
+                setIsTaskModalOpen(true);
+              }}
+              className="btn-primary"
+            >
+              <FaPlus className="inline mr-2" />
+              Create Task
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Completed Tasks Section */}
+      {completedTasks.length > 0 && (
+        <CompletedTasksSection
+          tasks={completedTasks}
+          onToggle={onToggleTask}
+          onDelete={onDeleteTask}
+          onEdit={onEditTask}
+          className="mb-6"
+        />
+      )}
+
+      {/* FAB Button */}
+      <TaskFAB
+        onAddTask={() => {
+          setEditingTask(null);
+          setIsTaskModalOpen(true);
+        }}
+        onAddMultipleTasks={() => setIsMultipleTasksModalOpen(true)}
+      />
 
       {/* Multiple Tasks Modal */}
       <MultipleTasksModal
@@ -970,214 +1160,6 @@ export const DashboardTasks = ({
         cancelText="Cancel"
         type="danger"
       />
-
-      <div className="space-y-6">
-        {/* Pending Tasks */}
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-              Pending ({pendingTasks.length})
-            </h2>
-            {pendingTasks.length > 0 && (
-              <div className="flex items-center gap-3">
-                {isSelectMode && (
-                  <div className="flex items-center gap-2">
-                    {selectedTasks.size > 0 && (
-                      <>
-                        <span className="text-sm text-[var(--text-secondary)]">
-                          {selectedTasks.size} selected
-                        </span>
-                        <button
-                          onClick={async () => {
-                            if (onBulkCompleteTasks) {
-                              await onBulkCompleteTasks(Array.from(selectedTasks));
-                            }
-                            setSelectedTasks(new Set());
-                            setIsSelectMode(false);
-                          }}
-                          className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
-                        >
-                          <FaCheckCircle />
-                          Complete ({selectedTasks.size})
-                        </button>
-                        <button
-                          onClick={() => setShowBulkDeleteConfirm(true)}
-                          className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
-                        >
-                          <FaTimes />
-                          Delete ({selectedTasks.size})
-                        </button>
-                      </>
-                    )}
-                    {selectedTasks.size === 0 && (
-                      <button
-                        onClick={() => {
-                          const allTaskIds = new Set(pendingTasks.map(task => task._id));
-                          setSelectedTasks(allTaskIds);
-                        }}
-                        className="px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium transition-colors"
-                      >
-                        Select All
-                      </button>
-                    )}
-                    {selectedTasks.size === pendingTasks.length && selectedTasks.size > 0 && (
-                      <button
-                        onClick={() => {
-                          setSelectedTasks(new Set());
-                        }}
-                        className="px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] text-sm font-medium transition-colors"
-                      >
-                        Deselect All
-                      </button>
-                    )}
-                  </div>
-                )}
-                <button
-                  onClick={() => {
-                    setIsSelectMode(!isSelectMode);
-                    if (isSelectMode) {
-                      setSelectedTasks(new Set());
-                    }
-                  }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isSelectMode
-                      ? 'bg-[var(--accent-primary)] text-white hover:opacity-90'
-                      : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:bg-[var(--border-color)]'
-                  }`}
-                >
-                  {isSelectMode ? 'Cancel' : 'Select'}
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="space-y-2">
-            {pendingTasks.length > 0 ? (
-              pendingTasks.map((task) => (
-                <TaskCard
-                  key={task._id}
-                  task={task}
-                  onToggle={onToggleTask}
-                  onDelete={onDeleteTask}
-                  onEdit={onEditTask}
-                  isSelectMode={isSelectMode}
-                  isSelected={selectedTasks.has(task._id)}
-                  onSelect={(taskId) => {
-                    const newSelected = new Set(selectedTasks);
-                    if (newSelected.has(taskId)) {
-                      newSelected.delete(taskId);
-                    } else {
-                      newSelected.add(taskId);
-                    }
-                    setSelectedTasks(newSelected);
-                  }}
-                />
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <FaTasks className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
-                <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No pending tasks</p>
-                <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
-                <button
-                  onClick={() => {
-                    setEditingTask(null);
-                    setIsTaskModalOpen(true);
-                  }}
-                  className="btn-primary"
-                >
-                  <FaPlus className="inline mr-2" />
-                  Create Task
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Completed Tasks - Grouped by Date */}
-        {completedTasks.length > 0 && (
-          <div className="card p-6">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
-              Completed ({completedTasks.length})
-            </h2>
-            <div className="space-y-6">
-              {/* Today */}
-              {renderDateSection('Today', groupedCompletedTasks.today, '📅')}
-
-              {/* Yesterday */}
-              {renderDateSection('Yesterday', groupedCompletedTasks.yesterday, '📆')}
-
-              {/* This Week */}
-              {groupedCompletedTasks.thisWeek && groupedCompletedTasks.thisWeek.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-3 px-2">
-                    <span className="text-[var(--accent-primary)]">📊</span>
-                    <h3 className="text-base font-semibold text-[var(--text-primary)]">This Week</h3>
-                    <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.thisWeek.length})</span>
-                  </div>
-                  <div className="space-y-2">
-                    {groupedCompletedTasks.thisWeek.map((task) => (
-                      <TaskCard
-                        key={task._id}
-                        task={task}
-                        onToggle={onToggleTask}
-                        onDelete={onDeleteTask}
-                        onEdit={onEditTask}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Last Week */}
-              {groupedCompletedTasks.lastWeek && groupedCompletedTasks.lastWeek.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-3 px-2">
-                    <span className="text-[var(--accent-primary)]">📋</span>
-                    <h3 className="text-base font-semibold text-[var(--text-primary)]">Last Week</h3>
-                    <span className="text-sm text-[var(--text-tertiary)]">({groupedCompletedTasks.lastWeek.length})</span>
-                  </div>
-                  <div className="space-y-2">
-                    {groupedCompletedTasks.lastWeek.map((task) => (
-                      <TaskCard
-                        key={task._id}
-                        task={task}
-                        onToggle={onToggleTask}
-                        onDelete={onDeleteTask}
-                        onEdit={onEditTask}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Older - Grouped by specific dates */}
-              {Object.keys(olderTasksByDate).length > 0 && (
-                <div className="space-y-6">
-                  {Object.entries(olderTasksByDate).map(([dateKey, dateGroup]) => (
-                    <div key={dateKey} className="mb-6">
-                      <div className="flex items-center gap-2 mb-3 px-2">
-                        <span className="text-[var(--accent-primary)]">🗓️</span>
-                        <h3 className="text-base font-semibold text-[var(--text-primary)]">{dateGroup.date}</h3>
-                        <span className="text-sm text-[var(--text-tertiary)]">({dateGroup.tasks.length})</span>
-                      </div>
-                      <div className="space-y-2">
-                        {dateGroup.tasks.map((task) => (
-                          <TaskCard
-                            key={task._id}
-                            task={task}
-                            onToggle={onToggleTask}
-                            onDelete={onDeleteTask}
-                            onEdit={onEditTask}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
