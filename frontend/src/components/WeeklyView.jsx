@@ -166,15 +166,17 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
         </div>
       </div>
       
-      {/* Weekly Timetable */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[70vh] rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-inner" ref={timetableRef} style={{ maxWidth: '100%' }}>
-        <div className="min-w-[800px] max-w-full">
-          {/* Day Headers */}
-          <div className="grid grid-cols-8 gap-2 mb-2 sticky top-0 bg-gradient-to-b from-[var(--bg-primary)] to-[var(--bg-secondary)] z-10 p-3 border-b-2 border-[var(--border-color)] shadow-sm backdrop-blur-sm">
-            <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-primary)] p-2">
+      {/* Weekly Timetable - Horizontal Layout */}
+      <div className="overflow-x-auto overflow-y-auto max-h-[75vh] rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-inner" ref={timetableRef}>
+        <div className="min-w-[900px]">
+          {/* Day Headers Row - Horizontal */}
+          <div className="grid grid-cols-8 gap-2 mb-2 sticky top-0 bg-gradient-to-b from-[var(--bg-primary)] to-[var(--bg-secondary)] z-20 p-3 border-b-2 border-[var(--border-color)] shadow-md backdrop-blur-sm">
+            {/* Time Column Header (Sticky) */}
+            <div className="flex items-center justify-center gap-2 text-sm font-bold text-[var(--text-primary)] p-2 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-color)] sticky left-2 -ml-2 pl-2 z-30 backdrop-blur-sm">
               <FaClock className="text-[var(--accent-primary)]" />
-              <span>Time</span>
+              <span className="hidden sm:inline">Time</span>
             </div>
+            {/* Day Headers - Horizontal */}
             {weekDays.map((day, index) => {
               const dayTaskCount = getTasksForDay(day).length;
               return (
@@ -191,13 +193,13 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
                   }`}>
                     {format(day, 'EEE')}
                   </div>
-                  <div className={`text-2xl font-bold mt-1 ${
+                  <div className={`text-xl md:text-2xl font-bold mt-1 ${
                     isToday(day) ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
                   }`}>
                     {format(day, 'd')}
                   </div>
                   {dayTaskCount > 0 && (
-                    <div className={`text-xs font-medium mt-1.5 px-2 py-1 rounded-full inline-block ${
+                    <div className={`text-[10px] font-medium mt-1.5 px-2 py-0.5 rounded-full inline-block ${
                       isToday(day) 
                         ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' 
                         : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
@@ -210,49 +212,67 @@ const WeeklyView = ({ tasks, onTaskClick, onCreateTask }) => {
             })}
           </div>
           
-          {/* Time Slots */}
-          <div className="space-y-1.5 p-2">
+          {/* Time Rows - Horizontal Layout */}
+          <div className="space-y-1 p-2">
             {timeSlots.map((hour) => (
-              <div key={hour} id={`time-slot-${hour}`} className="grid grid-cols-8 gap-2">
-                {/* Time Label */}
-                <div className="flex items-center justify-end pr-3">
-                  <div className="text-sm font-semibold text-[var(--text-primary)] bg-[var(--bg-tertiary)] px-3 py-2 rounded-lg border border-[var(--border-color)] min-w-[70px] text-right">
+              <div 
+                key={hour} 
+                id={`time-slot-${hour}`} 
+                className="grid grid-cols-8 gap-2 min-h-[80px] hover:bg-[var(--bg-tertiary)]/30 rounded-lg transition-colors"
+              >
+                {/* Time Label - Left Column (Sticky) */}
+                <div className="flex items-center justify-center sticky left-2 z-10 bg-[var(--bg-secondary)] rounded-lg -ml-2 pl-2">
+                  <div className="text-sm font-bold text-[var(--text-primary)] bg-[var(--bg-tertiary)] px-3 py-2.5 rounded-lg border border-[var(--border-color)] min-w-[75px] text-center shadow-sm backdrop-blur-sm">
                     {formatTime(hour)}
                   </div>
                 </div>
                 
-                {/* Day Columns */}
+                {/* Day Columns - Horizontal */}
                 {weekDays.map((day, dayIndex) => {
                   const tasksInSlot = getTasksForTimeSlot(day, hour);
+                  const isCurrentTime = isToday(day) && new Date().getHours() === hour;
+                  
                   return (
                     <div
                       key={dayIndex}
-                      className={`min-h-[70px] p-2 rounded-lg border transition-all ${
-                        isToday(day) && new Date().getHours() === hour
-                          ? 'border-[var(--accent-primary)]/50 bg-[var(--accent-primary)]/5 shadow-sm'
-                          : 'border-[var(--border-color)]/50 bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]/70 hover:border-[var(--border-color)]'
+                      className={`min-h-[80px] p-2 rounded-lg border-2 transition-all relative ${
+                        isCurrentTime
+                          ? 'border-[var(--accent-primary)]/60 bg-[var(--accent-primary)]/8 shadow-md'
+                          : 'border-[var(--border-color)]/40 bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]/50 hover:border-[var(--border-color)]/60'
                       }`}
                     >
-                      <div className="space-y-1.5">
-                        {tasksInSlot.map((task) => (
-                          <motion.button
-                            key={task._id}
-                            onClick={() => onTaskClick && onTaskClick(task)}
-                            className={`w-full text-left p-2.5 rounded-lg text-white text-xs font-semibold shadow-md border transition-all ${getPriorityColor(task.priority)} hover:shadow-lg`}
-                            whileHover={{ scale: 1.03, y: -1 }}
-                            whileTap={{ scale: 0.97 }}
-                            title={`${task.title}\n${format(new Date(task.dueDate), 'h:mm a')}\nPriority: ${task.priority}`}
-                          >
-                            <div className="truncate font-bold text-sm mb-0.5">{task.title}</div>
-                            <div className="text-[10px] opacity-90 font-medium flex items-center gap-1">
-                              <FaClock className="text-[10px]" />
-                              {format(new Date(task.dueDate), 'h:mm a')}
-                            </div>
-                            {task.status === 'completed' && (
-                              <div className="text-[10px] mt-1.5 font-medium opacity-80">✓ Completed</div>
-                            )}
-                          </motion.button>
-                        ))}
+                      {/* Current Time Indicator */}
+                      {isCurrentTime && (
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--accent-primary)] rounded-t-lg"></div>
+                      )}
+                      
+                      {/* Tasks Container */}
+                      <div className="space-y-1.5 h-full">
+                        {tasksInSlot.length > 0 ? (
+                          tasksInSlot.map((task) => (
+                            <motion.button
+                              key={task._id}
+                              onClick={() => onTaskClick && onTaskClick(task)}
+                              className={`w-full text-left p-2.5 rounded-lg text-white text-xs font-semibold shadow-md border transition-all ${getPriorityColor(task.priority)} hover:shadow-lg hover:scale-[1.02]`}
+                              whileHover={{ scale: 1.02, y: -1 }}
+                              whileTap={{ scale: 0.98 }}
+                              title={`${task.title}\n${format(new Date(task.dueDate), 'h:mm a')}\nPriority: ${task.priority}`}
+                            >
+                              <div className="truncate font-bold text-sm mb-1">{task.title}</div>
+                              <div className="text-[10px] opacity-90 font-medium flex items-center gap-1">
+                                <FaClock className="text-[9px]" />
+                                {format(new Date(task.dueDate), 'h:mm a')}
+                              </div>
+                              {task.status === 'completed' && (
+                                <div className="text-[10px] mt-1 font-medium opacity-80 line-through">✓ Completed</div>
+                              )}
+                            </motion.button>
+                          ))
+                        ) : (
+                          <div className="h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <span className="text-[10px] text-[var(--text-tertiary)]">+</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

@@ -37,21 +37,30 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
   if (viewMode === 'weekly') {
     return (
       <div className="space-y-4">
-        {/* View Toggle */}
-        <div className="flex items-center justify-end gap-2 p-2">
+        {/* View Toggle - Optimized */}
+        <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)]">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('monthly')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all shadow-sm"
+            >
+              <FaCalendarAlt />
+              <span className="text-sm font-medium">Monthly</span>
+            </button>
+            <button
+              onClick={() => setViewMode('weekly')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white transition-all shadow-md"
+            >
+              <FaCalendarWeek />
+              <span className="text-sm font-medium">Weekly</span>
+            </button>
+          </div>
           <button
-            onClick={() => setViewMode('monthly')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all"
+            onClick={onCreateTask}
+            className="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all"
           >
-            <FaCalendarAlt />
-            <span className="text-sm font-medium">Monthly</span>
-          </button>
-          <button
-            onClick={() => setViewMode('weekly')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white transition-all"
-          >
-            <FaCalendarWeek />
-            <span className="text-sm font-medium">Weekly</span>
+            <FaPlus />
+            <span>New Task</span>
           </button>
         </div>
         <WeeklyView 
@@ -120,13 +129,13 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1 md:gap-2 min-w-[350px]">
+      {/* Calendar Grid - Optimized */}
+      <div className="grid grid-cols-7 gap-1.5 md:gap-2.5 min-w-[350px]">
         {/* Week Day Headers */}
         {weekDays.map((day) => (
           <div
             key={day}
-            className="p-2 md:p-3 text-center text-xs md:text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wider bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-color)]"
+            className="p-2.5 md:p-3.5 text-center text-xs md:text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wider bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] shadow-sm"
           >
             <span className="hidden sm:inline">{day}</span>
             <span className="sm:hidden">{day.substring(0, 1)}</span>
@@ -149,14 +158,15 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
               transition={{ delay: index * 0.01 }}
               onClick={() => onDateClick && onDateClick(day)}
               className={`
-                p-2 md:p-3 rounded-lg md:rounded-xl min-h-[80px] md:min-h-[100px] text-left transition-all duration-200 border touch-manipulation
+                p-2.5 md:p-3.5 rounded-lg md:rounded-xl min-h-[85px] md:min-h-[110px] text-left transition-all duration-200 border-2 touch-manipulation relative
                 ${!isCurrentMonth 
-                  ? 'text-[var(--text-tertiary)] bg-[var(--bg-secondary)]/50 border-[var(--border-color)]/30' 
+                  ? 'text-[var(--text-tertiary)] bg-[var(--bg-secondary)]/40 border-[var(--border-color)]/30' 
                   : isToday 
-                  ? 'bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)] shadow-md' 
+                  ? 'bg-gradient-to-br from-[var(--accent-primary)]/25 to-[var(--accent-primary)]/12 border-2 border-[var(--accent-primary)] shadow-lg' 
                   : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] hover:border-[var(--accent-primary)]/50 active:bg-[var(--bg-tertiary)]'
                 }
-                ${hasEvents ? 'shadow-sm' : ''}
+                ${hasEvents ? 'shadow-md' : 'shadow-sm'}
+                hover:shadow-lg
               `}
             >
               <div className="flex items-center justify-between mb-1 md:mb-2">
@@ -177,7 +187,7 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
                   </span>
                 )}
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {dayTasks.slice(0, 2).map((task) => {
                   const taskDate = new Date(task.dueDate);
                   const hours = taskDate.getHours();
@@ -187,18 +197,18 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
                   return (
                     <div
                       key={task._id}
-                      className={`text-[10px] md:text-xs px-1.5 md:px-2 py-1 md:py-1.5 rounded md:rounded-lg font-medium shadow-sm border ${
+                      className={`text-[10px] md:text-xs px-2 md:px-2.5 py-1.5 md:py-2 rounded-lg font-medium shadow-sm border transition-all hover:shadow-md ${
                         task.priority === 'high'
-                          ? 'bg-gradient-to-r from-red-500/15 to-red-500/10 text-red-700 border-red-500/30'
+                          ? 'bg-gradient-to-r from-red-500/20 to-red-500/12 text-red-700 dark:text-red-300 border-red-500/40'
                           : task.priority === 'medium'
-                          ? 'bg-gradient-to-r from-yellow-500/15 to-yellow-500/10 text-yellow-700 border-yellow-500/30'
-                          : 'bg-gradient-to-r from-blue-500/15 to-blue-500/10 text-blue-700 border-blue-500/30'
-                      }`}
+                          ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-500/12 text-yellow-700 dark:text-yellow-300 border-yellow-500/40'
+                          : 'bg-gradient-to-r from-blue-500/20 to-blue-500/12 text-blue-700 dark:text-blue-300 border-blue-500/40'
+                      } ${task.status === 'completed' ? 'opacity-60 line-through' : ''}`}
                       title={task.title + (hasSpecificTime ? ` at ${format(taskDate, 'h:mm a')}` : '')}
                     >
-                      <div className="truncate font-semibold">{task.title}</div>
+                      <div className="truncate font-bold">{task.title}</div>
                       {hasSpecificTime && (
-                        <div className="text-[9px] md:text-[10px] opacity-80 mt-0.5 font-medium">
+                        <div className="text-[9px] md:text-[10px] opacity-75 mt-0.5 font-medium">
                           {format(taskDate, 'h:mm a')}
                         </div>
                       )}
@@ -206,7 +216,7 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask }) => {
                   );
                 })}
                 {dayTasks.length > 2 && (
-                  <div className="text-[10px] md:text-xs text-[var(--text-secondary)] font-medium px-1.5 md:px-2 py-0.5 md:py-1 bg-[var(--bg-tertiary)] rounded md:rounded-lg">
+                  <div className="text-[10px] md:text-xs text-[var(--text-secondary)] font-semibold px-2 md:px-2.5 py-1 md:py-1.5 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] transition-colors">
                     +{dayTasks.length - 2} more
                   </div>
                 )}
