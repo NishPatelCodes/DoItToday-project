@@ -4,6 +4,80 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Setup account information
+router.post('/setup', authenticate, async (req, res) => {
+  try {
+    const { accountType, accountName, initialBalance, currency, bankName, accountNumber } = req.body;
+    
+    let finance = await Finance.findOne({ userId: req.user._id });
+
+    if (!finance) {
+      finance = new Finance({
+        userId: req.user._id,
+        transactions: [],
+        savingsGoals: [],
+        monthlyBudget: {
+          income: 0,
+          expenses: 0,
+          month: new Date().getMonth() + 1,
+          year: new Date().getFullYear(),
+        },
+      });
+    }
+
+    // Update account info
+    finance.accountInfo = {
+      accountType: accountType || 'checking',
+      accountName: accountName || 'Primary Account',
+      initialBalance: initialBalance || 0,
+      currency: currency || 'USD',
+      bankName: bankName || '',
+      accountNumber: accountNumber || '',
+      isSetupComplete: true,
+      setupDate: new Date(),
+    };
+
+    // Add initial balance to history
+    finance.balanceHistory.push({
+      date: new Date(),
+      balance: initialBalance || 0,
+    });
+
+    finance.updatedAt = new Date();
+    await finance.save();
+
+    res.json(finance);
+  } catch (error) {
+    console.error('Error setting up finance account:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Update account information
+router.put('/account', authenticate, async (req, res) => {
+  try {
+    const finance = await Finance.findOne({ userId: req.user._id });
+
+    if (!finance) {
+      return res.status(404).json({ message: 'Finance data not found' });
+    }
+
+    finance.accountInfo = {
+      ...finance.accountInfo,
+      ...req.body,
+      isSetupComplete: true,
+    };
+
+    finance.updatedAt = new Date();
+    await finance.save();
+
+    res.json(finance);
+  } catch (error) {
+    console.error('Error updating account info:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Get finance data for user
 router.get('/', authenticate, async (req, res) => {
   try {
@@ -20,6 +94,9 @@ router.get('/', authenticate, async (req, res) => {
           expenses: 0,
           month: new Date().getMonth() + 1,
           year: new Date().getFullYear(),
+        },
+        accountInfo: {
+          isSetupComplete: false,
         },
       });
       await finance.save();
@@ -76,6 +153,40 @@ router.post('/transactions', authenticate, async (req, res) => {
       }
     }
 
+    // Calculate current balance and add to history (once per day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Check if we already have a balance entry for today
+    const todayHistory = finance.balanceHistory.find(
+      entry => entry.date.toISOString().split('T')[0] === todayStr
+    );
+
+    if (!todayHistory) {
+      // Calculate current balance
+      const initialBalance = finance.accountInfo?.initialBalance || 0;
+      const totalIncome = finance.transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const totalExpenses = finance.transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const currentBalance = initialBalance + totalIncome - totalExpenses;
+
+      finance.balanceHistory.push({
+        date: new Date(),
+        balance: currentBalance,
+      });
+
+      // Keep only last 365 days of history
+      const oneYearAgo = new Date();
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+      finance.balanceHistory = finance.balanceHistory.filter(
+        entry => entry.date >= oneYearAgo
+      );
+    }
+
     finance.updatedAt = new Date();
     await finance.save();
 
@@ -102,6 +213,38 @@ router.put('/transactions/:id', authenticate, async (req, res) => {
 
     // Update transaction
     Object.assign(transaction, req.body);
+    
+    // Recalculate balance history
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+    
+    const todayHistory = finance.balanceHistory.find(
+      entry => entry.date.toISOString().split('T')[0] === todayStr
+    );
+
+    if (!todayHistory) {
+      const initialBalance = finance.accountInfo?.initialBalance || 0;
+      const totalIncome = finance.transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const totalExpenses = finance.transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const currentBalance = initialBalance + totalIncome - totalExpenses;
+
+      finance.balanceHistory.push({
+        date: new Date(),
+        balance: currentBalance,
+      });
+
+      const oneYearAgo = new Date();
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+      finance.balanceHistory = finance.balanceHistory.filter(
+        entry => entry.date >= oneYearAgo
+      );
+    }
+    
     finance.updatedAt = new Date();
     await finance.save();
 
@@ -140,6 +283,38 @@ router.delete('/transactions/:id', authenticate, async (req, res) => {
     }
 
     finance.transactions.pull(req.params.id);
+    
+    // Recalculate balance history after deletion
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+    
+    const todayHistory = finance.balanceHistory.find(
+      entry => entry.date.toISOString().split('T')[0] === todayStr
+    );
+
+    if (!todayHistory) {
+      const initialBalance = finance.accountInfo?.initialBalance || 0;
+      const totalIncome = finance.transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const totalExpenses = finance.transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const currentBalance = initialBalance + totalIncome - totalExpenses;
+
+      finance.balanceHistory.push({
+        date: new Date(),
+        balance: currentBalance,
+      });
+
+      const oneYearAgo = new Date();
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+      finance.balanceHistory = finance.balanceHistory.filter(
+        entry => entry.date >= oneYearAgo
+      );
+    }
+    
     finance.updatedAt = new Date();
     await finance.save();
 

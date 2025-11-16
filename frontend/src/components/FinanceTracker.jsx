@@ -1,34 +1,35 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FaPlus, FaEdit, FaTrash, FaDollarSign, FaArrowUp, FaArrowDown, FaPiggyBank, FaChartLine } from 'react-icons/fa';
-import { format } from 'date-fns';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaPlus, FaEdit, FaTrash, FaDollarSign, FaArrowUp, FaArrowDown, FaWallet, FaTimes, FaCheckCircle, FaChartPie } from 'react-icons/fa';
+import { format, subDays, startOfDay, isToday, parseISO } from 'date-fns';
 import { financeAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
+  PieChart, Pie, Cell, ComposedChart, Area, AreaChart 
+} from 'recharts';
 
 const FinanceTracker = () => {
   const [finance, setFinance] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [savingsGoals, setSavingsGoals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showSetupModal, setShowSetupModal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [showGoalModal, setShowGoalModal] = useState(false);
-  const [showProgressModal, setShowProgressModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
-  const [editingGoal, setEditingGoal] = useState(null);
-  const [updatingGoal, setUpdatingGoal] = useState(null);
-  const [progressAmount, setProgressAmount] = useState('');
+  const [setupForm, setSetupForm] = useState({
+    accountType: 'checking',
+    accountName: 'Primary Account',
+    initialBalance: '',
+    currency: 'USD',
+    bankName: '',
+    accountNumber: '',
+  });
   const [transactionForm, setTransactionForm] = useState({
     type: 'expense',
     category: '',
     amount: '',
     description: '',
     date: new Date().toISOString().split('T')[0],
-  });
-  const [goalForm, setGoalForm] = useState({
-    name: '',
-    targetAmount: '',
-    targetDate: '',
   });
   const toast = useToast();
 
@@ -40,6 +41,8 @@ const FinanceTracker = () => {
     'Bills & Utilities',
     'Health & Fitness',
     'Education',
+    'Travel',
+    'Gifts & Donations',
     'Other',
   ];
 
@@ -47,9 +50,21 @@ const FinanceTracker = () => {
     'Salary',
     'Freelance',
     'Investment',
+    'Business',
     'Gift',
+    'Rental',
     'Other',
   ];
+
+  // Modern color palette for charts
+  const COLORS = {
+    expense: ['#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#3B82F6'],
+    income: '#22C55E',
+    background: 'var(--bg-secondary)',
+    border: 'var(--border-color)',
+    text: 'var(--text-primary)',
+    textSecondary: 'var(--text-secondary)',
+  };
 
   useEffect(() => {
     loadFinanceData();
@@ -58,18 +73,31 @@ const FinanceTracker = () => {
   const loadFinanceData = async () => {
     try {
       setLoading(true);
-      const [financeRes, statsRes] = await Promise.all([
-        financeAPI.getAll(),
-        financeAPI.getStats(),
-      ]);
+      const financeRes = await financeAPI.getAll();
       setFinance(financeRes.data);
       setTransactions(financeRes.data?.transactions || []);
-      setSavingsGoals(financeRes.data?.savingsGoals || []);
+      
+      // Show setup modal if account is not set up
+      if (!financeRes.data?.accountInfo?.isSetupComplete) {
+        setShowSetupModal(true);
+      }
     } catch (error) {
       console.error('Error loading finance data:', error);
       toast.error('Failed to load finance data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSetup = async (e) => {
+    e.preventDefault();
+    try {
+      await financeAPI.setupAccount(setupForm);
+      toast.success('Account setup complete!');
+      setShowSetupModal(false);
+      loadFinanceData();
+    } catch (error) {
+      toast.error('Failed to setup account');
     }
   };
 
@@ -108,161 +136,140 @@ const FinanceTracker = () => {
     }
   };
 
-  const handleAddGoal = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingGoal) {
-        await financeAPI.updateSavingsGoal(editingGoal._id, goalForm);
-        toast.success('Savings goal updated');
-      } else {
-        await financeAPI.addSavingsGoal(goalForm);
-        toast.success('Savings goal created');
-      }
-      setShowGoalModal(false);
-      setEditingGoal(null);
-      setGoalForm({
-        name: '',
-        targetAmount: '',
-        targetDate: '',
+  // Calculate current balance
+  const currentBalance = useMemo(() => {
+    if (!finance?.accountInfo) return 0;
+    const initialBalance = finance.accountInfo.initialBalance || 0;
+    const totalIncome = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalExpenses = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+    return initialBalance + totalIncome - totalExpenses;
+  }, [finance, transactions]);
+
+  // Chart 1: Expense Categories Pie Chart (Modern)
+  const expenseCategoryData = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const categoryTotals = expenseCategories.map(category => {
+      const amount = transactions
+        .filter(t => 
+          t.type === 'expense' && 
+          t.category === category && 
+          new Date(t.date) >= startOfMonth
+        )
+        .reduce((sum, t) => sum + t.amount, 0);
+      return { name: category, value: amount };
+    }).filter(item => item.value > 0);
+    
+    return categoryTotals.sort((a, b) => b.value - a.value);
+  }, [transactions]);
+
+  // Chart 2: Cash Flow Income vs Expense (Last 30 days)
+  const cashFlowData = useMemo(() => {
+    const days = Array.from({ length: 30 }, (_, i) => {
+      const date = subDays(new Date(), 29 - i);
+      const dayStart = startOfDay(date);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+      
+      const dayIncome = transactions
+        .filter(t => 
+          t.type === 'income' && 
+          new Date(t.date) >= dayStart && 
+          new Date(t.date) <= dayEnd
+        )
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const dayExpense = transactions
+        .filter(t => 
+          t.type === 'expense' && 
+          new Date(t.date) >= dayStart && 
+          new Date(t.date) <= dayEnd
+        )
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      return {
+        date: format(date, 'MMM dd'),
+        income: dayIncome,
+        expense: dayExpense,
+        net: dayIncome - dayExpense,
+      };
+    });
+    return days;
+  }, [transactions]);
+
+  // Chart 3: Daily Expense Line Graph (Last 30 days)
+  const dailyExpenseData = useMemo(() => {
+    const days = Array.from({ length: 30 }, (_, i) => {
+      const date = subDays(new Date(), 29 - i);
+      const dayStart = startOfDay(date);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+      
+      const expense = transactions
+        .filter(t => 
+          t.type === 'expense' && 
+          new Date(t.date) >= dayStart && 
+          new Date(t.date) <= dayEnd
+        )
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      return {
+        date: format(date, 'MMM dd'),
+        expense: expense,
+      };
+    });
+    return days;
+  }, [transactions]);
+
+  // Chart 4: Account Balance Trend Graph (Last 30 days)
+  const balanceTrendData = useMemo(() => {
+    if (!finance?.balanceHistory || finance.balanceHistory.length === 0) {
+      // Generate from transactions if no history
+      const initialBalance = finance?.accountInfo?.initialBalance || 0;
+      const days = Array.from({ length: 30 }, (_, i) => {
+        const date = subDays(new Date(), 29 - i);
+        const dayStart = startOfDay(date);
+        
+        const income = transactions
+          .filter(t => t.type === 'income' && new Date(t.date) <= dayStart)
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        const expense = transactions
+          .filter(t => t.type === 'expense' && new Date(t.date) <= dayStart)
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        return {
+          date: format(date, 'MMM dd'),
+          balance: initialBalance + income - expense,
+        };
       });
-      loadFinanceData();
-    } catch (error) {
-      toast.error('Failed to save savings goal');
+      return days;
     }
-  };
-
-  const handleDeleteGoal = async (id) => {
-    try {
-      await financeAPI.deleteSavingsGoal(id);
-      toast.success('Savings goal deleted');
-      loadFinanceData();
-    } catch (error) {
-      toast.error('Failed to delete savings goal');
-    }
-  };
-
-  const handleUpdateProgress = async (goalId, newCurrentAmount) => {
-    try {
-      await financeAPI.updateSavingsGoal(goalId, { currentAmount: parseFloat(newCurrentAmount) });
-      toast.success('Progress updated successfully');
-      loadFinanceData();
-    } catch (error) {
-      toast.error('Failed to update progress');
-    }
-  };
+    
+    // Use actual balance history (last 30 entries or last 30 days)
+    const sortedHistory = [...finance.balanceHistory]
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(-30);
+    
+    return sortedHistory.map(entry => ({
+      date: format(new Date(entry.date), 'MMM dd'),
+      balance: entry.balance,
+    }));
+  }, [finance, transactions]);
 
   // Calculate monthly stats
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
   const monthlyIncome = transactions
-    .filter(t => t.type === 'income' && new Date(t.date) >= startOfMonth && new Date(t.date) <= endOfMonth)
+    .filter(t => t.type === 'income' && new Date(t.date) >= startOfMonth)
     .reduce((sum, t) => sum + t.amount, 0);
-
   const monthlyExpenses = transactions
-    .filter(t => t.type === 'expense' && new Date(t.date) >= startOfMonth && new Date(t.date) <= endOfMonth)
+    .filter(t => t.type === 'expense' && new Date(t.date) >= startOfMonth)
     .reduce((sum, t) => sum + t.amount, 0);
-
-  const balance = monthlyIncome - monthlyExpenses;
-
-  // Chart data
-  const monthlyChartData = Array.from({ length: 12 }, (_, i) => {
-    const monthStart = new Date(now.getFullYear(), i, 1);
-    const monthEnd = new Date(now.getFullYear(), i + 1, 0);
-    const monthIncome = transactions
-      .filter(t => t.type === 'income' && new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
-      .reduce((sum, t) => sum + t.amount, 0);
-    const monthExpenses = transactions
-      .filter(t => t.type === 'expense' && new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
-      .reduce((sum, t) => sum + t.amount, 0);
-    return {
-      month: new Date(now.getFullYear(), i).toLocaleString('default', { month: 'short' }),
-      income: monthIncome,
-      expenses: monthExpenses,
-      balance: monthIncome - monthExpenses,
-    };
-  });
-
-  // Category breakdown
-  const categoryData = expenseCategories.map(category => {
-    const amount = transactions
-      .filter(t => t.type === 'expense' && t.category === category && new Date(t.date) >= startOfMonth && new Date(t.date) <= endOfMonth)
-      .reduce((sum, t) => sum + t.amount, 0);
-    return { name: category, value: amount };
-  }).filter(item => item.value > 0);
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
-
-  // Weekly spending data (last 4 weeks)
-  const weeklyData = Array.from({ length: 4 }, (_, i) => {
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - (3 - i) * 7);
-    weekStart.setHours(0, 0, 0, 0);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-    
-    const weekExpenses = transactions
-      .filter(t => t.type === 'expense' && new Date(t.date) >= weekStart && new Date(t.date) <= weekEnd)
-      .reduce((sum, t) => sum + t.amount, 0);
-    const weekIncome = transactions
-      .filter(t => t.type === 'income' && new Date(t.date) >= weekStart && new Date(t.date) <= weekEnd)
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    return {
-      week: `Week ${i + 1}`,
-      expenses: weekExpenses,
-      income: weekIncome,
-      date: format(weekStart, 'MMM dd')
-    };
-  });
-
-  // Last 6 months income vs expenses
-  const sixMonthData = Array.from({ length: 6 }, (_, i) => {
-    const monthDate = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-    const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
-    
-    const monthIncome = transactions
-      .filter(t => t.type === 'income' && new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
-      .reduce((sum, t) => sum + t.amount, 0);
-    const monthExpenses = transactions
-      .filter(t => t.type === 'expense' && new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd)
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    return {
-      month: format(monthStart, 'MMM yyyy'),
-      income: monthIncome,
-      expenses: monthExpenses,
-      savings: monthIncome - monthExpenses
-    };
-  });
-
-  // Top spending categories over time (last 3 months)
-  const topCategories = categoryData
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5)
-    .map(c => c.name);
-  
-  const categoryTrendData = Array.from({ length: 3 }, (_, i) => {
-    const monthDate = new Date(now.getFullYear(), now.getMonth() - (2 - i), 1);
-    const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-    const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
-    
-    const data = { month: format(monthStart, 'MMM') };
-    topCategories.forEach(category => {
-      data[category] = transactions
-        .filter(t => 
-          t.type === 'expense' && 
-          t.category === category && 
-          new Date(t.date) >= monthStart && 
-          new Date(t.date) <= monthEnd
-        )
-        .reduce((sum, t) => sum + t.amount, 0);
-    });
-    return data;
-  });
 
   if (loading) {
     return (
@@ -276,134 +283,139 @@ const FinanceTracker = () => {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 md:mb-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-2">
             <FaDollarSign className="text-green-500" />
             Finance Tracker
           </h1>
           <p className="text-[var(--text-secondary)]">
-            Track your income, expenses, and savings goals
+            {finance?.accountInfo?.accountName || 'Manage your finances'}
           </p>
         </div>
-        <div className="flex gap-2">
-          <motion.button
-            onClick={() => {
-              setEditingGoal(null);
-              setGoalForm({ name: '', targetAmount: '', targetDate: '' });
-              setShowGoalModal(true);
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="btn-secondary flex items-center gap-2"
+        <motion.button
+          onClick={() => {
+            setEditingTransaction(null);
+            setTransactionForm({
+              type: 'expense',
+              category: '',
+              amount: '',
+              description: '',
+              date: new Date().toISOString().split('T')[0],
+            });
+            setShowTransactionModal(true);
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn-primary flex items-center gap-2"
+        >
+          <FaPlus />
+          Add Transaction
+        </motion.button>
+      </div>
+
+      {/* Account Summary Cards */}
+      {finance?.accountInfo?.isSetupComplete && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="card p-5 md:p-6"
           >
-            <FaPiggyBank />
-            New Goal
-          </motion.button>
-          <motion.button
-            onClick={() => {
-              setEditingTransaction(null);
-              setTransactionForm({
-                type: 'expense',
-                category: '',
-                amount: '',
-                description: '',
-                date: new Date().toISOString().split('T')[0],
-              });
-              setShowTransactionModal(true);
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="btn-primary flex items-center gap-2"
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-[var(--text-secondary)]">Account Balance</span>
+              <FaWallet className={currentBalance >= 0 ? 'text-green-500' : 'text-red-500'} />
+            </div>
+            <p className={`text-2xl md:text-3xl font-bold ${currentBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              ${currentBalance.toFixed(2)}
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+              {finance.accountInfo.accountType.charAt(0).toUpperCase() + finance.accountInfo.accountType.slice(1)} Account
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="card p-5 md:p-6"
           >
-            <FaPlus />
-            Add Transaction
-          </motion.button>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-[var(--text-secondary)]">Monthly Income</span>
+              <FaArrowUp className="text-green-500" />
+            </div>
+            <p className="text-2xl md:text-3xl font-bold text-green-600">
+              ${monthlyIncome.toFixed(2)}
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="card p-5 md:p-6"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-[var(--text-secondary)]">Monthly Expenses</span>
+              <FaArrowDown className="text-red-500" />
+            </div>
+            <p className="text-2xl md:text-3xl font-bold text-red-600">
+              ${monthlyExpenses.toFixed(2)}
+            </p>
+          </motion.div>
         </div>
-      </div>
+      )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card p-5 md:p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[var(--text-secondary)]">Monthly Income</span>
-            <FaArrowUp className="text-green-500" />
-          </div>
-          <p className="text-2xl md:text-3xl font-bold text-green-600">
-            ${monthlyIncome.toFixed(2)}
-          </p>
-        </motion.div>
+      {/* Charts Section - 4 Modern Charts */}
+      {finance?.accountInfo?.isSetupComplete && (
+        <div className="space-y-6 mb-8">
+          {/* Chart 1: Expense Categories Pie Chart */}
+          {expenseCategoryData.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="card p-5 md:p-6"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <FaChartPie className="text-[var(--accent-primary)]" />
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                  Expense Categories
+                </h2>
+              </div>
+              <ResponsiveContainer width="100%" height={350}>
+                <PieChart>
+                  <Pie
+                    data={expenseCategoryData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={100}
+                    innerRadius={40}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {expenseCategoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS.expense[index % COLORS.expense.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: COLORS.background,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: '8px',
+                      color: COLORS.text,
+                    }}
+                    formatter={(value) => `$${value.toFixed(2)}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </motion.div>
+          )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card p-5 md:p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[var(--text-secondary)]">Monthly Expenses</span>
-            <FaArrowDown className="text-red-500" />
-          </div>
-          <p className="text-2xl md:text-3xl font-bold text-red-600">
-            ${monthlyExpenses.toFixed(2)}
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card p-5 md:p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[var(--text-secondary)]">Balance</span>
-            <FaDollarSign className={balance >= 0 ? 'text-green-500' : 'text-red-500'} />
-          </div>
-          <p className={`text-2xl md:text-3xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            ${balance.toFixed(2)}
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-8">
-        {/* Monthly Overview Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card p-5 md:p-6"
-        >
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <FaChartLine />
-            Monthly Overview
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyChartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-              <XAxis dataKey="month" stroke="var(--text-secondary)" />
-              <YAxis stroke="var(--text-secondary)" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                }}
-              />
-              <Legend />
-              <Bar dataKey="income" fill="#22c55e" name="Income" />
-              <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        {/* Expense Categories Chart */}
-        {categoryData.length > 0 && (
+          {/* Chart 2: Cash Flow Income vs Expense */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -411,321 +423,411 @@ const FinanceTracker = () => {
             className="card p-5 md:p-6"
           >
             <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
-              Expense Categories
+              Cash Flow - Income vs Expense (Last 30 Days)
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
+            <ResponsiveContainer width="100%" height={350}>
+              <ComposedChart data={cashFlowData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} opacity={0.3} />
+                <XAxis 
+                  dataKey="date" 
+                  stroke={COLORS.textSecondary}
+                  style={{ fontSize: '12px' }}
+                  tick={{ fill: COLORS.textSecondary }}
+                />
+                <YAxis 
+                  stroke={COLORS.textSecondary}
+                  tick={{ fill: COLORS.textSecondary }}
+                  tickFormatter={(value) => `$${value}`}
+                />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
+                    backgroundColor: COLORS.background,
+                    border: `1px solid ${COLORS.border}`,
                     borderRadius: '8px',
+                    color: COLORS.text,
                   }}
+                  formatter={(value) => `$${value.toFixed(2)}`}
                 />
-              </PieChart>
+                <Legend />
+                <Bar dataKey="income" fill={COLORS.income} name="Income" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" fill="#EF4444" name="Expense" radius={[4, 4, 0, 0]} />
+              </ComposedChart>
             </ResponsiveContainer>
           </motion.div>
-        )}
 
-        {/* Weekly Spending Trend */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card p-5 md:p-6"
-        >
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
-            Weekly Spending (Last 4 Weeks)
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-              <XAxis dataKey="date" stroke="var(--text-secondary)" />
-              <YAxis stroke="var(--text-secondary)" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                }}
-              />
-              <Legend />
-              <Line type="monotone" dataKey="expenses" stroke="#ef4444" name="Expenses" strokeWidth={2} />
-              <Line type="monotone" dataKey="income" stroke="#22c55e" name="Income" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </motion.div>
+          {/* Chart 3: Daily Expense Line Graph */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="card p-5 md:p-6"
+          >
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+              Daily Expense Trend (Last 30 Days)
+            </h2>
+            <ResponsiveContainer width="100%" height={350}>
+              <AreaChart data={dailyExpenseData}>
+                <defs>
+                  <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} opacity={0.3} />
+                <XAxis 
+                  dataKey="date" 
+                  stroke={COLORS.textSecondary}
+                  style={{ fontSize: '12px' }}
+                  tick={{ fill: COLORS.textSecondary }}
+                />
+                <YAxis 
+                  stroke={COLORS.textSecondary}
+                  tick={{ fill: COLORS.textSecondary }}
+                  tickFormatter={(value) => `$${value}`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: COLORS.background,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: '8px',
+                    color: COLORS.text,
+                  }}
+                  formatter={(value) => `$${value.toFixed(2)}`}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="expense" 
+                  stroke="#EF4444" 
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#expenseGradient)" 
+                  name="Expense"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
 
-        {/* Income vs Expenses (6 Months) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card p-5 md:p-6"
-        >
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
-            Income vs Expenses (6 Months)
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={sixMonthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-              <XAxis dataKey="month" stroke="var(--text-secondary)" />
-              <YAxis stroke="var(--text-secondary)" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                }}
-              />
-              <Legend />
-              <Area type="monotone" dataKey="income" stackId="1" stroke="#22c55e" fill="#22c55e" fillOpacity={0.6} name="Income" />
-              <Area type="monotone" dataKey="expenses" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} name="Expenses" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </motion.div>
-      </div>
-
-      {/* Savings Goals */}
-      {savingsGoals.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <FaPiggyBank className="text-yellow-500" />
-            Savings Goals
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {savingsGoals.map((goal) => {
-              const progress = (goal.currentAmount / goal.targetAmount) * 100;
-              return (
-                <motion.div
-                  key={goal._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="card p-5 md:p-6"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-[var(--text-primary)] mb-1">
-                        {goal.name}
-                      </h3>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        ${goal.currentAmount.toFixed(2)} / ${goal.targetAmount.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingGoal(goal);
-                          setGoalForm({
-                            name: goal.name,
-                            targetAmount: goal.targetAmount,
-                            targetDate: goal.targetDate ? new Date(goal.targetDate).toISOString().split('T')[0] : '',
-                          });
-                          setShowGoalModal(true);
-                        }}
-                        className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteGoal(goal._id)}
-                        className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mb-2">
-                    <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-2">
-                      <span>Progress</span>
-                      <span>{progress.toFixed(0)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        transition={{ duration: 0.5 }}
-                        className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"
-                      />
-                    </div>
-                  </div>
-                  <motion.button
-                    onClick={() => {
-                      setUpdatingGoal(goal);
-                      setProgressAmount(goal.currentAmount.toString());
-                      setShowProgressModal(true);
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full mt-3 py-2 px-4 bg-[var(--accent-primary)] text-white rounded-lg font-medium hover:bg-[var(--accent-hover)] transition-colors text-sm"
-                  >
-                    Update Progress
-                  </motion.button>
-                  {goal.targetDate && (
-                    <p className="text-xs text-[var(--text-tertiary)] mt-2">
-                      Target: {new Date(goal.targetDate).toLocaleDateString()}
-                    </p>
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
+          {/* Chart 4: Account Balance Trend Graph */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="card p-5 md:p-6"
+          >
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+              Account Balance Trend (Last 30 Days)
+            </h2>
+            <ResponsiveContainer width="100%" height={350}>
+              <AreaChart data={balanceTrendData}>
+                <defs>
+                  <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22C55E" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#22C55E" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} opacity={0.3} />
+                <XAxis 
+                  dataKey="date" 
+                  stroke={COLORS.textSecondary}
+                  style={{ fontSize: '12px' }}
+                  tick={{ fill: COLORS.textSecondary }}
+                />
+                <YAxis 
+                  stroke={COLORS.textSecondary}
+                  tick={{ fill: COLORS.textSecondary }}
+                  tickFormatter={(value) => `$${value}`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: COLORS.background,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: '8px',
+                    color: COLORS.text,
+                  }}
+                  formatter={(value) => `$${value.toFixed(2)}`}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="balance" 
+                  stroke="#22C55E" 
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#balanceGradient)" 
+                  name="Balance"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </motion.div>
         </div>
       )}
 
       {/* Recent Transactions */}
-      <div>
-        <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">
-          Recent Transactions
-        </h2>
-        <div className="card p-4 md:p-6">
-          {transactions.length === 0 ? (
-            <div className="text-center py-8">
-              <FaDollarSign className="text-6xl text-[var(--text-tertiary)] mx-auto mb-4" />
-              <p className="text-[var(--text-secondary)]">No transactions yet</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {transactions
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 10)
-                .map((transaction) => (
-                  <motion.div
-                    key={transaction._id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)]"
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          transaction.type === 'income'
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-red-100 text-red-600'
-                        }`}
-                      >
-                        {transaction.type === 'income' ? <FaArrowUp /> : <FaArrowDown />}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-[var(--text-primary)]">
-                          {transaction.category}
-                        </p>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                          {transaction.description || 'No description'}
-                        </p>
-                        <p className="text-xs text-[var(--text-tertiary)]">
-                          {new Date(transaction.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p
-                        className={`font-semibold ${
-                          transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      >
-                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                      </p>
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => {
-                            setEditingTransaction(transaction);
-                            setTransactionForm({
-                              type: transaction.type,
-                              category: transaction.category,
-                              amount: transaction.amount,
-                              description: transaction.description || '',
-                              date: new Date(transaction.date).toISOString().split('T')[0],
-                            });
-                            setShowTransactionModal(true);
-                          }}
-                          className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+      {finance?.accountInfo?.isSetupComplete && (
+        <div>
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">
+            Recent Transactions
+          </h2>
+          <div className="card p-4 md:p-6">
+            {transactions.length === 0 ? (
+              <div className="text-center py-8">
+                <FaDollarSign className="text-6xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+                <p className="text-[var(--text-secondary)]">No transactions yet</p>
+                <p className="text-sm text-[var(--text-tertiary)] mt-2">Add your first transaction to get started</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {transactions
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .slice(0, 10)
+                  .map((transaction) => (
+                    <motion.div
+                      key={transaction._id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center justify-between p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                            transaction.type === 'income'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                          }`}
                         >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTransaction(transaction._id)}
-                          className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
-                        >
-                          <FaTrash />
-                        </button>
+                          {transaction.type === 'income' ? <FaArrowUp /> : <FaArrowDown />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-[var(--text-primary)]">
+                            {transaction.category}
+                          </p>
+                          <p className="text-sm text-[var(--text-secondary)] truncate">
+                            {transaction.description || 'No description'}
+                          </p>
+                          <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                            {format(new Date(transaction.date), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-            </div>
-          )}
+                      <div className="flex items-center gap-4">
+                        <p
+                          className={`text-lg font-semibold ${
+                            transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
+                          {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                        </p>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => {
+                              setEditingTransaction(transaction);
+                              setTransactionForm({
+                                type: transaction.type,
+                                category: transaction.category,
+                                amount: transaction.amount,
+                                description: transaction.description || '',
+                                date: new Date(transaction.date).toISOString().split('T')[0],
+                              });
+                              setShowTransactionModal(true);
+                            }}
+                            className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTransaction(transaction._id)}
+                            className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+                            aria-label="Delete transaction"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Setup Modal */}
+      <AnimatePresence>
+        {showSetupModal && (
+          <SetupModal
+            isOpen={showSetupModal}
+            onClose={() => setShowSetupModal(false)}
+            onSave={handleSetup}
+            form={setupForm}
+            setForm={setSetupForm}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Transaction Modal */}
-      {showTransactionModal && (
-        <TransactionModal
-          isOpen={showTransactionModal}
-          onClose={() => {
-            setShowTransactionModal(false);
-            setEditingTransaction(null);
-          }}
-          onSave={handleAddTransaction}
-          form={transactionForm}
-          setForm={setTransactionForm}
-          expenseCategories={expenseCategories}
-          incomeCategories={incomeCategories}
-          isEditing={!!editingTransaction}
-        />
-      )}
-
-      {/* Goal Modal */}
-      {showGoalModal && (
-        <GoalModal
-          isOpen={showGoalModal}
-          onClose={() => {
-            setShowGoalModal(false);
-            setEditingGoal(null);
-          }}
-          onSave={handleAddGoal}
-          form={goalForm}
-          setForm={setGoalForm}
-          isEditing={!!editingGoal}
-        />
-      )}
-
-      {/* Progress Update Modal */}
-      {showProgressModal && updatingGoal && (
-        <ProgressModal
-          isOpen={showProgressModal}
-          onClose={() => {
-            setShowProgressModal(false);
-            setUpdatingGoal(null);
-            setProgressAmount('');
-          }}
-          onSave={async (e) => {
-            e.preventDefault();
-            await handleUpdateProgress(updatingGoal._id, progressAmount);
-            setShowProgressModal(false);
-            setUpdatingGoal(null);
-            setProgressAmount('');
-          }}
-          goal={updatingGoal}
-          progressAmount={progressAmount}
-          setProgressAmount={setProgressAmount}
-        />
-      )}
+      <AnimatePresence>
+        {showTransactionModal && (
+          <TransactionModal
+            isOpen={showTransactionModal}
+            onClose={() => {
+              setShowTransactionModal(false);
+              setEditingTransaction(null);
+            }}
+            onSave={handleAddTransaction}
+            form={transactionForm}
+            setForm={setTransactionForm}
+            expenseCategories={expenseCategories}
+            incomeCategories={incomeCategories}
+            isEditing={!!editingTransaction}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+};
+
+// Setup Modal Component
+const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
+  if (!isOpen) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="card p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+              Setup Your Account
+            </h2>
+            <p className="text-[var(--text-secondary)]">
+              Let's get started with your finance tracking
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Close modal"
+          >
+            <FaTimes />
+          </button>
+        </div>
+        <form onSubmit={onSave} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Account Type *
+            </label>
+            <select
+              value={form.accountType}
+              onChange={(e) => setForm({ ...form, accountType: e.target.value })}
+              className="input-field"
+              required
+            >
+              <option value="checking">Checking</option>
+              <option value="savings">Savings</option>
+              <option value="credit">Credit Card</option>
+              <option value="cash">Cash</option>
+              <option value="investment">Investment</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Account Name *
+            </label>
+            <input
+              type="text"
+              value={form.accountName}
+              onChange={(e) => setForm({ ...form, accountName: e.target.value })}
+              className="input-field"
+              placeholder="e.g., Primary Checking Account"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Initial Balance *
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={form.initialBalance}
+              onChange={(e) => setForm({ ...form, initialBalance: e.target.value })}
+              className="input-field"
+              placeholder="0.00"
+              required
+            />
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+              Enter your current account balance
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                Currency
+              </label>
+              <select
+                value={form.currency}
+                onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                className="input-field"
+              >
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="INR">INR (₹)</option>
+                <option value="CAD">CAD (C$)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                Bank Name (Optional)
+              </label>
+              <input
+                type="text"
+                value={form.bankName}
+                onChange={(e) => setForm({ ...form, bankName: e.target.value })}
+                className="input-field"
+                placeholder="e.g., Chase Bank"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Account Number (Optional)
+            </label>
+            <input
+              type="text"
+              value={form.accountNumber}
+              onChange={(e) => setForm({ ...form, accountNumber: e.target.value })}
+              className="input-field"
+              placeholder="Last 4 digits only"
+            />
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+              For your reference only - stored securely
+            </p>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <button type="submit" className="btn-primary flex-1">
+              <FaCheckCircle className="inline mr-2" />
+              Complete Setup
+            </button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -734,23 +836,40 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="card p-6 md:p-8 max-w-md w-full"
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="card p-6 md:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">
-          {isEditing ? 'Edit Transaction' : 'Add Transaction'}
-        </h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+            {isEditing ? 'Edit Transaction' : 'Add Transaction'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Close modal"
+          >
+            <FaTimes />
+          </button>
+        </div>
         <form onSubmit={onSave} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Type
+              Type *
             </label>
             <select
               value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              onChange={(e) => setForm({ ...form, type: e.target.value, category: '' })}
               className="input-field"
             >
               <option value="income">Income</option>
@@ -759,7 +878,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Category
+              Category *
             </label>
             <select
               value={form.category}
@@ -777,7 +896,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Amount
+              Amount *
             </label>
             <input
               type="number"
@@ -786,6 +905,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
               className="input-field"
+              placeholder="0.00"
               required
             />
           </div>
@@ -798,11 +918,12 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="input-field"
+              placeholder="Optional description"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Date
+              Date *
             </label>
             <input
               type="date"
@@ -812,7 +933,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
               required
             />
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-4">
             <button type="submit" className="btn-primary flex-1">
               {isEditing ? 'Update' : 'Add'} Transaction
             </button>
@@ -822,129 +943,8 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
           </div>
         </form>
       </motion.div>
-    </div>
-  );
-};
-
-// Goal Modal Component
-const GoalModal = ({ isOpen, onClose, onSave, form, setForm, isEditing }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="card p-6 md:p-8 max-w-md w-full"
-      >
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">
-          {isEditing ? 'Edit Savings Goal' : 'New Savings Goal'}
-        </h2>
-        <form onSubmit={onSave} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Goal Name
-            </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="input-field"
-              placeholder="e.g., Emergency Fund"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Target Amount
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.targetAmount}
-              onChange={(e) => setForm({ ...form, targetAmount: e.target.value })}
-              className="input-field"
-              placeholder="5000"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Target Date (Optional)
-            </label>
-            <input
-              type="date"
-              value={form.targetDate}
-              onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
-              className="input-field"
-            />
-          </div>
-          <div className="flex gap-3">
-            <button type="submit" className="btn-primary flex-1">
-              {isEditing ? 'Update' : 'Create'} Goal
-            </button>
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">
-              Cancel
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-};
-
-// Progress Update Modal Component
-const ProgressModal = ({ isOpen, onClose, onSave, goal, progressAmount, setProgressAmount }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="card p-6 md:p-8 max-w-md w-full"
-      >
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-          Update Progress
-        </h2>
-        <p className="text-sm text-[var(--text-secondary)] mb-6">
-          {goal.name} - Target: ${goal.targetAmount.toFixed(2)}
-        </p>
-        <form onSubmit={onSave} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Current Amount
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              max={goal.targetAmount}
-              value={progressAmount}
-              onChange={(e) => setProgressAmount(e.target.value)}
-              className="input-field"
-              placeholder="Enter current amount"
-              required
-              autoFocus
-            />
-            <p className="text-xs text-[var(--text-tertiary)] mt-1">
-              Current: ${goal.currentAmount.toFixed(2)} / Target: ${goal.targetAmount.toFixed(2)}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button type="submit" className="btn-primary flex-1">
-              Update Progress
-            </button>
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">
-              Cancel
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
+    </motion.div>
   );
 };
 
 export default FinanceTracker;
-

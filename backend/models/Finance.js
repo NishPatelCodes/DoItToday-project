@@ -6,6 +6,42 @@ const financeSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  // Account information
+  accountInfo: {
+    accountType: {
+      type: String,
+      enum: ['checking', 'savings', 'credit', 'cash', 'investment', 'other'],
+      default: 'checking',
+    },
+    accountName: {
+      type: String,
+      trim: true,
+      default: 'Primary Account',
+    },
+    initialBalance: {
+      type: Number,
+      default: 0,
+    },
+    currency: {
+      type: String,
+      default: 'USD',
+    },
+    bankName: {
+      type: String,
+      trim: true,
+    },
+    accountNumber: {
+      type: String,
+      trim: true,
+    },
+    isSetupComplete: {
+      type: Boolean,
+      default: false,
+    },
+    setupDate: {
+      type: Date,
+    },
+  },
   transactions: [
     {
       type: {
@@ -86,6 +122,19 @@ const financeSchema = new mongoose.Schema({
       default: new Date().getFullYear(),
     },
   },
+  // Account balance history for trend tracking
+  balanceHistory: [
+    {
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+      balance: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
