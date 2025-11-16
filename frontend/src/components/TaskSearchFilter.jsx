@@ -113,28 +113,93 @@ const TaskSearchFilter = memo(({
     statusFilter !== 'all' || 
     dateFilter !== 'all';
 
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Close search when clicking outside on mobile
+  useEffect(() => {
+    if (isSearchOpen) {
+      const handleClickOutside = (e) => {
+        if (!e.target.closest('.search-container')) {
+          setIsSearchOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isSearchOpen]);
+
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Search Bar */}
-      <div className="relative">
-        <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
-        <input
-          type="text"
-          placeholder="Search tasks by title or description..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-12 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
-          aria-label="Search tasks"
-        />
-        {searchQuery && (
+      {/* Search Bar - Button on mobile, full bar on desktop */}
+      <div className="relative search-container">
+        {/* Mobile: Search Button */}
+        {!isSearchOpen && (
           <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-            aria-label="Clear search"
+            onClick={() => setIsSearchOpen(true)}
+            className="md:hidden w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-tertiary)] hover:border-[var(--accent-primary)] transition-all"
+            aria-label="Open search"
           >
-            <FaTimes />
+            <div className="flex items-center gap-2">
+              <FaSearch className="text-[var(--text-tertiary)]" />
+              <span className="text-sm">Search tasks...</span>
+            </div>
           </button>
         )}
+
+        {/* Mobile: Full Search when open */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden relative mb-2"
+            >
+              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="w-full pl-12 pr-12 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
+                aria-label="Search tasks"
+              />
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setIsSearchOpen(false);
+                }}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                aria-label="Close search"
+              >
+                <FaTimes />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Desktop: Full Search Bar */}
+        <div className="hidden md:block relative">
+          <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
+          <input
+            type="text"
+            placeholder="Search tasks by title or description..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-12 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
+            aria-label="Search tasks"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Clear search"
+            >
+              <FaTimes />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter Toggle and Sort */}

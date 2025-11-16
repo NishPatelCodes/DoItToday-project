@@ -197,6 +197,17 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
     }
   };
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
+
   const toggleFriend = (friendId) => {
     setSelectedFriends(prev => 
       prev.includes(friendId)

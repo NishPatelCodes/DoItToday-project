@@ -1,60 +1,12 @@
-import React, { useMemo, memo, useCallback } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import React, { useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaGripVertical } from 'react-icons/fa';
 import TaskCard from './TaskCard';
 import { useAuthStore } from '../store/authStore';
 
-// Sortable Task Card Wrapper
-const SortableTaskCard = memo(({ task, onToggle, onDelete, onEdit, isSelectMode, isSelected, onSelect }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task._id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} className="relative group">
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10 p-1">
-        <div {...attributes} {...listeners} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
-          <FaGripVertical className="text-sm" />
-        </div>
-      </div>
-      <TaskCard
-        task={task}
-        onToggle={onToggle}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        isSelectMode={isSelectMode}
-        isSelected={isSelected}
-        onSelect={onSelect}
-      />
-    </div>
-  );
-});
-
-SortableTaskCard.displayName = 'SortableTaskCard';
 
 // Kanban Column Component
 const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit, isSelectMode, selectedTasks, onSelect, showLimit = false, limit = 5 }) => {
   const [showAll, setShowAll] = React.useState(false);
-  const taskIds = useMemo(() => {
-    const displayTasks = showLimit && !showAll ? tasks.slice(0, limit) : tasks;
-    return displayTasks.map(t => t._id);
-  }, [tasks, showLimit, showAll, limit]);
-  
   const displayTasks = showLimit && !showAll ? tasks.slice(0, limit) : tasks;
   const hasMore = showLimit && tasks.length > limit;
 
@@ -74,22 +26,20 @@ const KanbanColumn = memo(({ id, title, tasks, color, onToggle, onDelete, onEdit
 
       {/* Tasks List */}
       <div className={`space-y-2 ${displayTasks.length > 5 ? 'max-h-[700px] overflow-y-auto' : ''} px-2 pb-4`}>
-        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-          <AnimatePresence mode="popLayout">
-            {displayTasks.map((task) => (
-              <SortableTaskCard
-                key={task._id}
-                task={task}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                isSelectMode={isSelectMode}
-                isSelected={selectedTasks?.has(task._id)}
-                onSelect={onSelect}
-              />
-            ))}
-          </AnimatePresence>
-        </SortableContext>
+        <AnimatePresence mode="popLayout">
+          {displayTasks.map((task) => (
+            <TaskCard
+              key={task._id}
+              task={task}
+              onToggle={onToggle}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              isSelectMode={isSelectMode}
+              isSelected={selectedTasks?.has(task._id)}
+              onSelect={onSelect}
+            />
+          ))}
+        </AnimatePresence>
 
         {hasMore && (
           <button
@@ -184,38 +134,6 @@ const TaskKanbanBoard = memo(({
     };
   }, [tasks]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Require 8px movement before drag starts
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = useCallback((event) => {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) {
-      return;
-    }
-
-    // Find the task being moved
-    const activeTask = tasks.find(t => t._id === active.id);
-    if (!activeTask || !onTaskMove) {
-      return;
-    }
-
-    // Determine target column based on over element
-    // For now, drag-and-drop is primarily for reordering within columns
-    // Future enhancement: allow moving tasks between columns
-    // This would require updating the task status or due date based on target column
-    if (onTaskMove) {
-      onTaskMove(active.id, over.id);
-    }
-  }, [tasks, onTaskMove]);
 
   if (viewMode === 'list') {
     // List view - only show pending tasks (not completed)
@@ -240,12 +158,7 @@ const TaskKanbanBoard = memo(({
 
   // Kanban view
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
         <KanbanColumn
           id="todo"
           title="To Do"
@@ -285,7 +198,6 @@ const TaskKanbanBoard = memo(({
           limit={5}
         />
       </div>
-    </DndContext>
   );
 });
 

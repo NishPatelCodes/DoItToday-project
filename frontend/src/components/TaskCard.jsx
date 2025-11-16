@@ -7,7 +7,6 @@ import ConfirmationModal from './ConfirmationModal';
 
 const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSelected = false, onSelect }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const { user } = useAuthStore();
   const isCompleted = task.status === 'completed';
   const isOwnTask = task.userId?._id === user?.id || task.userId === user?.id;
@@ -71,13 +70,8 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
         ) : (
           <button
             onClick={() => {
-              if (isCompleted) {
-                // Uncomplete - no confirmation needed
-                onToggle(task._id);
-              } else {
-                // Complete - show confirmation
-                setShowCompleteConfirm(true);
-              }
+              // No confirmation needed - complete/uncomplete directly
+              onToggle(task._id);
             }}
             className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
               isCompleted
@@ -231,19 +225,6 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
         type="danger"
       />
 
-      <ConfirmationModal
-        isOpen={showCompleteConfirm}
-        onClose={() => setShowCompleteConfirm(false)}
-        onConfirm={() => {
-          onToggle(task._id);
-          setShowCompleteConfirm(false);
-        }}
-        title="Complete Task"
-        message={`Are you sure you want to mark "${task.title}" as completed?${task.dueDate && !isOverdue ? ' You will earn +20 XP!' : ''}`}
-        confirmText="Complete"
-        cancelText="Cancel"
-        type="success"
-      />
     </motion.div>
   );
 };

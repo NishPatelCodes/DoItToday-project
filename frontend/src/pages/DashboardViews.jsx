@@ -20,7 +20,6 @@ import TaskSearchFilter from '../components/TaskSearchFilter';
 import TaskFAB from '../components/TaskFAB';
 import TaskAlerts from '../components/TaskAlerts';
 import CompletedTasksSection from '../components/CompletedTasksSection';
-import MotivationQuotes from '../components/MotivationQuotes';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -993,10 +992,10 @@ export const DashboardTasks = ({
   return (
     <div className="p-4 md:p-8 overflow-x-hidden relative min-h-screen pb-24">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Tasks</h1>
-          <p className="text-sm md:text-base text-[var(--text-secondary)]">Manage your daily tasks with ease</p>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-8 gap-3 md:gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl md:text-3xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">Tasks</h1>
+          <p className="text-xs md:text-base text-[var(--text-secondary)]">Manage your daily tasks with ease</p>
         </div>
         <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
@@ -1036,21 +1035,6 @@ export const DashboardTasks = ({
         className="mb-6"
       />
 
-      {/* Motivation Quotes */}
-      {(() => {
-        const completionRate = completedTasks.length > 0 && tasks.length > 0
-          ? (completedTasks.length / tasks.length) * 100
-          : 0;
-        return (
-          <MotivationQuotes
-            key={`${completionRate}-${completedTasks.length}-${user?.streak || 0}`}
-            completionRate={completionRate}
-            totalCompleted={completedTasks.length}
-            streak={user?.streak || 0}
-            className="mb-6"
-          />
-        );
-      })()}
 
       {/* Task Alerts (Overdue, Due Today, Due Tomorrow) */}
       <TaskAlerts
@@ -1063,9 +1047,9 @@ export const DashboardTasks = ({
 
       {/* Main Task Board/List */}
       <div className="card p-6 mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-6">
+          <div className="flex items-center gap-3 md:gap-4">
+            <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">
               {viewMode === 'kanban' ? 'Productivity Board' : 'Task List'}
             </h2>
             {/* Date Filter */}

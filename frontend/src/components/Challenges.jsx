@@ -61,20 +61,28 @@ const Challenges = () => {
 
   const loadChallenges = async () => {
     try {
+      // Load active challenges first (most important)
       setLoading(true);
-      const [allRes, activeRes, completedRes] = await Promise.all([
-        challengesAPI.getAll(),
-        challengesAPI.getActive(),
-        challengesAPI.getCompleted(),
-      ]);
-      setChallenges(allRes.data || []);
+      const activeRes = await challengesAPI.getActive();
       setActiveChallenges(activeRes.data || []);
-      setCompletedChallenges(completedRes.data || []);
+      
+      // Load other data in parallel without blocking
+      Promise.all([
+        challengesAPI.getAll(),
+        challengesAPI.getCompleted(),
+      ]).then(([allRes, completedRes]) => {
+        setChallenges(allRes.data || []);
+        setCompletedChallenges(completedRes.data || []);
+      }).catch(() => {
+        // Silently handle errors for non-critical data
+      });
+      
+      // Set loading to false immediately after active challenges load
+      setLoading(false);
     } catch (error) {
       console.error('Error loading challenges:', error);
-      toast.error('Failed to load challenges');
-    } finally {
       setLoading(false);
+      // Don't show error toast, just load silently
     }
   };
 
@@ -176,9 +184,12 @@ const Challenges = () => {
   if (loading) {
     return (
       <div className="p-4 md:p-8">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading challenges...</p>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-tertiary)] z-50">
+          <div className="h-full bg-[var(--accent-primary)] animate-pulse" style={{ width: '60%' }}></div>
+        </div>
+        <div className="text-center mt-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent mb-4"></div>
+          <p className="text-[var(--text-secondary)] text-sm">Loading challenges...</p>
         </div>
       </div>
     );
