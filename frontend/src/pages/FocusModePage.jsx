@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlay, FaPause, FaStop, FaExpand, FaCompress, FaTimes } from 'react-icons/fa';
+import { FaPlay, FaPause, FaStop, FaExpand, FaCompress, FaTimes, FaPalette, FaMoon, FaLeaf, FaSun, FaMagic, FaBell, FaShare, FaEllipsisV } from 'react-icons/fa';
 import { focusAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import { useAuthStore } from '../store/authStore';
@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/authStore';
 const FocusModePage = () => {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isBreakMode, setIsBreakMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
   const [sessionId, setSessionId] = useState(null);
   const [backgroundMode, setBackgroundMode] = useState(() => {
@@ -53,6 +54,7 @@ const FocusModePage = () => {
       id: 'minimal-gradient',
       name: 'Minimal Gradient',
       description: 'Calm blue/purple blend',
+      icon: FaPalette,
       colors: {
         primary: 'from-blue-500 via-purple-500 to-indigo-600',
         secondary: 'from-indigo-600 via-purple-500 to-blue-500',
@@ -63,6 +65,7 @@ const FocusModePage = () => {
       id: 'deep-focus',
       name: 'Deep Focus',
       description: 'Dark abstract gradient',
+      icon: FaMoon,
       colors: {
         primary: 'from-gray-900 via-slate-800 to-gray-900',
         secondary: 'from-slate-900 via-gray-800 to-slate-900',
@@ -73,6 +76,7 @@ const FocusModePage = () => {
       id: 'nature-calm',
       name: 'Nature Calm',
       description: 'Soft green/brown tones',
+      icon: FaLeaf,
       colors: {
         primary: 'from-emerald-500 via-teal-500 to-green-600',
         secondary: 'from-amber-600 via-orange-500 to-amber-500',
@@ -83,6 +87,7 @@ const FocusModePage = () => {
       id: 'sunset-glow',
       name: 'Sunset Glow',
       description: 'Orange/pink tones',
+      icon: FaSun,
       colors: {
         primary: 'from-orange-500 via-pink-500 to-rose-500',
         secondary: 'from-rose-500 via-pink-500 to-orange-500',
@@ -93,6 +98,7 @@ const FocusModePage = () => {
       id: 'motivational-motion',
       name: 'Motivational Motion',
       description: 'Animated gradient',
+      icon: FaMagic,
       colors: {
         primary: 'from-purple-600 via-pink-500 to-indigo-600',
         secondary: 'from-blue-600 via-cyan-500 to-teal-500',
@@ -469,409 +475,401 @@ const FocusModePage = () => {
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 flex flex-col items-center justify-center pt-2 pb-4 px-4 md:pt-8 md:pb-8 md:px-8 min-h-screen">
-        {/* Motivational Quote */}
-        <AnimatePresence mode="wait">
-          {currentQuote && (
-            <motion.div
-              key={currentQuote}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-8 md:mb-12 max-w-3xl px-4"
-            >
-              <p className="text-xl md:text-2xl lg:text-3xl font-normal text-[var(--text-primary)] leading-relaxed tracking-wide" style={{ fontFamily: "'Times New Roman', 'Georgia', 'Palatino', 'Book Antiqua', serif", letterSpacing: '0.02em', fontWeight: 400 }}>
-                {`"${currentQuote}"`}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Timer Circle */}
-        <div className="relative w-80 h-80 md:w-96 md:h-96 mb-8 md:mb-12">
-          <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
-            <defs>
-              <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#667eea" />
-                <stop offset="100%" stopColor="#764ba2" />
-              </linearGradient>
-            </defs>
-            {/* Background circle */}
-            <circle
-              cx="100"
-              cy="100"
-              r="90"
-              fill="none"
-              stroke="var(--border-color)"
-              strokeWidth="4"
-              opacity="0.3"
-            />
-            {/* Progress circle */}
-            <motion.circle
-              cx="100"
-              cy="100"
-              r="90"
-              fill="none"
-              stroke={`url(#${gradientId})`}
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={2 * Math.PI * 90}
-              initial={{ strokeDashoffset: 2 * Math.PI * 90 }}
-              animate={{ 
-                strokeDashoffset: 2 * Math.PI * 90 * (1 - progress / 100)
-              }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl md:text-7xl lg:text-8xl font-bold text-[var(--text-primary)] mb-2">
-                {formatTime(timeLeft)}
-              </div>
-              <div className="text-lg md:text-xl text-[var(--text-secondary)]">
-                {isActive ? (isPaused ? 'Paused' : 'Focusing') : 'Ready to focus'}
-              </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Top Bar */}
+        {isActive && (
+          <div className="flex items-center justify-between px-6 py-4 md:px-8 md:py-6">
+            <div className="flex items-center gap-2">
+              <FaBell className="text-[var(--text-secondary)] text-lg" />
+              <FaShare className="text-[var(--text-secondary)] text-lg" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm md:text-base font-medium text-[var(--text-primary)]">FOCUSING</span>
+              <FaEllipsisV className="text-[var(--text-secondary)] text-lg" />
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Controls */}
-        <div className="flex flex-col items-center gap-6 mb-8 w-full max-w-2xl px-4">
-          {/* Background Mode Selector */}
-          {!isActive && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-full"
-            >
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 text-center">
-                Background Theme
-              </label>
-              <div className="flex gap-2 flex-wrap justify-center">
-                {backgroundModes.map((mode) => (
-                  <motion.button
-                    key={mode.id}
-                    onClick={() => setBackgroundMode(mode.id)}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`p-3 rounded-xl border-2 transition-all ${
-                      backgroundMode === mode.id
-                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-lg'
-                        : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-secondary)]/50'
-                    }`}
-                  >
-                    <div className="text-xs font-medium text-[var(--text-primary)] text-center">
-                      {mode.name}
-                    </div>
-                    <div className="text-xs text-[var(--text-tertiary)] mt-1">
-                      {mode.description}
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Duration Presets */}
-          {!isActive && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="w-full"
-            >
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 text-center">
-                Duration
-              </label>
-              <div className="flex gap-3 justify-center flex-wrap">
-                {[25, 45, 60].map((mins) => (
-                  <motion.button
-                    key={mins}
-                    onClick={() => handleSetDuration(mins)}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
-                      customDuration === mins
-                        ? 'bg-[var(--accent-primary)] text-white shadow-lg'
-                        : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
-                    }`}
-                  >
-                    {mins}m
-                  </motion.button>
-                ))}
-                <motion.button
-                  onClick={() => {
-                    if (!showCustomInput) {
-                      // Initialize with current duration when opening
-                      const hours = Math.floor(customDuration / 60);
-                      const minutes = customDuration % 60;
-                      setCustomHours(hours);
-                      setCustomMinutes(minutes);
-                    }
-                    setShowCustomInput(!showCustomInput);
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-8 py-8 md:py-12">
+          {/* Timer Circle - New Style (shown when active) */}
+          {isActive ? (
+            <div className="relative w-80 h-80 md:w-96 md:h-96 mb-8 md:mb-12">
+              <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
+                <defs>
+                  <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#667eea" />
+                    <stop offset="100%" stopColor="#764ba2" />
+                  </linearGradient>
+                </defs>
+                {/* Thin background circle */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="90"
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.2)"
+                  strokeWidth="2"
+                />
+                {/* Progress circle - thin */}
+                <motion.circle
+                  cx="100"
+                  cy="100"
+                  r="90"
+                  fill="none"
+                  stroke={`url(#${gradientId})`}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 90}
+                  initial={{ strokeDashoffset: 2 * Math.PI * 90 }}
+                  animate={{ 
+                    strokeDashoffset: 2 * Math.PI * 90 * (1 - progress / 100)
                   }}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
-                    showCustomInput
-                      ? 'bg-[var(--accent-primary)] text-white shadow-lg'
-                      : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
-                  }`}
-                >
-                  Custom
-                </motion.button>
-              </div>
-              
-              {/* Custom Time Picker */}
-              <AnimatePresence>
-                {showCustomInput && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-6 w-full max-w-md mx-auto"
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
+                {/* Progress indicator dot */}
+                <motion.circle
+                  cx="100"
+                  cy="10"
+                  r="4"
+                  fill="#667eea"
+                  initial={{ rotate: 0 }}
+                  animate={{ 
+                    rotate: 360 * (1 - progress / 100)
+                  }}
+                  transition={{ duration: 1, ease: 'linear' }}
+                  style={{ transformOrigin: '100px 100px' }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                {/* FOCUS / BREAK Mode Toggle */}
+                <div className="flex items-center gap-3 mb-4">
+                  <button
+                    onClick={() => setIsBreakMode(false)}
+                    className={`text-sm md:text-base font-medium transition-colors ${
+                      !isBreakMode
+                        ? 'text-white'
+                        : 'text-white/40'
+                    }`}
                   >
-                    <div className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-color)] shadow-lg">
-                      <div className="text-center mb-4">
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Set Custom Duration</h3>
-                        <p className="text-sm text-[var(--text-secondary)]">Select hours and minutes</p>
-                      </div>
-                      
-                      {/* Time Picker Columns */}
-                      <div className="flex items-center justify-center gap-4 mb-6">
-                        {/* Hours Column */}
-                        <div className="flex flex-col items-center">
-                          <label className="text-xs font-medium text-[var(--text-secondary)] mb-2">Hours</label>
-                          <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
-                            {/* Selection indicator - fixed position */}
-                            <div className="absolute top-1/2 left-0 right-0 h-12 -translate-y-1/2 border-t-2 border-b-2 border-[var(--accent-primary)]/40 pointer-events-none z-10 rounded" />
-                            {/* Gradient fade at top and bottom */}
-                            <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[var(--bg-tertiary)] to-transparent pointer-events-none z-10" />
-                            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[var(--bg-tertiary)] to-transparent pointer-events-none z-10" />
-                            <div 
-                              ref={hoursScrollRef}
-                              className="h-full overflow-y-auto scrollbar-hide"
-                              style={{ scrollBehavior: 'smooth' }}
-                            >
-                              <div className="py-20">
-                                {[0, 1, 2, 3, 4].map((hour) => (
-                                  <button
-                                    key={hour}
-                                    data-hour={hour}
-                                    type="button"
-                                    onClick={() => {
-                                      setCustomHours(hour);
-                                      const button = hoursScrollRef.current?.querySelector(`[data-hour="${hour}"]`);
-                                      if (button) {
-                                        button.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                      }
-                                    }}
-                                    className={`w-full h-12 flex items-center justify-center text-lg font-medium transition-colors ${
-                                      customHours === hour
-                                        ? 'bg-[var(--accent-primary)] text-white'
-                                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
-                                    }`}
-                                  >
-                                    {hour}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Separator */}
-                        <div className="text-2xl font-bold text-[var(--text-primary)] mt-8">:</div>
-
-                        {/* Minutes Column */}
-                        <div className="flex flex-col items-center">
-                          <label className="text-xs font-medium text-[var(--text-secondary)] mb-2">Minutes</label>
-                          <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
-                            {/* Selection indicator - fixed position */}
-                            <div className="absolute top-1/2 left-0 right-0 h-10 -translate-y-1/2 border-t-2 border-b-2 border-[var(--accent-primary)]/40 pointer-events-none z-10 rounded" />
-                            {/* Gradient fade at top and bottom */}
-                            <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-[var(--bg-tertiary)] to-transparent pointer-events-none z-10" />
-                            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[var(--bg-tertiary)] to-transparent pointer-events-none z-10" />
-                            <div 
-                              ref={minutesScrollRef}
-                              className="h-full overflow-y-auto scrollbar-hide"
-                              style={{ scrollBehavior: 'smooth' }}
-                            >
-                              <div className="py-20">
-                                {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
-                                  <button
-                                    key={minute}
-                                    data-minute={minute}
-                                    type="button"
-                                    onClick={() => {
-                                      setCustomMinutes(minute);
-                                      const button = minutesScrollRef.current?.querySelector(`[data-minute="${minute}"]`);
-                                      if (button) {
-                                        button.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                      }
-                                    }}
-                                    className={`w-full h-10 flex items-center justify-center text-base font-medium transition-colors ${
-                                      customMinutes === minute
-                                        ? 'bg-[var(--accent-primary)] text-white'
-                                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
-                                    }`}
-                                  >
-                                    {String(minute).padStart(2, '0')}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Selected Time Display */}
-                      <div className="text-center mb-4">
-                        <p className="text-sm text-[var(--text-secondary)]">Selected Duration</p>
-                        <p className="text-2xl font-bold text-[var(--accent-primary)]">
-                          {customHours > 0 ? `${customHours}h ` : ''}{customMinutes}m
-                        </p>
-                        <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                          ({customHours * 60 + customMinutes} minutes total)
-                        </p>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 justify-center">
-                        <motion.button
-                          type="button"
-                          onClick={handleTimePickerConfirm}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="btn-primary px-6 py-2 flex-1"
-                        >
-                          Set Duration
-                        </motion.button>
-                        <motion.button
-                          type="button"
-                          onClick={() => {
-                            setShowCustomInput(false);
-                            setCustomHours(0);
-                            setCustomMinutes(25);
-                          }}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="btn-secondary px-4 py-2"
-                        >
-                          <FaTimes />
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
-
-          {/* Control Buttons */}
-          <div className="flex items-center gap-4">
-            {!isActive ? (
-              <motion.button
-                onClick={handleStart}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-primary flex items-center gap-3 px-8 py-4 text-lg shadow-lg"
-              >
-                <FaPlay />
-                Start Focus
-              </motion.button>
-            ) : (
-              <>
+                    FOCUS
+                  </button>
+                  <span className="text-white/40">/</span>
+                  <button
+                    onClick={() => setIsBreakMode(true)}
+                    className={`text-sm md:text-base font-medium transition-colors ${
+                      isBreakMode
+                        ? 'text-white'
+                        : 'text-white/40'
+                    }`}
+                  >
+                    BREAK
+                  </button>
+                </div>
+                
+                {/* Time Display - Minutes format */}
+                <div className="text-7xl md:text-8xl lg:text-9xl font-bold text-white mb-2">
+                  {Math.floor(timeLeft / 60)}m
+                </div>
+                
+                {/* Current Activity */}
+                <div className="text-lg md:text-xl text-white/80 mb-6">
+                  {isPaused ? 'Paused' : (isBreakMode ? 'Break' : 'Focus')}
+                </div>
+                
+                {/* Pause/Resume Button */}
                 <motion.button
                   onClick={handlePause}
-                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="btn-secondary flex items-center gap-3 px-6 py-3 text-lg shadow-md"
+                  className="px-8 py-3 rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-sm text-white font-medium text-sm md:text-base hover:bg-white/20 transition-all"
                 >
-                  {isPaused ? <FaPlay /> : <FaPause />}
-                  {isPaused ? 'Resume' : 'Pause'}
+                  {isPaused ? 'RESUME' : 'PAUSE'}
                 </motion.button>
-                <motion.button
-                  onClick={handleStop}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="btn-secondary flex items-center gap-3 px-6 py-3 text-lg border-red-200 hover:border-red-400 text-red-600 hover:text-red-700 shadow-md"
-                >
-                  <FaStop />
-                  End Session
-                </motion.button>
-                {/* Fullscreen Button - Only visible when timer is running (not paused) */}
-                {isActive && !isPaused && (
-                  <motion.button
-                    onClick={handleFullscreen}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-secondary flex items-center gap-3 px-6 py-3 text-lg shadow-md"
-                    title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                  >
-                    {isFullscreen ? <FaCompress /> : <FaExpand />}
-                    {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                  </motion.button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Focus Stats Card */}
-        {!isActive && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="card p-6 max-w-md w-full shadow-lg"
-          >
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 text-center">
-              Focus Stats
-            </h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-[var(--accent-primary)]">
-                  {focusStats.totalSessions || 0}
-                </div>
-                <div className="text-xs text-[var(--text-secondary)] mt-1">
-                  Sessions
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-[var(--accent-primary)]">
-                  {Math.floor((focusStats.totalMinutes || 0) / 60)}h
-                </div>
-                <div className="text-xs text-[var(--text-secondary)] mt-1">
-                  This Week
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-[var(--accent-primary)]">
-                  {focusStats.totalDP || 0}
-                </div>
-                <div className="text-xs text-[var(--text-secondary)] mt-1">
-                  DP Earned
-                </div>
               </div>
             </div>
-          </motion.div>
-        )}
+          ) : (
+            /* Setup View: Timer with Themes on Leftmost and Duration on Rightmost */
+            <div className="relative w-full max-w-7xl flex items-center justify-center" style={{ minHeight: '500px' }}>
+              {/* Themes on Leftmost Edge - Vertically Centered */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 items-start z-10"
+              >
+                <label className="block text-sm font-medium text-white/80 mb-2 md:mb-3 whitespace-nowrap">
+                  Theme
+                </label>
+                <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide">
+                  {backgroundModes.map((mode) => {
+                    const IconComponent = mode.icon;
+                    return (
+                      <motion.button
+                        key={mode.id}
+                        onClick={() => setBackgroundMode(mode.id)}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`flex-shrink-0 p-3 md:p-4 rounded-xl border-2 transition-all ${
+                          backgroundMode === mode.id
+                            ? 'border-[#667eea] bg-[#667eea]/20 shadow-lg'
+                            : 'border-white/20 hover:border-[#667eea]/50 bg-white/5'
+                        }`}
+                        title={mode.name}
+                      >
+                        <IconComponent 
+                          className={`text-xl md:text-2xl ${
+                            backgroundMode === mode.id
+                              ? 'text-[#667eea]'
+                              : 'text-white/60'
+                          }`} 
+                        />
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </motion.div>
 
-        {/* Active Session Message */}
-        {isActive && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center text-sm text-[var(--text-secondary)] mt-4"
-          >
-            <p>Stay disciplined. Your focus builds your future.</p>
-            <p className="mt-1">
-              You'll earn Discipline Points when you complete this session.
-            </p>
-          </motion.div>
-        )}
+              {/* Timer Preview - Center */}
+              <div className="relative w-64 h-64 md:w-80 md:h-80 flex-shrink-0 z-0">
+                <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="90"
+                    fill="none"
+                    stroke="rgba(255, 255, 255, 0.2)"
+                    strokeWidth="2"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="text-5xl md:text-6xl font-bold text-white mb-2">
+                    {Math.floor(timeLeft / 60)}m
+                  </div>
+                  <div className="text-base md:text-lg text-white/60">
+                    Ready to focus
+                  </div>
+                </div>
+              </div>
+
+              {/* Duration on Rightmost Edge - Vertically Centered */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 items-end z-10"
+              >
+                <label className="block text-sm font-medium text-white/80 mb-2 md:mb-3 text-right">
+                  Duration
+                </label>
+                <div className="flex flex-row md:flex-col gap-3">
+                  {[25, 45, 60].map((mins) => (
+                    <motion.button
+                      key={mins}
+                      onClick={() => handleSetDuration(mins)}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
+                        customDuration === mins
+                          ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow-lg'
+                          : 'bg-white/10 text-white border border-white/20 hover:border-[#667eea] hover:shadow-lg'
+                      }`}
+                    >
+                      {mins}m
+                    </motion.button>
+                  ))}
+                  <motion.button
+                    onClick={() => {
+                      if (!showCustomInput) {
+                        const hours = Math.floor(customDuration / 60);
+                        const minutes = customDuration % 60;
+                        setCustomHours(hours);
+                        setCustomMinutes(minutes);
+                      }
+                      setShowCustomInput(!showCustomInput);
+                    }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
+                      showCustomInput
+                        ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow-lg'
+                        : 'bg-white/10 text-white border border-white/20 hover:border-[#667eea] hover:shadow-lg'
+                    }`}
+                  >
+                    Custom
+                  </motion.button>
+                </div>
+                
+                {/* Custom Time Picker */}
+                <AnimatePresence>
+                  {showCustomInput && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-6 w-full max-w-md mx-auto"
+                    >
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-lg">
+                  <div className="text-center mb-4">
+                    <h3 className="text-lg font-semibold text-white mb-1">Set Custom Duration</h3>
+                    <p className="text-sm text-white/60">Select hours and minutes</p>
+                  </div>
+                  
+                  {/* Time Picker Columns */}
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    {/* Hours Column */}
+                    <div className="flex flex-col items-center">
+                      <label className="text-xs font-medium text-white/60 mb-2">Hours</label>
+                      <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-white/5 border border-white/20">
+                        {/* Selection indicator - fixed position */}
+                        <div className="absolute top-1/2 left-0 right-0 h-12 -translate-y-1/2 border-t-2 border-b-2 border-[#667eea]/40 pointer-events-none z-10 rounded" />
+                        {/* Gradient fade at top and bottom */}
+                        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
+                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/10 to-transparent pointer-events-none z-10" />
+                        <div 
+                          ref={hoursScrollRef}
+                          className="h-full overflow-y-auto scrollbar-hide"
+                          style={{ scrollBehavior: 'smooth' }}
+                        >
+                          <div className="py-20">
+                            {[0, 1, 2, 3, 4].map((hour) => (
+                              <button
+                                key={hour}
+                                data-hour={hour}
+                                type="button"
+                                onClick={() => {
+                                  setCustomHours(hour);
+                                  const button = hoursScrollRef.current?.querySelector(`[data-hour="${hour}"]`);
+                                  if (button) {
+                                    button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }
+                                }}
+                                className={`w-full h-12 flex items-center justify-center text-lg font-medium transition-colors ${
+                                  customHours === hour
+                                    ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
+                                    : 'text-white/60 hover:text-white hover:bg-white/10'
+                                }`}
+                              >
+                                {hour}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Separator */}
+                    <div className="text-2xl font-bold text-white mt-8">:</div>
+
+                    {/* Minutes Column */}
+                    <div className="flex flex-col items-center">
+                      <label className="text-xs font-medium text-white/60 mb-2">Minutes</label>
+                      <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-white/5 border border-white/20">
+                        {/* Selection indicator - fixed position */}
+                        <div className="absolute top-1/2 left-0 right-0 h-10 -translate-y-1/2 border-t-2 border-b-2 border-[#667eea]/40 pointer-events-none z-10 rounded" />
+                        {/* Gradient fade at top and bottom */}
+                        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
+                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/10 to-transparent pointer-events-none z-10" />
+                        <div 
+                          ref={minutesScrollRef}
+                          className="h-full overflow-y-auto scrollbar-hide"
+                          style={{ scrollBehavior: 'smooth' }}
+                        >
+                          <div className="py-20">
+                            {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                              <button
+                                key={minute}
+                                data-minute={minute}
+                                type="button"
+                                onClick={() => {
+                                  setCustomMinutes(minute);
+                                  const button = minutesScrollRef.current?.querySelector(`[data-minute="${minute}"]`);
+                                  if (button) {
+                                    button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }
+                                }}
+                                className={`w-full h-10 flex items-center justify-center text-base font-medium transition-colors ${
+                                  customMinutes === minute
+                                    ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
+                                    : 'text-white/60 hover:text-white hover:bg-white/10'
+                                }`}
+                              >
+                                {String(minute).padStart(2, '0')}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Selected Time Display */}
+                  <div className="text-center mb-4">
+                    <p className="text-sm text-white/60">Selected Duration</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
+                      {customHours > 0 ? `${customHours}h ` : ''}{customMinutes}m
+                    </p>
+                    <p className="text-xs text-white/40 mt-1">
+                      ({customHours * 60 + customMinutes} minutes total)
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 justify-center">
+                    <motion.button
+                      type="button"
+                      onClick={handleTimePickerConfirm}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-6 py-2 flex-1 rounded-lg bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium"
+                    >
+                      Set Duration
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={() => {
+                        setShowCustomInput(false);
+                        setCustomHours(0);
+                        setCustomMinutes(25);
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                    >
+                      <FaTimes />
+                    </motion.button>
+                  </div>
+                </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </div>
+
+          {/* Start Button - Only shown when not active */}
+          {!isActive && (
+            <motion.button
+              onClick={handleStart}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-4 rounded-full bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium text-base md:text-lg shadow-lg hover:shadow-xl transition-all"
+            >
+              Start Focus
+            </motion.button>
+          )}
+
+          {/* Stop Button - Only shown when active */}
+          {isActive && (
+            <motion.button
+              onClick={handleStop}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3 rounded-full border-2 border-red-400/50 bg-red-500/10 backdrop-blur-sm text-red-400 font-medium text-sm md:text-base hover:bg-red-500/20 transition-all"
+            >
+              End Session
+            </motion.button>
+          )}
+        </div>
       </div>
     </div>
   );
