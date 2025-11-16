@@ -707,137 +707,137 @@ const FocusModePage = () => {
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-6 w-full max-w-md mx-auto"
                     >
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-lg">
-                  <div className="text-center mb-4">
-                    <h3 className="text-lg font-semibold text-white mb-1">Set Custom Duration</h3>
-                    <p className="text-sm text-white/60">Select hours and minutes</p>
-                  </div>
-                  
-                  {/* Time Picker Columns */}
-                  <div className="flex items-center justify-center gap-4 mb-6">
-                    {/* Hours Column */}
-                    <div className="flex flex-col items-center">
-                      <label className="text-xs font-medium text-white/60 mb-2">Hours</label>
-                      <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-white/5 border border-white/20">
-                        {/* Selection indicator - fixed position */}
-                        <div className="absolute top-1/2 left-0 right-0 h-12 -translate-y-1/2 border-t-2 border-b-2 border-[#667eea]/40 pointer-events-none z-10 rounded" />
-                        {/* Gradient fade at top and bottom */}
-                        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
-                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/10 to-transparent pointer-events-none z-10" />
-                        <div 
-                          ref={hoursScrollRef}
-                          className="h-full overflow-y-auto scrollbar-hide"
-                          style={{ scrollBehavior: 'smooth' }}
-                        >
-                          <div className="py-20">
-                            {[0, 1, 2, 3, 4].map((hour) => (
-                              <button
-                                key={hour}
-                                data-hour={hour}
-                                type="button"
-                                onClick={() => {
-                                  setCustomHours(hour);
-                                  const button = hoursScrollRef.current?.querySelector(`[data-hour="${hour}"]`);
-                                  if (button) {
-                                    button.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                  }
-                                }}
-                                className={`w-full h-12 flex items-center justify-center text-lg font-medium transition-colors ${
-                                  customHours === hour
-                                    ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
-                                    : 'text-white/60 hover:text-white hover:bg-white/10'
-                                }`}
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-lg">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-semibold text-white mb-1">Set Custom Duration</h3>
+                          <p className="text-sm text-white/60">Select hours and minutes</p>
+                        </div>
+                        
+                        {/* Time Picker Columns */}
+                        <div className="flex items-center justify-center gap-4 mb-6">
+                          {/* Hours Column */}
+                          <div className="flex flex-col items-center">
+                            <label className="text-xs font-medium text-white/60 mb-2">Hours</label>
+                            <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-white/5 border border-white/20">
+                              {/* Selection indicator - fixed position */}
+                              <div className="absolute top-1/2 left-0 right-0 h-12 -translate-y-1/2 border-t-2 border-b-2 border-[#667eea]/40 pointer-events-none z-10 rounded" />
+                              {/* Gradient fade at top and bottom */}
+                              <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
+                              <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/10 to-transparent pointer-events-none z-10" />
+                              <div 
+                                ref={hoursScrollRef}
+                                className="h-full overflow-y-auto scrollbar-hide"
+                                style={{ scrollBehavior: 'smooth' }}
                               >
-                                {hour}
-                              </button>
-                            ))}
+                                <div className="py-20">
+                                  {[0, 1, 2, 3, 4].map((hour) => (
+                                    <button
+                                      key={hour}
+                                      data-hour={hour}
+                                      type="button"
+                                      onClick={() => {
+                                        setCustomHours(hour);
+                                        const button = hoursScrollRef.current?.querySelector(`[data-hour="${hour}"]`);
+                                        if (button) {
+                                          button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }
+                                      }}
+                                      className={`w-full h-12 flex items-center justify-center text-lg font-medium transition-colors ${
+                                        customHours === hour
+                                          ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
+                                          : 'text-white/60 hover:text-white hover:bg-white/10'
+                                      }`}
+                                    >
+                                      {hour}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Separator */}
+                          <div className="text-2xl font-bold text-white mt-8">:</div>
+
+                          {/* Minutes Column */}
+                          <div className="flex flex-col items-center">
+                            <label className="text-xs font-medium text-white/60 mb-2">Minutes</label>
+                            <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-white/5 border border-white/20">
+                              {/* Selection indicator - fixed position */}
+                              <div className="absolute top-1/2 left-0 right-0 h-10 -translate-y-1/2 border-t-2 border-b-2 border-[#667eea]/40 pointer-events-none z-10 rounded" />
+                              {/* Gradient fade at top and bottom */}
+                              <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
+                              <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/10 to-transparent pointer-events-none z-10" />
+                              <div 
+                                ref={minutesScrollRef}
+                                className="h-full overflow-y-auto scrollbar-hide"
+                                style={{ scrollBehavior: 'smooth' }}
+                              >
+                                <div className="py-20">
+                                  {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                                    <button
+                                      key={minute}
+                                      data-minute={minute}
+                                      type="button"
+                                      onClick={() => {
+                                        setCustomMinutes(minute);
+                                        const button = minutesScrollRef.current?.querySelector(`[data-minute="${minute}"]`);
+                                        if (button) {
+                                          button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }
+                                      }}
+                                      className={`w-full h-10 flex items-center justify-center text-base font-medium transition-colors ${
+                                        customMinutes === minute
+                                          ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
+                                          : 'text-white/60 hover:text-white hover:bg-white/10'
+                                      }`}
+                                    >
+                                      {String(minute).padStart(2, '0')}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Separator */}
-                    <div className="text-2xl font-bold text-white mt-8">:</div>
+                        {/* Selected Time Display */}
+                        <div className="text-center mb-4">
+                          <p className="text-sm text-white/60">Selected Duration</p>
+                          <p className="text-2xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
+                            {customHours > 0 ? `${customHours}h ` : ''}{customMinutes}m
+                          </p>
+                          <p className="text-xs text-white/40 mt-1">
+                            ({customHours * 60 + customMinutes} minutes total)
+                          </p>
+                        </div>
 
-                    {/* Minutes Column */}
-                    <div className="flex flex-col items-center">
-                      <label className="text-xs font-medium text-white/60 mb-2">Minutes</label>
-                      <div className="relative w-20 h-48 overflow-hidden rounded-lg bg-white/5 border border-white/20">
-                        {/* Selection indicator - fixed position */}
-                        <div className="absolute top-1/2 left-0 right-0 h-10 -translate-y-1/2 border-t-2 border-b-2 border-[#667eea]/40 pointer-events-none z-10 rounded" />
-                        {/* Gradient fade at top and bottom */}
-                        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
-                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/10 to-transparent pointer-events-none z-10" />
-                        <div 
-                          ref={minutesScrollRef}
-                          className="h-full overflow-y-auto scrollbar-hide"
-                          style={{ scrollBehavior: 'smooth' }}
-                        >
-                          <div className="py-20">
-                            {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
-                              <button
-                                key={minute}
-                                data-minute={minute}
-                                type="button"
-                                onClick={() => {
-                                  setCustomMinutes(minute);
-                                  const button = minutesScrollRef.current?.querySelector(`[data-minute="${minute}"]`);
-                                  if (button) {
-                                    button.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                  }
-                                }}
-                                className={`w-full h-10 flex items-center justify-center text-base font-medium transition-colors ${
-                                  customMinutes === minute
-                                    ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
-                                    : 'text-white/60 hover:text-white hover:bg-white/10'
-                                }`}
-                              >
-                                {String(minute).padStart(2, '0')}
-                              </button>
-                            ))}
-                          </div>
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 justify-center">
+                          <motion.button
+                            type="button"
+                            onClick={handleTimePickerConfirm}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-6 py-2 flex-1 rounded-lg bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium"
+                          >
+                            Set Duration
+                          </motion.button>
+                          <motion.button
+                            type="button"
+                            onClick={() => {
+                              setShowCustomInput(false);
+                              setCustomHours(0);
+                              setCustomMinutes(25);
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                          >
+                            <FaTimes />
+                          </motion.button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Selected Time Display */}
-                  <div className="text-center mb-4">
-                    <p className="text-sm text-white/60">Selected Duration</p>
-                    <p className="text-2xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
-                      {customHours > 0 ? `${customHours}h ` : ''}{customMinutes}m
-                    </p>
-                    <p className="text-xs text-white/40 mt-1">
-                      ({customHours * 60 + customMinutes} minutes total)
-                    </p>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 justify-center">
-                    <motion.button
-                      type="button"
-                      onClick={handleTimePickerConfirm}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-6 py-2 flex-1 rounded-lg bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium"
-                    >
-                      Set Duration
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      onClick={() => {
-                        setShowCustomInput(false);
-                        setCustomHours(0);
-                        setCustomMinutes(25);
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 hover:bg-white/20"
-                    >
-                      <FaTimes />
-                    </motion.button>
-                  </div>
-                </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -846,30 +846,29 @@ const FocusModePage = () => {
           )}
         </div>
 
-          {/* Start Button - Only shown when not active */}
-          {!isActive && (
-            <motion.button
-              onClick={handleStart}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-10 py-4 rounded-full bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium text-base md:text-lg shadow-lg hover:shadow-xl transition-all"
-            >
-              Start Focus
-            </motion.button>
-          )}
+        {/* Start Button - Only shown when not active */}
+        {!isActive && (
+          <motion.button
+            onClick={handleStart}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-10 py-4 rounded-full bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium text-base md:text-lg shadow-lg hover:shadow-xl transition-all"
+          >
+            Start Focus
+          </motion.button>
+        )}
 
-          {/* Stop Button - Only shown when active */}
-          {isActive && (
-            <motion.button
-              onClick={handleStop}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 rounded-full border-2 border-red-400/50 bg-red-500/10 backdrop-blur-sm text-red-400 font-medium text-sm md:text-base hover:bg-red-500/20 transition-all"
-            >
-              End Session
-            </motion.button>
-          )}
-        </div>
+        {/* Stop Button - Only shown when active */}
+        {isActive && (
+          <motion.button
+            onClick={handleStop}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-8 py-3 rounded-full border-2 border-red-400/50 bg-red-500/10 backdrop-blur-sm text-red-400 font-medium text-sm md:text-base hover:bg-red-500/20 transition-all"
+          >
+            End Session
+          </motion.button>
+        )}
       </div>
     </div>
   );
