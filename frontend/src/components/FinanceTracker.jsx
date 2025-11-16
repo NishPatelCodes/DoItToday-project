@@ -92,12 +92,20 @@ const FinanceTracker = () => {
   const handleSetup = async (e) => {
     e.preventDefault();
     try {
-      await financeAPI.setupAccount(setupForm);
+      // Convert initialBalance to number
+      const setupData = {
+        ...setupForm,
+        initialBalance: parseFloat(setupForm.initialBalance) || 0,
+      };
+      
+      await financeAPI.setupAccount(setupData);
       toast.success('Account setup complete!');
       setShowSetupModal(false);
       loadFinanceData();
     } catch (error) {
-      toast.error('Failed to setup account');
+      console.error('Setup error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to setup account';
+      toast.error(errorMessage);
     }
   };
 
@@ -704,6 +712,11 @@ const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
         exit={{ scale: 0.9, opacity: 0 }}
         className="card p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            onClose();
+          }
+        }}
       >
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -761,6 +774,7 @@ const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
             <input
               type="number"
               step="0.01"
+              min="0"
               value={form.initialBalance}
               onChange={(e) => setForm({ ...form, initialBalance: e.target.value })}
               className="input-field"

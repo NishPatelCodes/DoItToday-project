@@ -25,11 +25,14 @@ router.post('/setup', authenticate, async (req, res) => {
       });
     }
 
+    // Parse initialBalance to number
+    const parsedInitialBalance = parseFloat(initialBalance) || 0;
+
     // Update account info
     finance.accountInfo = {
       accountType: accountType || 'checking',
       accountName: accountName || 'Primary Account',
-      initialBalance: initialBalance || 0,
+      initialBalance: parsedInitialBalance,
       currency: currency || 'USD',
       bankName: bankName || '',
       accountNumber: accountNumber || '',
@@ -40,7 +43,7 @@ router.post('/setup', authenticate, async (req, res) => {
     // Add initial balance to history
     finance.balanceHistory.push({
       date: new Date(),
-      balance: initialBalance || 0,
+      balance: parsedInitialBalance,
     });
 
     finance.updatedAt = new Date();
