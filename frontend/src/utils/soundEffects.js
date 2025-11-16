@@ -14,8 +14,8 @@ const getAudioContext = () => {
 };
 
 /**
- * Play a pleasant completion sound (positive, minimal)
- * A soft ascending chord progression
+ * Play a cheerful, positive completion sound
+ * An uplifting major chord progression with a celebratory feel
  */
 export const playTaskCompleteSound = () => {
   try {
@@ -28,27 +28,38 @@ export const playTaskCompleteSound = () => {
     
     const now = ctx.currentTime;
     
-    // Create a pleasant ascending chord (C major triad -> F major)
-    const frequencies = [
-      { freq: 523.25, time: 0.0, duration: 0.15 }, // C5
-      { freq: 659.25, time: 0.05, duration: 0.15 }, // E5
-      { freq: 783.99, time: 0.1, duration: 0.15 }, // G5
-      { freq: 698.46, time: 0.15, duration: 0.2 }, // F5
+    // Create a cheerful, uplifting major chord progression (C-E-G-C, then C-F-A-C)
+    // More interactive with layered notes and a celebratory ending
+    const chord1 = [
+      { freq: 523.25, time: 0.0, duration: 0.25 }, // C5
+      { freq: 659.25, time: 0.05, duration: 0.25 }, // E5
+      { freq: 783.99, time: 0.1, duration: 0.25 }, // G5
     ];
     
-    frequencies.forEach(({ freq, time: startTime, duration }) => {
+    const chord2 = [
+      { freq: 523.25, time: 0.2, duration: 0.3 }, // C5 (octave jump)
+      { freq: 698.46, time: 0.25, duration: 0.3 }, // F5
+      { freq: 880.00, time: 0.3, duration: 0.3 }, // A5
+    ];
+    
+    // Final celebratory high note
+    const finale = { freq: 1046.50, time: 0.4, duration: 0.2 }; // C6
+    
+    [...chord1, ...chord2, finale].forEach(({ freq, time: startTime, duration }) => {
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
       
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
       
+      // Use 'sine' for smoother, more pleasant sound
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(freq, now + startTime);
       
-      // Gentle fade in and out
+      // More dynamic volume with pleasant fade
       gainNode.gain.setValueAtTime(0, now + startTime);
-      gainNode.gain.linearRampToValueAtTime(0.08, now + startTime + 0.02);
+      gainNode.gain.linearRampToValueAtTime(0.12, now + startTime + 0.03);
+      gainNode.gain.linearRampToValueAtTime(0.08, now + startTime + duration * 0.6);
       gainNode.gain.linearRampToValueAtTime(0, now + startTime + duration);
       
       oscillator.start(now + startTime);
@@ -61,8 +72,8 @@ export const playTaskCompleteSound = () => {
 };
 
 /**
- * Play a subtle notification sound when adding a task
- * A simple, pleasant beep
+ * Play a positive, engaging sound when adding a task
+ * A friendly two-note ascending melody that feels encouraging
  */
 export const playTaskAddSound = () => {
   try {
@@ -74,23 +85,34 @@ export const playTaskAddSound = () => {
     }
     
     const now = ctx.currentTime;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
     
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    // Create a cheerful two-note ascending melody (C -> E, major third)
+    // More interactive and positive feeling
+    const notes = [
+      { freq: 523.25, time: 0.0, duration: 0.15 }, // C5
+      { freq: 659.25, time: 0.12, duration: 0.18 }, // E5 (slightly overlapping for smoothness)
+    ];
     
-    // Pleasant tone (C5)
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(523.25, now);
-    
-    // Quick, subtle sound
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.06, now + 0.01);
-    gainNode.gain.linearRampToValueAtTime(0, now + 0.12);
-    
-    oscillator.start(now);
-    oscillator.stop(now + 0.12);
+    notes.forEach(({ freq, time: startTime, duration }) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      // Use 'sine' for a clean, pleasant tone
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, now + startTime);
+      
+      // Smooth, pleasant volume envelope
+      gainNode.gain.setValueAtTime(0, now + startTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, now + startTime + 0.02);
+      gainNode.gain.linearRampToValueAtTime(0.07, now + startTime + duration * 0.7);
+      gainNode.gain.linearRampToValueAtTime(0, now + startTime + duration);
+      
+      oscillator.start(now + startTime);
+      oscillator.stop(now + startTime + duration);
+    });
   } catch (error) {
     // Silently fail if audio is not supported
     console.debug('Audio not supported or failed:', error);
