@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaTarget, FaExclamationTriangle, FaCheckCircle, FaEdit } from 'react-icons/fa';
+import { FaBullseye, FaExclamationTriangle, FaCheckCircle, FaEdit } from 'react-icons/fa';
 import { formatCurrency } from '../utils/currencyFormatter';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
@@ -85,7 +85,7 @@ const BudgetTracker = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FaTarget className="text-green-500 text-sm" />
+                <FaBullseye className="text-green-500 text-sm" />
                 <span className="text-sm font-medium text-[var(--text-secondary)]">
                   Income Budget
                 </span>
@@ -114,7 +114,7 @@ const BudgetTracker = ({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FaTarget className={`text-sm ${
+              <FaBullseye className={`text-sm ${
                 isOverBudget 
                   ? 'text-red-500' 
                   : isOnTrack 
@@ -186,7 +186,7 @@ const BudgetTracker = ({
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
           >
-            <FaTarget className="text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+            <FaBullseye className="text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
                 On Track
