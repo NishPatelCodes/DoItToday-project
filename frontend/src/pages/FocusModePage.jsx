@@ -870,25 +870,6 @@ const FocusModePage = () => {
             </motion.button>
           )}
         </div>
-
-        {/* Motivational Quote at Bottom */}
-        <AnimatePresence mode="wait">
-          {currentQuote && (
-            <motion.div
-              key={currentQuote}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6 }}
-              className="text-center px-4 pb-6 md:pb-8"
-            >
-              <p className="text-sm md:text-base text-white/60 italic">
-                {currentQuote}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
       </div>
     </div>
   );
