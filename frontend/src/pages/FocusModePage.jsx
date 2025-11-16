@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlay, FaPause, FaStop, FaExpand, FaCompress, FaTimes } from 'react-icons/fa';
+import { FaPlay, FaPause, FaStop, FaExpand, FaCompress, FaTimes, FaPalette, FaMoon, FaLeaf, FaSun, FaMagic } from 'react-icons/fa';
 import { focusAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import { useAuthStore } from '../store/authStore';
@@ -53,6 +53,7 @@ const FocusModePage = () => {
       id: 'minimal-gradient',
       name: 'Minimal Gradient',
       description: 'Calm blue/purple blend',
+      icon: FaPalette,
       colors: {
         primary: 'from-blue-500 via-purple-500 to-indigo-600',
         secondary: 'from-indigo-600 via-purple-500 to-blue-500',
@@ -63,6 +64,7 @@ const FocusModePage = () => {
       id: 'deep-focus',
       name: 'Deep Focus',
       description: 'Dark abstract gradient',
+      icon: FaMoon,
       colors: {
         primary: 'from-gray-900 via-slate-800 to-gray-900',
         secondary: 'from-slate-900 via-gray-800 to-slate-900',
@@ -73,6 +75,7 @@ const FocusModePage = () => {
       id: 'nature-calm',
       name: 'Nature Calm',
       description: 'Soft green/brown tones',
+      icon: FaLeaf,
       colors: {
         primary: 'from-emerald-500 via-teal-500 to-green-600',
         secondary: 'from-amber-600 via-orange-500 to-amber-500',
@@ -83,6 +86,7 @@ const FocusModePage = () => {
       id: 'sunset-glow',
       name: 'Sunset Glow',
       description: 'Orange/pink tones',
+      icon: FaSun,
       colors: {
         primary: 'from-orange-500 via-pink-500 to-rose-500',
         secondary: 'from-rose-500 via-pink-500 to-orange-500',
@@ -93,6 +97,7 @@ const FocusModePage = () => {
       id: 'motivational-motion',
       name: 'Motivational Motion',
       description: 'Animated gradient',
+      icon: FaMagic,
       colors: {
         primary: 'from-purple-600 via-pink-500 to-indigo-600',
         secondary: 'from-blue-600 via-cyan-500 to-teal-500',
@@ -537,101 +542,102 @@ const FocusModePage = () => {
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col items-center gap-6 mb-8 w-full max-w-2xl px-4">
-          {/* Background Mode Selector */}
+        <div className="flex flex-col items-center gap-6 mb-8 w-full max-w-4xl px-4">
+          {/* In Focus Section: Icons on Left, Duration on Right */}
           {!isActive && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="w-full"
             >
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 text-center">
-                Background Theme
-              </label>
-              <div className="flex gap-2 flex-wrap justify-center">
-                {backgroundModes.map((mode) => (
-                  <motion.button
-                    key={mode.id}
-                    onClick={() => setBackgroundMode(mode.id)}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`p-3 rounded-xl border-2 transition-all ${
-                      backgroundMode === mode.id
-                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-lg'
-                        : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-secondary)]/50'
-                    }`}
-                  >
-                    <div className="text-xs font-medium text-[var(--text-primary)] text-center">
-                      {mode.name}
-                    </div>
-                    <div className="text-xs text-[var(--text-tertiary)] mt-1">
-                      {mode.description}
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center">
+                {/* Left Side: Vertical Mode Icons */}
+                <div className="flex flex-col gap-2 w-full md:w-auto">
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-left whitespace-nowrap">
+                    Theme
+                  </label>
+                  <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide justify-center md:justify-start">
+                    {backgroundModes.map((mode) => {
+                      const IconComponent = mode.icon;
+                      return (
+                        <motion.button
+                          key={mode.id}
+                          onClick={() => setBackgroundMode(mode.id)}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`flex-shrink-0 p-3 md:p-4 rounded-xl border-2 transition-all ${
+                            backgroundMode === mode.id
+                              ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-lg'
+                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-secondary)]/50'
+                          }`}
+                          title={mode.name}
+                        >
+                          <IconComponent 
+                            className={`text-xl md:text-2xl ${
+                              backgroundMode === mode.id
+                                ? 'text-[var(--accent-primary)]'
+                                : 'text-[var(--text-secondary)]'
+                            }`} 
+                          />
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-          {/* Duration Presets */}
-          {!isActive && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="w-full"
-            >
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 text-center">
-                Duration
-              </label>
-              <div className="flex gap-3 justify-center flex-wrap">
-                {[25, 45, 60].map((mins) => (
-                  <motion.button
-                    key={mins}
-                    onClick={() => handleSetDuration(mins)}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
-                      customDuration === mins
-                        ? 'bg-[var(--accent-primary)] text-white shadow-lg'
-                        : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
-                    }`}
-                  >
-                    {mins}m
-                  </motion.button>
-                ))}
-                <motion.button
-                  onClick={() => {
-                    if (!showCustomInput) {
-                      // Initialize with current duration when opening
-                      const hours = Math.floor(customDuration / 60);
-                      const minutes = customDuration % 60;
-                      setCustomHours(hours);
-                      setCustomMinutes(minutes);
-                    }
-                    setShowCustomInput(!showCustomInput);
-                  }}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
-                    showCustomInput
-                      ? 'bg-[var(--accent-primary)] text-white shadow-lg'
-                      : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
-                  }`}
-                >
-                  Custom
-                </motion.button>
-              </div>
-              
-              {/* Custom Time Picker */}
-              <AnimatePresence>
-                {showCustomInput && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-6 w-full max-w-md mx-auto"
-                  >
+                {/* Right Side: Duration Selector */}
+                <div className="flex-1 w-full md:w-auto">
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 text-center md:text-left">
+                    Duration
+                  </label>
+                  <div className="flex gap-3 justify-center md:justify-start flex-wrap">
+                    {[25, 45, 60].map((mins) => (
+                      <motion.button
+                        key={mins}
+                        onClick={() => handleSetDuration(mins)}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
+                          customDuration === mins
+                            ? 'bg-[var(--accent-primary)] text-white shadow-lg'
+                            : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
+                        }`}
+                      >
+                        {mins}m
+                      </motion.button>
+                    ))}
+                    <motion.button
+                      onClick={() => {
+                        if (!showCustomInput) {
+                          // Initialize with current duration when opening
+                          const hours = Math.floor(customDuration / 60);
+                          const minutes = customDuration % 60;
+                          setCustomHours(hours);
+                          setCustomMinutes(minutes);
+                        }
+                        setShowCustomInput(!showCustomInput);
+                      }}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
+                        showCustomInput
+                          ? 'bg-[var(--accent-primary)] text-white shadow-lg'
+                          : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
+                      }`}
+                    >
+                      Custom
+                    </motion.button>
+                  </div>
+                  
+                  {/* Custom Time Picker */}
+                  <AnimatePresence>
+                    {showCustomInput && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-6 w-full max-w-md mx-auto md:mx-0"
+                      >
                     <div className="bg-[var(--bg-secondary)] rounded-xl p-6 border border-[var(--border-color)] shadow-lg">
                       <div className="text-center mb-4">
                         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Set Custom Duration</h3>
@@ -766,6 +772,8 @@ const FocusModePage = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
+                </div>
+              </div>
             </motion.div>
           )}
 
