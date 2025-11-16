@@ -494,13 +494,13 @@ const FocusModePage = () => {
         </AnimatePresence>
 
         {/* Main Content: Timer with Themes on Left and Duration on Right */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-8 md:mb-12 w-full max-w-6xl px-4">
-          {/* Red Box Area: Themes on Left */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 mb-8 md:mb-12 w-full max-w-7xl px-4 md:px-8">
+          {/* Red Box Area: Themes on Leftmost - Vertically Centered */}
           {!isActive && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex flex-col gap-2 w-full md:w-auto order-2 md:order-1"
+              className="flex flex-col gap-2 w-full md:w-auto order-2 md:order-1 items-center md:items-start"
             >
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-left whitespace-nowrap">
                 Theme
@@ -536,7 +536,7 @@ const FocusModePage = () => {
           )}
 
           {/* Timer Circle - Center */}
-          <div className="relative w-80 h-80 md:w-96 md:h-96 order-1 md:order-2">
+          <div className="relative w-80 h-80 md:w-96 md:h-96 order-1 md:order-2 flex-shrink-0">
             <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
               <defs>
                 <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -583,17 +583,17 @@ const FocusModePage = () => {
             </div>
           </div>
 
-          {/* Yellow Box Area: Duration on Right */}
+          {/* Yellow Box Area: Duration on Rightmost - Vertically Centered */}
           {!isActive && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex flex-col gap-2 w-full md:w-auto order-3"
+              className="flex flex-col gap-2 w-full md:w-auto order-3 items-center md:items-end"
             >
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-left">
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-right">
                 Duration
               </label>
-              <div className="flex flex-row md:flex-col gap-3 justify-center md:justify-start">
+              <div className="flex flex-row md:flex-col gap-3 justify-center md:justify-end">
                 {[25, 45, 60].map((mins) => (
                   <motion.button
                     key={mins}
