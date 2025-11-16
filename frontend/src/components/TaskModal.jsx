@@ -4,6 +4,7 @@ import { FaTimes } from 'react-icons/fa';
 import { useDataStore } from '../store/dataStore';
 import ConfirmationModal from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { playTaskAddSound } from '../utils/soundEffects';
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const { friends, goals } = useDataStore();
@@ -176,6 +177,11 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
         dateObj.setHours(23, 59, 0, 0);
       }
       dueDateTimeValue = dateObj.toISOString();
+    }
+    
+    // Play sound only when adding a new task (not editing)
+    if (!task) {
+      playTaskAddSound();
     }
     
     onSave({

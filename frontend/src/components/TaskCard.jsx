@@ -4,6 +4,7 @@ import { FaCheckCircle, FaCircle, FaTrash, FaEdit, FaClock, FaUserFriends, FaSta
 import { format, isPast, isToday } from 'date-fns';
 import { useAuthStore } from '../store/authStore';
 import ConfirmationModal from './ConfirmationModal';
+import { playTaskCompleteSound } from '../utils/soundEffects';
 
 const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSelected = false, onSelect }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -71,6 +72,10 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
           <button
             onClick={() => {
               // No confirmation needed - complete/uncomplete directly
+              // Play sound only when completing (not uncompleting)
+              if (!isCompleted) {
+                playTaskCompleteSound();
+              }
               onToggle(task._id);
             }}
             className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
