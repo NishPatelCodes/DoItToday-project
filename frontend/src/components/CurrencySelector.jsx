@@ -60,10 +60,10 @@ const CurrencySelector = ({
           focus:ring-2
           focus:ring-[var(--accent-primary)]/30
           transition-all
-          aria-expanded={isOpen}
-          aria-haspopup="listbox"
-          aria-label={`Currency selector. Current currency: ${selectedCurrencyInfo.name}`}
         `}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-label={`Currency selector. Current currency: ${selectedCurrencyInfo.name}`}
       >
         <FaGlobe className="text-[var(--text-secondary)]" />
         <span className="font-medium">
