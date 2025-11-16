@@ -493,141 +493,144 @@ const FocusModePage = () => {
           )}
         </AnimatePresence>
 
-        {/* Timer Circle */}
-        <div className="relative w-80 h-80 md:w-96 md:h-96 mb-8 md:mb-12">
-          <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
-            <defs>
-              <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#667eea" />
-                <stop offset="100%" stopColor="#764ba2" />
-              </linearGradient>
-            </defs>
-            {/* Background circle */}
-            <circle
-              cx="100"
-              cy="100"
-              r="90"
-              fill="none"
-              stroke="var(--border-color)"
-              strokeWidth="4"
-              opacity="0.3"
-            />
-            {/* Progress circle */}
-            <motion.circle
-              cx="100"
-              cy="100"
-              r="90"
-              fill="none"
-              stroke={`url(#${gradientId})`}
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={2 * Math.PI * 90}
-              initial={{ strokeDashoffset: 2 * Math.PI * 90 }}
-              animate={{ 
-                strokeDashoffset: 2 * Math.PI * 90 * (1 - progress / 100)
-              }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl md:text-7xl lg:text-8xl font-bold text-[var(--text-primary)] mb-2">
-                {formatTime(timeLeft)}
+        {/* Main Content: Timer with Themes on Left and Duration on Right */}
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-8 md:mb-12 w-full max-w-6xl px-4">
+          {/* Red Box Area: Themes on Left */}
+          {!isActive && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex flex-col gap-2 w-full md:w-auto order-2 md:order-1"
+            >
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-left whitespace-nowrap">
+                Theme
+              </label>
+              <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide justify-center md:justify-start">
+                {backgroundModes.map((mode) => {
+                  const IconComponent = mode.icon;
+                  return (
+                    <motion.button
+                      key={mode.id}
+                      onClick={() => setBackgroundMode(mode.id)}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`flex-shrink-0 p-3 md:p-4 rounded-xl border-2 transition-all ${
+                        backgroundMode === mode.id
+                          ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-lg'
+                          : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-secondary)]/50'
+                      }`}
+                      title={mode.name}
+                    >
+                      <IconComponent 
+                        className={`text-xl md:text-2xl ${
+                          backgroundMode === mode.id
+                            ? 'text-[var(--accent-primary)]'
+                            : 'text-[var(--text-secondary)]'
+                        }`} 
+                      />
+                    </motion.button>
+                  );
+                })}
               </div>
-              <div className="text-lg md:text-xl text-[var(--text-secondary)]">
-                {isActive ? (isPaused ? 'Paused' : 'Focusing') : 'Ready to focus'}
+            </motion.div>
+          )}
+
+          {/* Timer Circle - Center */}
+          <div className="relative w-80 h-80 md:w-96 md:h-96 order-1 md:order-2">
+            <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#667eea" />
+                  <stop offset="100%" stopColor="#764ba2" />
+                </linearGradient>
+              </defs>
+              {/* Background circle */}
+              <circle
+                cx="100"
+                cy="100"
+                r="90"
+                fill="none"
+                stroke="var(--border-color)"
+                strokeWidth="4"
+                opacity="0.3"
+              />
+              {/* Progress circle */}
+              <motion.circle
+                cx="100"
+                cy="100"
+                r="90"
+                fill="none"
+                stroke={`url(#${gradientId})`}
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 90}
+                initial={{ strokeDashoffset: 2 * Math.PI * 90 }}
+                animate={{ 
+                  strokeDashoffset: 2 * Math.PI * 90 * (1 - progress / 100)
+                }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-6xl md:text-7xl lg:text-8xl font-bold text-[var(--text-primary)] mb-2">
+                  {formatTime(timeLeft)}
+                </div>
+                <div className="text-lg md:text-xl text-[var(--text-secondary)]">
+                  {isActive ? (isPaused ? 'Paused' : 'Focusing') : 'Ready to focus'}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Controls */}
-        <div className="flex flex-col items-center gap-6 mb-8 w-full max-w-4xl px-4">
-          {/* In Focus Section: Icons on Left, Duration on Right */}
+          {/* Yellow Box Area: Duration on Right */}
           {!isActive && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-full"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex flex-col gap-2 w-full md:w-auto order-3"
             >
-              <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center justify-center min-h-[300px]">
-                {/* Left Side: Vertical Mode Icons - Centered */}
-                <div className="flex flex-col gap-2 w-full md:w-auto items-center md:items-start">
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-left whitespace-nowrap">
-                    Theme
-                  </label>
-                  <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide justify-center md:justify-start">
-                    {backgroundModes.map((mode) => {
-                      const IconComponent = mode.icon;
-                      return (
-                        <motion.button
-                          key={mode.id}
-                          onClick={() => setBackgroundMode(mode.id)}
-                          whileHover={{ scale: 1.05, y: -2 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`flex-shrink-0 p-3 md:p-4 rounded-xl border-2 transition-all ${
-                            backgroundMode === mode.id
-                              ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-lg'
-                              : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-secondary)]/50'
-                          }`}
-                          title={mode.name}
-                        >
-                          <IconComponent 
-                            className={`text-xl md:text-2xl ${
-                              backgroundMode === mode.id
-                                ? 'text-[var(--accent-primary)]'
-                                : 'text-[var(--text-secondary)]'
-                            }`} 
-                          />
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Right Side: Duration Selector - Centered */}
-                <div className="flex-1 w-full md:w-auto flex flex-col items-center md:items-start">
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 text-center md:text-left">
-                    Duration
-                  </label>
-                  <div className="flex flex-row md:flex-col gap-3 justify-center md:justify-start">
-                    {[25, 45, 60].map((mins) => (
-                      <motion.button
-                        key={mins}
-                        onClick={() => handleSetDuration(mins)}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
-                          customDuration === mins
-                            ? 'bg-[var(--accent-primary)] text-white shadow-lg'
-                            : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
-                        }`}
-                      >
-                        {mins}m
-                      </motion.button>
-                    ))}
-                    <motion.button
-                      onClick={() => {
-                        if (!showCustomInput) {
-                          // Initialize with current duration when opening
-                          const hours = Math.floor(customDuration / 60);
-                          const minutes = customDuration % 60;
-                          setCustomHours(hours);
-                          setCustomMinutes(minutes);
-                        }
-                        setShowCustomInput(!showCustomInput);
-                      }}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
-                        showCustomInput
-                          ? 'bg-[var(--accent-primary)] text-white shadow-lg'
-                          : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
-                      }`}
-                    >
-                      Custom
-                    </motion.button>
-                  </div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-left">
+                Duration
+              </label>
+              <div className="flex flex-row md:flex-col gap-3 justify-center md:justify-start">
+                {[25, 45, 60].map((mins) => (
+                  <motion.button
+                    key={mins}
+                    onClick={() => handleSetDuration(mins)}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
+                      customDuration === mins
+                        ? 'bg-[var(--accent-primary)] text-white shadow-lg'
+                        : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
+                    }`}
+                  >
+                    {mins}m
+                  </motion.button>
+                ))}
+                <motion.button
+                  onClick={() => {
+                    if (!showCustomInput) {
+                      // Initialize with current duration when opening
+                      const hours = Math.floor(customDuration / 60);
+                      const minutes = customDuration % 60;
+                      setCustomHours(hours);
+                      setCustomMinutes(minutes);
+                    }
+                    setShowCustomInput(!showCustomInput);
+                  }}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
+                    showCustomInput
+                      ? 'bg-[var(--accent-primary)] text-white shadow-lg'
+                      : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
+                  }`}
+                >
+                  Custom
+                </motion.button>
+              </div>
                   
                   {/* Custom Time Picker */}
                   <AnimatePresence>
@@ -772,13 +775,12 @@ const FocusModePage = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-                </div>
-              </div>
             </motion.div>
           )}
+        </div>
 
-          {/* Control Buttons */}
-          <div className="flex items-center gap-4">
+        {/* Control Buttons */}
+        <div className="flex items-center gap-4">
             {!isActive ? (
               <motion.button
                 onClick={handleStart}
