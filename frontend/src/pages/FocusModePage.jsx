@@ -550,9 +550,9 @@ const FocusModePage = () => {
               animate={{ opacity: 1, y: 0 }}
               className="w-full"
             >
-              <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center">
-                {/* Left Side: Vertical Mode Icons */}
-                <div className="flex flex-col gap-2 w-full md:w-auto">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center justify-center min-h-[300px]">
+                {/* Left Side: Vertical Mode Icons - Centered */}
+                <div className="flex flex-col gap-2 w-full md:w-auto items-center md:items-start">
                   <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 md:mb-3 text-center md:text-left whitespace-nowrap">
                     Theme
                   </label>
@@ -585,19 +585,19 @@ const FocusModePage = () => {
                   </div>
                 </div>
 
-                {/* Right Side: Duration Selector */}
-                <div className="flex-1 w-full md:w-auto">
+                {/* Right Side: Duration Selector - Centered */}
+                <div className="flex-1 w-full md:w-auto flex flex-col items-center md:items-start">
                   <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 text-center md:text-left">
                     Duration
                   </label>
-                  <div className="flex gap-3 justify-center md:justify-start flex-wrap">
+                  <div className="flex flex-row md:flex-col gap-3 justify-center md:justify-start">
                     {[25, 45, 60].map((mins) => (
                       <motion.button
                         key={mins}
                         onClick={() => handleSetDuration(mins)}
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
+                        className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
                           customDuration === mins
                             ? 'bg-[var(--accent-primary)] text-white shadow-lg'
                             : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
@@ -619,7 +619,7 @@ const FocusModePage = () => {
                       }}
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md ${
+                      className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md w-full md:w-auto ${
                         showCustomInput
                           ? 'bg-[var(--accent-primary)] text-white shadow-lg'
                           : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-lg'
