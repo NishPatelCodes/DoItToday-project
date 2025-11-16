@@ -589,18 +589,18 @@ const FocusModePage = () => {
               </div>
             </div>
           ) : (
-            /* Setup View: Timer with Themes and Duration */
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 mb-8 md:mb-12 w-full max-w-7xl">
-              {/* Themes on Left */}
+            /* Setup View: Timer with Themes on Leftmost and Duration on Rightmost */
+            <div className="relative w-full max-w-7xl flex items-center justify-center" style={{ minHeight: '500px' }}>
+              {/* Themes on Leftmost Edge - Vertically Centered */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex flex-col gap-2 w-full md:w-auto items-center md:items-start"
+                className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 items-start z-10"
               >
-                <label className="block text-sm font-medium text-white/80 mb-2 md:mb-3 text-center md:text-left whitespace-nowrap">
+                <label className="block text-sm font-medium text-white/80 mb-2 md:mb-3 whitespace-nowrap">
                   Theme
                 </label>
-                <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide justify-center md:justify-start">
+                <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide">
                   {backgroundModes.map((mode) => {
                     const IconComponent = mode.icon;
                     return (
@@ -629,8 +629,8 @@ const FocusModePage = () => {
                 </div>
               </motion.div>
 
-              {/* Timer Preview */}
-              <div className="relative w-64 h-64 md:w-80 md:h-80 flex-shrink-0">
+              {/* Timer Preview - Center */}
+              <div className="relative w-64 h-64 md:w-80 md:h-80 flex-shrink-0 z-0">
                 <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 200 200">
                   <circle
                     cx="100"
@@ -651,16 +651,16 @@ const FocusModePage = () => {
                 </div>
               </div>
 
-              {/* Duration on Right */}
+              {/* Duration on Rightmost Edge - Vertically Centered */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex flex-col gap-2 w-full md:w-auto items-center md:items-end"
+                className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 items-end z-10"
               >
-                <label className="block text-sm font-medium text-white/80 mb-2 md:mb-3 text-center md:text-right">
+                <label className="block text-sm font-medium text-white/80 mb-2 md:mb-3 text-right">
                   Duration
                 </label>
-                <div className="flex flex-row md:flex-col gap-3 justify-center md:justify-end">
+                <div className="flex flex-row md:flex-col gap-3">
                   {[25, 45, 60].map((mins) => (
                     <motion.button
                       key={mins}
