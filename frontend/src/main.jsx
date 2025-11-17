@@ -34,8 +34,8 @@ window.addEventListener('unhandledrejection', (event) => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <BrowserRouter>
+    <BrowserRouter>
+      <ErrorBoundary>
         <App />
         <Toaster
           toastOptions={{
@@ -47,8 +47,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             },
           }}
         />
-      </BrowserRouter>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </BrowserRouter>
   </React.StrictMode>,
 );
 
