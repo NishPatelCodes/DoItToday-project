@@ -832,6 +832,7 @@ const Dashboard = () => {
                 user={user}
                 tasks={tasks}
                 goals={goals}
+                habits={habits}
               />
             }
           />

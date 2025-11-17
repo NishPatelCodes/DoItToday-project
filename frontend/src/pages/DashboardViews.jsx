@@ -24,6 +24,7 @@ import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skel
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { notesAPI } from '../services/api';
+import AnalyticsDashboard from '../components/AnalyticsDashboard';
 
 // Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
@@ -1313,56 +1314,15 @@ export const DashboardGoals = ({
 };
 
 // Analytics View
-export const DashboardAnalytics = ({ analytics, tasks, goals, habits }) => {
+export const DashboardAnalytics = ({ analytics, tasks, goals, habits, user }) => {
   return (
-    <div className="p-4 md:p-8 overflow-x-hidden">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
-        <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your productivity and progress</p>
-          </div>
-          
-      <div className="grid grid-cols-1 gap-4 md:gap-6">
-        {analytics?.taskCompletion && (
-            <GraphCard
-            title="Task Completion Over Time"
-            data={analytics.taskCompletion}
-              type="line"
-            dataKey="completed"
-            />
-          )}
-
-        {analytics?.weeklyCompletion && (
-            <GraphCard
-              title="Weekly Task Completion"
-            data={analytics.weeklyCompletion.map((item, index) => ({
-              name: item.week || `Week ${index + 1}`,
-              completed: item.completed || 0,
-              total: item.total || 0,
-            }))}
-              type="bar"
-            dataKey="completed"
-          />
-        )}
-
-        {analytics?.goalProgress && (
-          <GraphCard
-            title="Goal Progress"
-            data={analytics.goalProgress}
-            type="area"
-            dataKey="progress"
-          />
-        )}
-
-        {analytics?.habitStreak && (
-          <GraphCard
-            title="Habit Streak"
-            data={analytics.habitStreak}
-            type="line"
-            dataKey="streak"
-          />
-        )}
-      </div>
-    </div>
+    <AnalyticsDashboard
+      analytics={analytics}
+      tasks={tasks || []}
+      goals={goals || []}
+      habits={habits || []}
+      user={user}
+    />
   );
 };
 
