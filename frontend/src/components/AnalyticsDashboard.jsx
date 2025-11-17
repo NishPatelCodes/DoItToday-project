@@ -171,26 +171,37 @@ const CircularProgress = ({ value, max = 100, size = 120, strokeWidth = 8, color
 
 // Challenge Timeline Component
 const ChallengeTimeline = ({ challenge }) => {
+  if (!challenge) return null;
   const days = challenge.duration || 7;
-  const completedDays = challenge.checkIns?.filter(c => c.completed).length || 0;
+  const completedDays = challenge.checkIns?.filter(c => c && c.completed).length || 0;
   
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       {Array.from({ length: Math.min(days, 30) }).map((_, i) => {
-        const isCompleted = challenge.checkIns?.some(
-          c => c.completed && new Date(c.date).toDateString() === new Date(Date.now() - (days - i - 1) * 86400000).toDateString()
-        );
-        return (
-          <div
-            key={i}
-            className={`w-2.5 h-2.5 rounded-full transition-all ${
-              isCompleted
-                ? 'bg-gradient-to-br from-yellow-400 to-orange-500 shadow-sm'
-                : 'bg-[var(--bg-tertiary)]'
-            }`}
-            title={isCompleted ? 'Completed' : 'Pending'}
-          />
-        );
+        try {
+          const isCompleted = challenge.checkIns?.some(
+            c => c && c.completed && c.date && new Date(c.date).toDateString() === new Date(Date.now() - (days - i - 1) * 86400000).toDateString()
+          );
+          return (
+            <div
+              key={i}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                isCompleted
+                  ? 'bg-gradient-to-br from-yellow-400 to-orange-500 shadow-sm'
+                  : 'bg-[var(--bg-tertiary)]'
+              }`}
+              title={isCompleted ? 'Completed' : 'Pending'}
+            />
+          );
+        } catch (e) {
+          return (
+            <div
+              key={i}
+              className="w-2.5 h-2.5 rounded-full bg-[var(--bg-tertiary)]"
+              title="Pending"
+            />
+          );
+        }
       })}
     </div>
   );
@@ -262,11 +273,12 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
 
   // Calculate statistics
   const stats = useMemo(() => {
-    const completedTasks = tasks.filter(t => t.status === 'completed');
+    const tasksArray = Array.isArray(tasks) ? tasks : [];
+    const completedTasks = tasksArray.filter(t => t && t.status === 'completed');
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthlyTasks = tasks.filter(t => new Date(t.createdAt) >= startOfMonth);
-    const monthlyCompleted = monthlyTasks.filter(t => t.status === 'completed');
+    const monthlyTasks = tasksArray.filter(t => t && t.createdAt && new Date(t.createdAt) >= startOfMonth);
+    const monthlyCompleted = monthlyTasks.filter(t => t && t.status === 'completed');
     const monthlyCompletionRate = monthlyTasks.length > 0 
       ? Math.round((monthlyCompleted.length / monthlyTasks.length) * 100) 
       : 0;
@@ -299,8 +311,10 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
   }, [focusStats]);
 
   const taskCategoryData = useMemo(() => {
+    const tasksArray = Array.isArray(tasks) ? tasks : [];
     const categories = {};
-    tasks.forEach(task => {
+    tasksArray.forEach(task => {
+      if (!task) return;
       const category = task.category || 'Other';
       if (!categories[category]) {
         categories[category] = { name: category, completed: 0, total: 0 };
@@ -318,12 +332,19 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
   }, [tasks]);
 
   const weeklyTaskData = useMemo(() => {
-    if (!analytics?.dailyProductivity) return [];
-    return analytics.dailyProductivity.map(day => ({
-      date: new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }),
-      completed: day.completed || 0,
-      productivity: day.productivity || 0,
-    }));
+    if (!analytics?.dailyProductivity || !Array.isArray(analytics.dailyProductivity)) return [];
+    return analytics.dailyProductivity.map(day => {
+      if (!day || !day.date) return { date: '', completed: 0, productivity: 0 };
+      try {
+        return {
+          date: new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }),
+          completed: day.completed || 0,
+          productivity: day.productivity || 0,
+        };
+      } catch (e) {
+        return { date: '', completed: 0, productivity: 0 };
+      }
+    }).filter(day => day.date);
   }, [analytics]);
 
   // Get discipline level
@@ -711,21 +732,23 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeChallenges.map((challenge, i) => (
-              <motion.div
-                key={challenge._id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 + i * 0.1 }}
-                className="p-5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-[var(--text-primary)] mb-1">{challenge.name}</h3>
-                    <p className="text-xs text-[var(--text-secondary)]">{challenge.description}</p>
+            {activeChallenges.map((challenge, i) => {
+              if (!challenge || !challenge._id) return null;
+              return (
+                <motion.div
+                  key={challenge._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + i * 0.1 }}
+                  className="p-5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-[var(--text-primary)] mb-1">{challenge.name || 'Unnamed Challenge'}</h3>
+                      <p className="text-xs text-[var(--text-secondary)]">{challenge.description || ''}</p>
+                    </div>
+                    <span className="text-2xl font-bold text-yellow-500">{challenge.progress || 0}%</span>
                   </div>
-                  <span className="text-2xl font-bold text-yellow-500">{challenge.progress || 0}%</span>
-                </div>
                 <div className="mb-4">
                   <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                     <motion.div
@@ -749,8 +772,9 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                     </p>
                   </div>
                 </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       )}
@@ -778,14 +802,14 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
               <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-1">Completed</p>
                 <p className="text-2xl font-bold text-[var(--text-primary)]">
-                  {tasks.filter(t => t.status === 'completed').length}
+                  {Array.isArray(tasks) ? tasks.filter(t => t && t.status === 'completed').length : 0}
                 </p>
               </div>
               <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-1">Completion Rate</p>
                 <p className="text-2xl font-bold text-[var(--text-primary)]">
-                  {tasks.length > 0
-                    ? Math.round((tasks.filter(t => t.status === 'completed').length / tasks.length) * 100)
+                  {Array.isArray(tasks) && tasks.length > 0
+                    ? Math.round((tasks.filter(t => t && t.status === 'completed').length / tasks.length) * 100)
                     : 0}%
                 </p>
               </div>
@@ -870,10 +894,11 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           </div>
 
           <div className="space-y-4">
-            {habits.length > 0 ? (
+            {Array.isArray(habits) && habits.length > 0 ? (
               habits.map((habit, i) => {
+                if (!habit || !habit._id) return null;
                 const completedToday = habit.completions?.some(
-                  c => new Date(c.date).toDateString() === new Date().toDateString()
+                  c => c && c.date && new Date(c.date).toDateString() === new Date().toDateString()
                 );
                 return (
                   <div
@@ -881,7 +906,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                     className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-[var(--text-primary)]">{habit.name}</span>
+                      <span className="font-medium text-[var(--text-primary)]">{habit.name || 'Unnamed Habit'}</span>
                       {completedToday && (
                         <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-600 dark:text-green-400">
                           Done today
