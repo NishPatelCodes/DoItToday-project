@@ -131,14 +131,14 @@ const CollapsibleSection = ({ title, icon: Icon, children, defaultOpen = false, 
 };
 
 // Stat Card Component
-const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, trend, trendValue }) => {
+const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, trend, trendValue, className = '' }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
       whileHover={{ scale: 1.02, y: -4 }}
-      className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
+      className={`relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 ${className}`}
       style={{
         background: gradient || 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.12) 100%)',
         borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -497,7 +497,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
       </motion.div>
 
       {/* Top Insight Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
         <StatCard
           title="Discipline Points"
           value={stats.disciplinePoints}
@@ -537,6 +537,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           icon={FaCheckCircle}
           gradient="linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(22, 163, 74, 0.08) 50%, rgba(21, 128, 61, 0.12) 100%)"
           delay={0.4}
+          className="col-span-2 md:col-span-1"
         />
       </div>
 
