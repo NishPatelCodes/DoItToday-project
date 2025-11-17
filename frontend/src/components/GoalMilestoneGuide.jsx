@@ -70,7 +70,10 @@ const GoalMilestoneGuide = ({ goals = [], tasks = [] }) => {
 
   useEffect(() => {
     if (!selectedGoalId && goals.length > 0) {
-      setSelectedGoalId(getGoalId(goals[0]));
+      const firstGoalId = getGoalId(goals[0]);
+      if (firstGoalId) {
+        setSelectedGoalId(firstGoalId);
+      }
     }
   }, [goals, selectedGoalId]);
 
