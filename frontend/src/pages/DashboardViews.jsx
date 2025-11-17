@@ -59,6 +59,7 @@ import { useNavigate } from 'react-router-dom';
 import { notesAPI, financeAPI } from '../services/api';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import ErrorBoundary from '../components/ErrorBoundary';
+import ChartErrorBoundary from '../components/ChartErrorBoundary';
 import { formatCurrency } from '../utils/currencyFormatter';
 import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
 
@@ -994,38 +995,47 @@ export const DashboardHome = ({
             </div>
             {productivityTrend.length > 0 ? (
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={productivityTrend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
-                    <XAxis
-                      dataKey="label"
-                      stroke="var(--text-tertiary)"
-                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                    />
-                    <YAxis
-                      stroke="var(--text-tertiary)"
-                      domain={[0, 100]}
-                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '12px',
-                        color: 'var(--text-primary)',
-                      }}
-                      formatter={(value) => [`${value}%`, 'Productivity']}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="productivity"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
-                      dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <ChartErrorBoundary
+                  fallback={
+                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                      <p>Chart unavailable</p>
+                      <p className="text-[11px] mt-1">Error loading productivity data.</p>
+                    </div>
+                  }
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={productivityTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                      <XAxis
+                        dataKey="label"
+                        stroke="var(--text-tertiary)"
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="var(--text-tertiary)"
+                        domain={[0, 100]}
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '12px',
+                          color: 'var(--text-primary)',
+                        }}
+                        formatter={(value) => [`${value}%`, 'Productivity']}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="productivity"
+                        stroke="#8b5cf6"
+                        strokeWidth={3}
+                        dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartErrorBoundary>
               </div>
             ) : (
               <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
@@ -1059,46 +1069,55 @@ export const DashboardHome = ({
               </div>
             ) : incomeTrend.length > 0 ? (
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={incomeTrend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
-                    <XAxis
-                      dataKey="label"
-                      stroke="var(--text-tertiary)"
-                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                    />
-                    <YAxis
-                      stroke="var(--text-tertiary)"
-                      tickFormatter={(value) =>
-                        formatCurrency(value || 0, incomeMeta.currency, {
-                          maximumFractionDigits: 0,
-                          showSymbol: false,
-                        })
-                      }
-                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '12px',
-                        color: 'var(--text-primary)',
-                      }}
-                      formatter={(value) => [
-                        formatCurrency(value || 0, incomeMeta.currency, { maximumFractionDigits: 2 }),
-                        'Income',
-                      ]}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="amount"
-                      stroke="#fbbf24"
-                      strokeWidth={3}
-                      dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <ChartErrorBoundary
+                  fallback={
+                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                      <p>Chart unavailable</p>
+                      <p className="text-[11px] mt-1">Error loading income data.</p>
+                    </div>
+                  }
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={incomeTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                      <XAxis
+                        dataKey="label"
+                        stroke="var(--text-tertiary)"
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="var(--text-tertiary)"
+                        tickFormatter={(value) =>
+                          formatCurrency(value || 0, incomeMeta.currency, {
+                            maximumFractionDigits: 0,
+                            showSymbol: false,
+                          })
+                        }
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '12px',
+                          color: 'var(--text-primary)',
+                        }}
+                        formatter={(value) => [
+                          formatCurrency(value || 0, incomeMeta.currency, { maximumFractionDigits: 2 }),
+                          'Income',
+                        ]}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="amount"
+                        stroke="#fbbf24"
+                        strokeWidth={3}
+                        dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartErrorBoundary>
               </div>
             ) : (
               <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
@@ -1622,7 +1641,9 @@ export const DashboardGoals = ({
       
         {/* Strategy Sidebar */}
         <div className="space-y-6">
-          <GoalMilestoneGuide goals={Array.isArray(goals) ? goals : []} tasks={Array.isArray(tasks) ? tasks : []} />
+          <ErrorBoundary>
+            <GoalMilestoneGuide goals={Array.isArray(goals) ? goals : []} tasks={Array.isArray(tasks) ? tasks : []} />
+          </ErrorBoundary>
             </div>
       </div>
       {selectedGoalForAnalytics && (

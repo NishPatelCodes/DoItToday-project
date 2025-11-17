@@ -13,7 +13,28 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Enhanced error logging
+    console.error('ErrorBoundary caught an error:', error);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
+    console.error('Component stack:', errorInfo?.componentStack);
+    console.error('Full error info:', errorInfo);
+    
+    // Log to localStorage for debugging (even in production)
+    try {
+      const errorLog = {
+        message: error?.message || String(error),
+        stack: error?.stack,
+        componentStack: errorInfo?.componentStack,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+      };
+      localStorage.setItem('lastError', JSON.stringify(errorLog));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+
     this.setState({
       error,
       errorInfo,
@@ -37,6 +58,20 @@ class ErrorBoundary extends React.Component {
 const ErrorFallback = ({ error, errorInfo, onReset }) => {
   const navigate = useNavigate();
   const isDev = import.meta.env.DEV;
+  const [showDetails, setShowDetails] = React.useState(isDev);
+
+  // Try to get error from localStorage if available
+  const [storedError, setStoredError] = React.useState(null);
+  React.useEffect(() => {
+    try {
+      const lastError = localStorage.getItem('lastError');
+      if (lastError) {
+        setStoredError(JSON.parse(lastError));
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--bg-primary)]">
@@ -49,15 +84,50 @@ const ErrorFallback = ({ error, errorInfo, onReset }) => {
           <p className="text-[var(--text-secondary)] mb-6">
             We're sorry, but something unexpected happened. Please try again or return to the dashboard.
           </p>
+          <p className="text-xs text-[var(--text-tertiary)] mb-4">
+            If this persists, try disabling browser extensions or using incognito mode.
+          </p>
         </div>
 
-        {isDev && error && (
+        {(showDetails || isDev) && (error || storedError) && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-left">
-            <p className="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">Error Details:</p>
-            <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto max-h-48">
-              {error.toString()}
-              {errorInfo?.componentStack}
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold text-red-800 dark:text-red-200">Error Details:</p>
+              {!isDev && (
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                >
+                  {showDetails ? 'Hide' : 'Show'} Details
+                </button>
+              )}
+            </div>
+            <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto max-h-64 whitespace-pre-wrap">
+              {error?.message || error?.toString() || storedError?.message || 'Unknown error'}
+              {'\n\n'}
+              {error?.stack || storedError?.stack || 'No stack trace available'}
+              {'\n\n'}
+              Component Stack:
+              {errorInfo?.componentStack || storedError?.componentStack || 'No component stack available'}
             </pre>
+            <button
+              onClick={() => {
+                try {
+                  const errorText = `
+Error: ${error?.message || storedError?.message}
+Stack: ${error?.stack || storedError?.stack}
+Component Stack: ${errorInfo?.componentStack || storedError?.componentStack}
+                  `.trim();
+                  navigator.clipboard.writeText(errorText);
+                  alert('Error details copied to clipboard!');
+                } catch (e) {
+                  console.error('Failed to copy:', e);
+                }
+              }}
+              className="mt-2 text-xs text-red-600 dark:text-red-400 hover:underline"
+            >
+              Copy Error Details
+            </button>
           </div>
         )}
 
