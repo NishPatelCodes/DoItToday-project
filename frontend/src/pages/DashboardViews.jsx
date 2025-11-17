@@ -1,7 +1,41 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic, FaCheckSquare, FaSquare, FaColumns, FaList } from 'react-icons/fa';
-import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
+import {
+  FaPlus,
+  FaTasks,
+  FaBullseye,
+  FaFire,
+  FaUserFriends,
+  FaChartLine,
+  FaSearch,
+  FaEllipsisV,
+  FaLightbulb,
+  FaDollarSign,
+  FaTrophy,
+  FaFlag,
+  FaCheckCircle,
+  FaCheck,
+  FaUser,
+  FaStickyNote,
+  FaCopy,
+  FaTimes,
+  FaMagic,
+  FaCheckSquare,
+  FaSquare,
+  FaColumns,
+  FaList,
+  FaCompass,
+} from 'react-icons/fa';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts';
+import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, addDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import GoalAnalytics from '../components/GoalAnalytics';
@@ -9,7 +43,6 @@ import HabitCard from '../components/HabitCard';
 import SmartPlanner from '../components/SmartPlanner';
 import FocusMode from '../components/FocusMode';
 import DisciplinePoints from '../components/DisciplinePoints';
-import GraphCard from '../components/GraphCard';
 import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
 import DashboardSummary from '../components/DashboardSummary';
@@ -23,9 +56,11 @@ import CompletedTasksSection from '../components/CompletedTasksSection';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { notesAPI } from '../services/api';
+import { notesAPI, financeAPI } from '../services/api';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { formatCurrency } from '../utils/currencyFormatter';
+import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
 
 // Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
@@ -57,6 +92,9 @@ export const DashboardHome = ({
   const [showMenu, setShowMenu] = useState(false);
   const [notes, setNotes] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [incomeTrend, setIncomeTrend] = useState([]);
+  const [incomeMeta, setIncomeMeta] = useState({ currency: 'USD', total: 0 });
+  const [incomeLoading, setIncomeLoading] = useState(false);
 
   // Close menu and search on outside click
   useEffect(() => {
@@ -69,6 +107,29 @@ export const DashboardHome = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
 
+  const buildIncomeTrend = useCallback((transactions = []) => {
+    const now = new Date();
+    return Array.from({ length: 6 }).map((_, index) => {
+      const weeksAgo = 5 - index;
+      const start = startOfWeek(subDays(now, weeksAgo * 7), { weekStartsOn: 0 });
+      const end = endOfWeek(start, { weekStartsOn: 0 });
+      const weeklyIncome = transactions
+        .filter(
+          (transaction) =>
+            transaction?.type === 'income' &&
+            transaction.date &&
+            new Date(transaction.date) >= start &&
+            new Date(transaction.date) <= end
+        )
+        .reduce((sum, txn) => sum + (txn.amount || 0), 0);
+      return {
+        date: start.toISOString(),
+        label: format(start, 'MMM d'),
+        amount: Number(weeklyIncome.toFixed(2)),
+      };
+    });
+  }, []);
+
   // Load notes for search
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -79,6 +140,39 @@ export const DashboardHome = ({
       setNotes([]);
     }
   }, [searchQuery]);
+
+  // Load lightweight finance trend for dashboard insights
+  useEffect(() => {
+    let isMounted = true;
+    const loadFinanceTrend = async () => {
+      try {
+        setIncomeLoading(true);
+        const response = await financeAPI.getAll();
+        if (!isMounted) return;
+        const transactions = response.data?.transactions || [];
+        const currency = response.data?.accountInfo?.currency || 'USD';
+        const weeklyTrend = buildIncomeTrend(transactions);
+        const totalIncome = transactions
+          .filter((txn) => txn.type === 'income')
+          .reduce((sum, txn) => sum + (txn.amount || 0), 0);
+        setIncomeTrend(weeklyTrend);
+        setIncomeMeta({ currency, total: totalIncome });
+      } catch (error) {
+        if (isMounted) {
+          setIncomeTrend([]);
+          setIncomeMeta({ currency: 'USD', total: 0 });
+        }
+      } finally {
+        if (isMounted) {
+          setIncomeLoading(false);
+        }
+      }
+    };
+    loadFinanceTrend();
+    return () => {
+      isMounted = false;
+    };
+  }, [buildIncomeTrend]);
 
   // Filter search results
   const searchResults = useMemo(() => {
@@ -118,6 +212,18 @@ export const DashboardHome = ({
     });
   }, [tasks]);
 
+  const productivityTrend = useMemo(() => {
+    if (!analytics?.dailyProductivity || analytics.dailyProductivity.length === 0) {
+      return [];
+    }
+    return analytics.dailyProductivity.slice(-7).map((entry) => ({
+      date: entry.date,
+      label: format(new Date(entry.date), 'EEE'),
+      productivity: entry.productivity ?? 0,
+      completed: entry.completed ?? 0,
+    }));
+  }, [analytics]);
+
   // Calculate today's plan progress
   const todaysPlanProgress = useMemo(() => {
     if (todaysTasks.length === 0) return 0;
@@ -150,22 +256,69 @@ export const DashboardHome = ({
     return sortedTodaysTasks.find(t => t.status !== 'completed') || null;
   }, [sortedTodaysTasks]);
 
-  // Calculate consistency percentage
+  // Calculate consistency percentage with guardrails
   const consistencyPercentage = useMemo(() => {
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
-    const weekTasks = tasks.filter(task => {
-      if (!task.completedAt) return false;
-      const completedDate = new Date(task.completedAt);
-      return completedDate >= weekStart;
-    });
-    const totalWeekTasks = tasks.filter(task => {
-      if (!task.dueDate) return false;
+    if (!Array.isArray(tasks) || tasks.length === 0) return 0;
+    const today = new Date();
+    const weekStartDate = startOfWeek(today, { weekStartsOn: 0 });
+    const weekEndDate = endOfWeek(today, { weekStartsOn: 0 });
+    const scheduledThisWeek = tasks.filter((task) => {
+      if (!task?.dueDate) return false;
       const dueDate = new Date(task.dueDate);
-      return dueDate >= weekStart;
+      return dueDate >= weekStartDate && dueDate <= weekEndDate;
     });
-    if (totalWeekTasks.length === 0) return 0;
-    return Math.round((weekTasks.length / totalWeekTasks.length) * 100);
+    if (scheduledThisWeek.length === 0) return 0;
+    const completedThisWeek = scheduledThisWeek.filter((task) => task.status === 'completed');
+    const percentage = Math.round((completedThisWeek.length / scheduledThisWeek.length) * 100);
+    return Math.min(100, Math.max(0, percentage));
   }, [tasks]);
+
+  const weeklyFocus = useMemo(() => {
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      return { pending: [], total: 0, completed: 0 };
+    }
+    const today = new Date();
+    const weekStartDate = startOfWeek(today, { weekStartsOn: 0 });
+    const weekEndDate = endOfWeek(today, { weekStartsOn: 0 });
+    const weeklyTasks = tasks.filter((task) => {
+      if (!task?.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      return dueDate >= weekStartDate && dueDate <= weekEndDate;
+    });
+    const pending = weeklyTasks
+      .filter((task) => task.status !== 'completed')
+      .sort((a, b) => {
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      });
+    const completed = weeklyTasks.length - pending.length;
+    return {
+      pending,
+      total: weeklyTasks.length,
+      completed,
+    };
+  }, [tasks]);
+
+  const weeklyFocusPreview = weeklyFocus.pending.slice(0, 3);
+  const weeklyFocusCompletion =
+    weeklyFocus.total === 0 ? 0 : Math.round((weeklyFocus.completed / weeklyFocus.total) * 100);
+
+  const latestProductivity =
+    productivityTrend.length > 0 ? productivityTrend[productivityTrend.length - 1].productivity || 0 : 0;
+  const averageProductivity =
+    productivityTrend.length === 0
+      ? 0
+      : Math.round(
+          productivityTrend.reduce((sum, entry) => sum + (entry.productivity || 0), 0) /
+            productivityTrend.length
+        );
+
+  const latestIncome = incomeTrend.length > 0 ? incomeTrend[incomeTrend.length - 1].amount || 0 : 0;
+  const averageIncome =
+    incomeTrend.length === 0
+      ? 0
+      : incomeTrend.reduce((sum, entry) => sum + (entry.amount || 0), 0) / incomeTrend.length;
 
   // Get today's spend (placeholder - would come from finance API)
   const todaysSpend = 0;
@@ -664,7 +817,7 @@ export const DashboardHome = ({
         </div>
       </div>
 
-      {/* Lower Middle Section: Focus Mode and Consistency */}
+      {/* Lower Middle Section: Focus Mode and Momentum */}
       <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
         {/* Focus Mode Card */}
         <motion.div
@@ -682,26 +835,87 @@ export const DashboardHome = ({
           </button>
         </motion.div>
 
-        {/* Consistency Card with Lightbulb */}
+        {/* Weekly Momentum Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
           className="card p-6 lg:p-8 rounded-2xl flex-shrink-0 w-[300px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center gap-3 mb-3 lg:mb-4">
-            <FaLightbulb className="text-yellow-500 text-xl lg:text-2xl" />
-            <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Stay consistent</h3>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
+              <FaCompass className="text-base lg:text-lg" />
             </div>
-          <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
-            You've done {consistencyPercentage}% of your week's plan
-          </p>
-          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 lg:h-2.5">
-            <div
-              className="bg-yellow-500 h-2 lg:h-2.5 rounded-full transition-all duration-500"
-              style={{ width: `${consistencyPercentage}%` }}
+            <div>
+              <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Momentum map</h3>
+              <p className="text-xs text-[var(--text-tertiary)]">Place the moves that matter</p>
+            </div>
+          </div>
+          {weeklyFocus.total > 0 ? (
+            <div className="space-y-3">
+              {weeklyFocusPreview.map((task) => (
+                <div
+                  key={task._id}
+                  className="flex items-center gap-3 rounded-xl border border-[var(--border-color)]/70 px-3 py-2"
+                >
+                  <span
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      task.priority === 'high'
+                        ? 'bg-red-500/15 text-red-500'
+                        : task.priority === 'medium'
+                        ? 'bg-yellow-500/15 text-yellow-500'
+                        : 'bg-blue-500/15 text-blue-500'
+                    }`}
+                  >
+                    {task.priority?.charAt(0)?.toUpperCase() || 'L'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
+                    <p className="text-[11px] text-[var(--text-tertiary)]">
+                      {task.dueDate ? format(new Date(task.dueDate), 'EEE, MMM d') : 'No due date'}
+                    </p>
+                  </div>
+                  <button
+                    className="text-[10px] font-semibold text-[var(--accent-primary)] hover:underline"
+                    onClick={() =>
+                      navigate('/dashboard/tasks', { state: { highlightTaskId: task._id } })
+                    }
+                  >
+                    Jump
+                  </button>
+                </div>
+              ))}
+              {weeklyFocus.pending.length > weeklyFocusPreview.length && (
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  +{weeklyFocus.pending.length - weeklyFocusPreview.length} more action
+                  {weeklyFocus.pending.length - weeklyFocusPreview.length === 1 ? '' : 's'} to place
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-[var(--border-color)] p-4 text-center">
+              <p className="text-sm text-[var(--text-secondary)] mb-2">No week-specific tasks yet.</p>
+              <p className="text-xs text-[var(--text-tertiary)]">Drop two anchor tasks to set the tone.</p>
+            </div>
+          )}
+          <div className="mt-5">
+            <div className="flex items-center justify-between text-[11px] text-[var(--text-tertiary)] mb-1.5">
+              <span>Weekly flow</span>
+              <span>{weeklyFocusCompletion}% locked in</span>
+            </div>
+            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-full transition-all duration-500"
+                style={{ width: `${weeklyFocusCompletion}%` }}
             />
             </div>
+          </div>
+          <button
+            onClick={() => navigate('/dashboard/tasks')}
+            className="w-full mt-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-sm font-medium text-[var(--text-primary)] transition-colors"
+          >
+            Plan the rest of the week
+          </button>
         </motion.div>
           </div>
 
@@ -765,24 +979,134 @@ export const DashboardHome = ({
             View Full Analytics →
           </button>
         </div>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="rounded-2xl border border-[var(--border-color)] p-5">
+            <div className="flex items-center justify-between mb-4">
         <div>
-          <h4 className="text-sm lg:text-base font-medium text-[var(--text-secondary)] mb-4 lg:mb-6">Weekly Task Completion</h4>
-          {analytics?.weeklyCompletion ? (
-            <GraphCard
-              title=""
-              data={analytics.weeklyCompletion.map((item, index) => ({
-                name: item.week || `Week ${index + 1}`,
-                completed: item.completed || 0,
-                total: item.total || 0,
-              }))}
-              type="line"
-              dataKey="completed"
-            />
-          ) : (
-            <div className="h-64 lg:h-80 flex items-center justify-center">
-              <p className="text-[var(--text-tertiary)] text-sm lg:text-base">No analytics data available</p>
+                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
+                <p className="text-2xl font-bold text-[var(--text-primary)]">{latestProductivity}%</p>
+                <p className="text-[11px] text-[var(--text-tertiary)]">Today</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-[var(--text-tertiary)]">Avg (7d)</p>
+                <p className="text-lg font-semibold text-[var(--text-primary)]">{averageProductivity}%</p>
+              </div>
+            </div>
+            {productivityTrend.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={productivityTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                    <XAxis
+                      dataKey="label"
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <YAxis
+                      stroke="var(--text-tertiary)"
+                      domain={[0, 100]}
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        color: 'var(--text-primary)',
+                      }}
+                      formatter={(value) => [`${value}%`, 'Productivity']}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="productivity"
+                      stroke="#8b5cf6"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                <p>No productivity data yet.</p>
+                <p className="text-[11px] mt-1">Complete tasks to unlock the trend.</p>
             </div>
           )}
+          </div>
+          <div className="rounded-2xl border border-[var(--border-color)] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Income runway</p>
+                <p className="text-2xl font-bold text-[var(--text-primary)]">
+                  {formatCurrency(latestIncome, incomeMeta.currency, { maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-[11px] text-[var(--text-tertiary)]">Last week</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-[var(--text-tertiary)]">Avg (6w)</p>
+                <p className="text-lg font-semibold text-[var(--text-primary)]">
+                  {formatCurrency(averageIncome || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-[11px] text-[var(--text-tertiary)] mt-1">
+                  Total: {formatCurrency(incomeMeta.total || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+            </div>
+            {incomeLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent"></div>
+              </div>
+            ) : incomeTrend.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={incomeTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                    <XAxis
+                      dataKey="label"
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <YAxis
+                      stroke="var(--text-tertiary)"
+                      tickFormatter={(value) =>
+                        formatCurrency(value || 0, incomeMeta.currency, {
+                          maximumFractionDigits: 0,
+                          showSymbol: false,
+                        })
+                      }
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        color: 'var(--text-primary)',
+                      }}
+                      formatter={(value) => [
+                        formatCurrency(value || 0, incomeMeta.currency, { maximumFractionDigits: 2 }),
+                        'Income',
+                      ]}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="amount"
+                      stroke="#fbbf24"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                <p>No income data captured.</p>
+                <p className="text-[11px] mt-1">Log transactions in Finance to see this fill in.</p>
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>
@@ -1296,20 +1620,18 @@ export const DashboardGoals = ({
         )}
       </div>
       
-        {/* Analytics Sidebar */}
+        {/* Strategy Sidebar */}
         <div className="space-y-6">
-          {selectedGoalForAnalytics ? (
-            <GoalAnalytics goal={selectedGoalForAnalytics} tasks={tasks} />
-          ) : (
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Goal Analytics</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Select a goal to view detailed analytics and progress insights.
-              </p>
+          <GoalMilestoneGuide goals={goals} tasks={tasks} />
             </div>
-          )}
-        </div>
       </div>
+      {selectedGoalForAnalytics && (
+        <GoalAnalytics
+          goal={selectedGoalForAnalytics}
+          tasks={tasks}
+          onClose={() => setSelectedGoalForAnalytics(null)}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaClock, FaTasks } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaClock, FaCheck } from 'react-icons/fa';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import TaskCard from './TaskCard';
 
@@ -131,24 +131,37 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask, onTaskToggle, o
                   {format(day, 'd')}
                 </div>
 
-                {/* Task Count - Mobile Optimized with Icon */}
+                {/* Task chips */}
                 {totalTasks > 0 && (
-                  <div className={`flex items-center gap-1 ${
-                    !isCurrentMonth
-                      ? 'text-[var(--text-tertiary)]'
-                      : 'text-[var(--accent-primary)]'
-                  }`}>
-                    {/* Icon with count for mobile, text for larger screens */}
-                    <div className="flex items-center gap-1">
-                      <FaTasks className="text-[10px] sm:text-xs md:text-sm" />
-                      <span className="text-[10px] sm:text-xs md:text-sm font-semibold">
-                        {totalTasks}
-                      </span>
-                    </div>
-                    {/* Show "tasks" text only on larger screens */}
-                    <span className="hidden md:inline text-[10px] sm:text-xs md:text-sm font-medium ml-0.5">
-                      {totalTasks === 1 ? 'task' : 'tasks'}
-                    </span>
+                  <div className="space-y-1">
+                    {dayTasks.slice(0, 3).map((task) => (
+                      <div
+                        key={task._id}
+                        className={`flex items-center gap-1.5 text-[10px] sm:text-xs ${
+                          task.status === 'completed'
+                            ? 'text-[var(--text-tertiary)]'
+                            : 'text-[var(--text-primary)]'
+                        }`}
+                      >
+                        <span
+                          className={`inline-flex w-3.5 h-3.5 rounded-full border items-center justify-center ${
+                            task.status === 'completed'
+                              ? 'bg-green-500 border-green-500 text-white'
+                              : 'border-[var(--border-color)]'
+                          }`}
+                        >
+                          {task.status === 'completed' ? <FaCheck className="text-[8px]" /> : null}
+                        </span>
+                        <span className={`truncate ${task.status === 'completed' ? 'line-through' : ''}`}>
+                          {task.title || 'Untitled task'}
+                        </span>
+                      </div>
+                    ))}
+                    {dayTasks.length > 3 && (
+                      <p className="text-[10px] text-[var(--text-tertiary)]">
+                        +{dayTasks.length - 3} more
+                      </p>
+                    )}
                   </div>
                 )}
               </motion.button>
