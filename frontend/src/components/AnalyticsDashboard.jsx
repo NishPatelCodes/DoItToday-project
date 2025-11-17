@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaFire,
   FaTrophy,
@@ -76,6 +76,60 @@ const AnimatedNumber = ({ value, duration = 1.5, decimals = 0 }) => {
   return <>{displayValue.toFixed(decimals)}</>;
 };
 
+// Collapsible Section Component for Mobile
+const CollapsibleSection = ({ title, icon: Icon, children, defaultOpen = false, mobileOnly = true }) => {
+  const [isOpen, setIsOpen] = useState(!mobileOnly || !defaultOpen);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const shouldCollapse = mobileOnly && isMobile;
+
+  if (!shouldCollapse) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--bg-tertiary)] transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          {Icon && <Icon className="text-lg text-[var(--accent-primary)]" />}
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">{title}</h3>
+        </div>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <FaArrowDown className="text-sm text-[var(--text-secondary)]" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 pt-0">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 // Stat Card Component
 const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, trend, trendValue }) => {
   return (
@@ -84,29 +138,29 @@ const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, tre
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
       whileHover={{ scale: 1.02, y: -4 }}
-      className="relative overflow-hidden rounded-2xl p-6 shadow-lg backdrop-blur-sm border transition-all duration-300"
+      className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
       style={{
         background: gradient || 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.12) 100%)',
         borderColor: 'rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+        boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
       }}
     >
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-2 md:mb-4">
+          <div className="flex items-center gap-2 md:gap-3">
             <div 
-              className="p-3 rounded-xl backdrop-blur-sm transition-all duration-300"
+              className="p-2 md:p-3 rounded-lg md:rounded-xl backdrop-blur-sm transition-all duration-300"
               style={{
                 background: 'rgba(255, 255, 255, 0.08)',
                 boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.1)',
               }}
             >
-              <Icon className="text-xl text-[var(--accent-primary)]" />
+              <Icon className="text-base md:text-xl text-[var(--accent-primary)]" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[var(--text-secondary)]">{title}</p>
+              <p className="text-xs md:text-sm font-medium text-[var(--text-secondary)]">{title}</p>
               {trend && (
-                <div className="flex items-center gap-1 mt-1">
+                <div className="flex items-center gap-1 mt-0.5 md:mt-1">
                   {trend === 'up' ? (
                     <FaArrowUp className="text-green-500 text-xs" />
                   ) : (
@@ -120,23 +174,23 @@ const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, tre
             </div>
           </div>
         </div>
-        <div className="mt-2">
-          <p className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">
+        <div className="mt-1 md:mt-2">
+          <p className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
             <AnimatedNumber value={value} />
           </p>
           {subtitle && (
-            <p className="text-sm text-[var(--text-tertiary)] mt-1 font-medium">{subtitle}</p>
+            <p className="text-xs md:text-sm text-[var(--text-tertiary)] mt-0.5 md:mt-1 font-medium">{subtitle}</p>
           )}
         </div>
       </div>
       <div 
-        className="absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 opacity-40"
+        className="hidden md:block absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 opacity-40"
         style={{
           background: 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%)',
         }}
       />
       <div 
-        className="absolute bottom-0 left-0 w-24 h-24 rounded-full -ml-12 -mb-12 opacity-30"
+        className="hidden md:block absolute bottom-0 left-0 w-24 h-24 rounded-full -ml-12 -mb-12 opacity-30"
         style={{
           background: 'radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%)',
         }}
@@ -150,10 +204,12 @@ const CircularProgress = ({ value, max = 100, size = 120, strokeWidth = 8, color
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (value / max) * circumference;
+  const mobileSize = size < 120 ? size : 100;
+  const mobileStrokeWidth = strokeWidth < 8 ? strokeWidth : 6;
 
   return (
     <div className="relative inline-flex items-center justify-center">
-      <svg width={size} height={size} className="transform -rotate-90">
+      <svg width={size} height={size} className="transform -rotate-90 w-full h-auto max-w-[100px] md:max-w-none">
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -180,8 +236,8 @@ const CircularProgress = ({ value, max = 100, size = 120, strokeWidth = 8, color
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-2xl font-bold text-[var(--text-primary)]">{Math.round(value)}%</p>
-          {label && <p className="text-xs text-[var(--text-tertiary)] mt-1">{label}</p>}
+          <p className="text-lg md:text-2xl font-bold text-[var(--text-primary)]">{Math.round(value)}%</p>
+          {label && <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-0.5 md:mt-1">{label}</p>}
         </div>
       </div>
     </div>
@@ -195,7 +251,7 @@ const ChallengeTimeline = ({ challenge }) => {
   const completedDays = challenge.checkIns?.filter(c => c && c.completed).length || 0;
   
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center gap-0.5 md:gap-1.5 flex-wrap">
       {Array.from({ length: Math.min(days, 30) }).map((_, i) => {
         try {
           const isCompleted = challenge.checkIns?.some(
@@ -204,7 +260,7 @@ const ChallengeTimeline = ({ challenge }) => {
           return (
             <div
               key={i}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
+              className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all ${
                 isCompleted
                   ? 'bg-gradient-to-br from-yellow-400 to-orange-500 shadow-sm'
                   : 'bg-[var(--bg-tertiary)]'
@@ -216,7 +272,7 @@ const ChallengeTimeline = ({ challenge }) => {
           return (
             <div
               key={i}
-              className="w-2.5 h-2.5 rounded-full bg-[var(--bg-tertiary)]"
+              className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[var(--bg-tertiary)]"
               title="Pending"
             />
           );
@@ -425,23 +481,23 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
   const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-4 md:mb-6 lg:mb-8"
       >
-        <h1 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-2">
+        <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
           Analytics Dashboard
         </h1>
-        <p className="text-[var(--text-secondary)]">
+        <p className="text-sm md:text-base text-[var(--text-secondary)]">
           Track your productivity, discipline, and progress
         </p>
       </motion.div>
 
       {/* Top Insight Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
         <StatCard
           title="Discipline Points"
           value={stats.disciplinePoints}
@@ -490,54 +546,54 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+          className="rounded-xl md:rounded-2xl bg-[var(--bg-secondary)] p-4 md:p-6 lg:p-8 border border-[var(--border-color)] shadow-md md:shadow-lg"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20">
-              <FaHeadphones className="text-xl text-purple-500" />
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+            <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20">
+              <FaHeadphones className="text-lg md:text-xl text-purple-500" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Focus Mode Analytics</h2>
-              <p className="text-sm text-[var(--text-secondary)]">Your focus session insights</p>
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Focus Mode Analytics</h2>
+              <p className="text-xs md:text-sm text-[var(--text-secondary)]">Your focus session insights</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Hours</p>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4 mb-4 md:mb-6">
+            <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-1">Total Hours</p>
+              <p className="text-lg md:text-2xl font-bold text-[var(--text-primary)]">
                 {Math.round((focusStats.totalMinutes || 0) / 60 * 10) / 10}h
               </p>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">All time</p>
+              <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-0.5 md:mt-1">All time</p>
             </div>
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">This Week</p>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">
+            <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-1">This Week</p>
+              <p className="text-lg md:text-2xl font-bold text-[var(--text-primary)]">
                 {Math.round((focusStats.weeklyMinutes || 0) / 60 * 10) / 10}h
               </p>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">Weekly total</p>
+              <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-0.5 md:mt-1">Weekly total</p>
             </div>
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Sessions</p>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">{focusStats.totalSessions || 0}</p>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">Completed</p>
+            <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-1">Sessions</p>
+              <p className="text-lg md:text-2xl font-bold text-[var(--text-primary)]">{focusStats.totalSessions || 0}</p>
+              <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-0.5 md:mt-1">Completed</p>
             </div>
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Avg Session</p>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">
+            <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-1">Avg Session</p>
+              <p className="text-lg md:text-2xl font-bold text-[var(--text-primary)]">
                 {focusStats.averageSessionLength || 0}m
               </p>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">Length</p>
+              <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-0.5 md:mt-1">Length</p>
             </div>
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">DP Earned</p>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">{focusStats.totalDP || 0}</p>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">From focus</p>
+            <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] col-span-2 md:col-span-1">
+              <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-1">DP Earned</p>
+              <p className="text-lg md:text-2xl font-bold text-[var(--text-primary)]">{focusStats.totalDP || 0}</p>
+              <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-0.5 md:mt-1">From focus</p>
             </div>
           </div>
 
           {focusChartData.length > 0 && (
-            <div className="h-64 md:h-80">
+            <div className="h-40 md:h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={focusChartData}>
                   <defs>
@@ -550,17 +606,19 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                   <XAxis
                     dataKey="date"
                     stroke="var(--text-secondary)"
-                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                    tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
+                    className="hidden md:block"
                   />
                   <YAxis
                     stroke="var(--text-secondary)"
-                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                    tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
                   />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'var(--bg-primary)',
                       border: '1px solid var(--border-color)',
                       borderRadius: '8px',
+                      fontSize: '12px',
                     }}
                   />
                   <Area
@@ -583,37 +641,38 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+        className="rounded-xl md:rounded-2xl bg-[var(--bg-secondary)] p-4 md:p-6 lg:p-8 border border-[var(--border-color)] shadow-md md:shadow-lg"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20">
-            <FaFire className="text-xl text-orange-500" />
+        <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+          <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20">
+            <FaFire className="text-lg md:text-xl text-orange-500" />
           </div>
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Reflection Analytics</h2>
-            <p className="text-sm text-[var(--text-secondary)]">Gratitude journal insights</p>
+            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Reflection Analytics</h2>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)]">Gratitude journal insights</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <div className="text-center">
             <CircularProgress
               value={Math.min((gratitudeStreak / 30) * 100, 100)}
-              size={140}
+              size={100}
+              strokeWidth={6}
               color="#f97316"
               label="30-day goal"
             />
-            <p className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
+            <p className="mt-3 md:mt-4 text-base md:text-lg font-semibold text-[var(--text-primary)]">
               {gratitudeStreak} Day Streak
             </p>
-            <p className="text-sm text-[var(--text-secondary)]">Keep it going!</p>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)]">Keep it going!</p>
           </div>
-          <div className="md:col-span-2 space-y-4">
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm text-[var(--text-secondary)] mb-2">Reflection Completion</p>
-              <div className="flex items-center gap-4">
+          <div className="md:col-span-2 space-y-3 md:space-y-4">
+            <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-2">Reflection Completion</p>
+              <div className="flex items-center gap-3 md:gap-4">
                 <div className="flex-1">
-                  <div className="w-full h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                  <div className="w-full h-2 md:h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min((gratitudeStreak / 7) * 100, 100)}%` }}
@@ -622,19 +681,19 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                     />
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
+                <span className="text-xs md:text-sm font-semibold text-[var(--text-primary)]">
                   {Math.round((gratitudeStreak / 7) * 100)}%
                 </span>
               </div>
-              <p className="text-xs text-[var(--text-tertiary)] mt-2">Weekly goal progress</p>
+              <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-1 md:mt-2">Weekly goal progress</p>
             </div>
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm font-medium text-[var(--text-primary)] mb-2">Positive Highlights</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <p className="text-xs md:text-sm font-medium text-[var(--text-primary)] mb-2">Positive Highlights</p>
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
                 {['Grateful', 'Blessed', 'Thankful', 'Appreciative', 'Joyful'].map((word, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 text-xs font-medium rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30"
+                    className="px-2 md:px-3 py-0.5 md:py-1 text-[10px] md:text-xs font-medium rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30"
                   >
                     {word}
                   </span>
@@ -650,38 +709,38 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
-        className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+        className="rounded-xl md:rounded-2xl bg-[var(--bg-secondary)] p-4 md:p-6 lg:p-8 border border-[var(--border-color)] shadow-md md:shadow-lg"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20">
-            <FaStar className="text-xl text-yellow-500" />
+        <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+          <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20">
+            <FaStar className="text-lg md:text-xl text-yellow-500" />
           </div>
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Discipline Points</h2>
-            <p className="text-sm text-[var(--text-secondary)]">Your progress to the next level</p>
+            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Discipline Points</h2>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)]">Your progress to the next level</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="p-6 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-[var(--text-secondary)]">Current Level</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="space-y-3 md:space-y-4">
+            <div className="p-4 md:p-6 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <span className="text-xs md:text-sm font-medium text-[var(--text-secondary)]">Current Level</span>
                 <span
-                  className="px-3 py-1 text-sm font-bold rounded-full text-white"
+                  className="px-2 md:px-3 py-1 text-xs md:text-sm font-bold rounded-full text-white"
                   style={{ backgroundColor: disciplineLevel.color }}
                 >
                   {disciplineLevel.name}
                 </span>
               </div>
-              <div className="mb-4">
+              <div className="mb-3 md:mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-bold text-[var(--text-primary)]">
+                  <span className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
                     {stats.disciplinePoints.toLocaleString()}
                   </span>
-                  <span className="text-sm text-[var(--text-tertiary)]">DP</span>
+                  <span className="text-xs md:text-sm text-[var(--text-tertiary)]">DP</span>
                 </div>
-                <div className="w-full h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                <div className="w-full h-2 md:h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(disciplineLevel.progress, 100)}%` }}
@@ -693,26 +752,26 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[var(--border-color)]">
+              <div className="grid grid-cols-2 gap-3 md:gap-4 pt-3 md:pt-4 border-t border-[var(--border-color)]">
                 <div>
-                  <p className="text-xs text-[var(--text-secondary)] mb-1">From Tasks</p>
-                  <p className="text-lg font-semibold text-[var(--text-primary)]">
+                  <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">From Tasks</p>
+                  <p className="text-base md:text-lg font-semibold text-[var(--text-primary)]">
                     {Math.round(stats.disciplinePoints * 0.4)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-secondary)] mb-1">From Focus</p>
-                  <p className="text-lg font-semibold text-[var(--text-primary)]">
+                  <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">From Focus</p>
+                  <p className="text-base md:text-lg font-semibold text-[var(--text-primary)]">
                     {focusStats?.totalDP || 0}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="space-y-4">
-            <div className="p-6 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-sm font-medium text-[var(--text-secondary)] mb-4">Level Progression</p>
-              <div className="space-y-3">
+          <div className="space-y-3 md:space-y-4">
+            <div className="p-4 md:p-6 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+              <p className="text-xs md:text-sm font-medium text-[var(--text-secondary)] mb-3 md:mb-4">Level Progression</p>
+              <div className="space-y-2 md:space-y-3">
                 {[
                   { name: 'Bronze', threshold: 0, color: '#cd7f32' },
                   { name: 'Silver', threshold: 2000, color: '#94a3b8' },
@@ -722,10 +781,10 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                   const isUnlocked = stats.disciplinePoints >= level.threshold;
                   const isCurrent = disciplineLevel.name === level.name;
                   return (
-                    <div key={i} className="flex items-center gap-3">
+                    <div key={i} className="flex items-center gap-2 md:gap-3">
                       <div
-                        className={`w-3 h-3 rounded-full ${
-                          isUnlocked ? 'ring-2 ring-offset-2' : 'opacity-30'
+                        className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${
+                          isUnlocked ? 'ring-2 ring-offset-1 md:ring-offset-2' : 'opacity-30'
                         }`}
                         style={{
                           backgroundColor: isUnlocked ? level.color : 'var(--bg-tertiary)',
@@ -733,7 +792,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                         }}
                       />
                       <span
-                        className={`text-sm font-medium ${
+                        className={`text-xs md:text-sm font-medium ${
                           isUnlocked ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'
                         }`}
                       >
@@ -750,99 +809,105 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
 
       {/* Challenges Analytics */}
       {activeChallenges.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+        <CollapsibleSection
+          title="Active Challenges"
+          icon={FaTrophy}
+          defaultOpen={false}
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20">
-              <FaTrophy className="text-xl text-yellow-500" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="md:rounded-2xl md:bg-[var(--bg-secondary)] md:p-6 lg:p-8 md:border md:border-[var(--border-color)] md:shadow-lg"
+          >
+            <div className="hidden md:flex items-center gap-3 mb-6">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20">
+                <FaTrophy className="text-xl text-yellow-500" />
+              </div>
+              <div>
+                <h2 className="text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Active Challenges</h2>
+                <p className="text-sm text-[var(--text-secondary)]">Track your challenge progress</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Active Challenges</h2>
-              <p className="text-sm text-[var(--text-secondary)]">Track your challenge progress</p>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeChallenges.map((challenge, i) => {
-              if (!challenge || !challenge._id) return null;
-              return (
-                <motion.div
-                  key={challenge._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 + i * 0.1 }}
-                  className="p-5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-[var(--text-primary)] mb-1">{challenge.name || 'Unnamed Challenge'}</h3>
-                      <p className="text-xs text-[var(--text-secondary)]">{challenge.description || ''}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              {activeChallenges.map((challenge, i) => {
+                if (!challenge || !challenge._id) return null;
+                return (
+                  <motion.div
+                    key={challenge._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 + i * 0.1 }}
+                    className="p-4 md:p-5 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]"
+                  >
+                    <div className="flex items-start justify-between mb-3 md:mb-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm md:text-base font-semibold text-[var(--text-primary)] mb-1 truncate">{challenge.name || 'Unnamed Challenge'}</h3>
+                        <p className="text-[10px] md:text-xs text-[var(--text-secondary)] line-clamp-2">{challenge.description || ''}</p>
+                      </div>
+                      <span className="text-xl md:text-2xl font-bold text-yellow-500 ml-2 flex-shrink-0">{challenge.progress || 0}%</span>
                     </div>
-                    <span className="text-2xl font-bold text-yellow-500">{challenge.progress || 0}%</span>
-                  </div>
-                <div className="mb-4">
-                  <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${challenge.progress || 0}%` }}
-                      transition={{ duration: 1.5 }}
-                      className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-[var(--text-secondary)] mb-1">Check-in Timeline</p>
-                    <ChallengeTimeline challenge={challenge} />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-[var(--text-secondary)]">Success Rate</p>
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">
-                      {challenge.checkIns?.filter(c => c.completed).length || 0}/
-                      {challenge.duration || 0}
-                    </p>
-                  </div>
-                </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
+                    <div className="mb-3 md:mb-4">
+                      <div className="w-full h-1.5 md:h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${challenge.progress || 0}%` }}
+                          transition={{ duration: 1.5 }}
+                          className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">Check-in Timeline</p>
+                        <ChallengeTimeline challenge={challenge} />
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-[10px] md:text-xs text-[var(--text-secondary)]">Success Rate</p>
+                        <p className="text-xs md:text-sm font-semibold text-[var(--text-primary)]">
+                          {challenge.checkIns?.filter(c => c && c.completed).length || 0}/
+                          {challenge.duration || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </CollapsibleSection>
       )}
 
       {/* Task & Habit Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+          className="rounded-xl md:rounded-2xl bg-[var(--bg-secondary)] p-4 md:p-6 lg:p-8 border border-[var(--border-color)] shadow-md md:shadow-lg"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20">
-              <FaTasks className="text-xl text-blue-500" />
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+            <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20">
+              <FaTasks className="text-lg md:text-xl text-blue-500" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Task Analytics</h2>
-              <p className="text-sm text-[var(--text-secondary)]">Productivity insights</p>
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Task Analytics</h2>
+              <p className="text-xs md:text-sm text-[var(--text-secondary)]">Productivity insights</p>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-                <p className="text-xs text-[var(--text-secondary)] mb-1">Completed</p>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">
+          <div className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-2 gap-2 md:gap-4">
+              <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">Completed</p>
+                <p className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
                   {Array.isArray(tasks) ? tasks.filter(t => t && t.status === 'completed').length : 0}
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-                <p className="text-xs text-[var(--text-secondary)] mb-1">Completion Rate</p>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">
+              <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">Completion Rate</p>
+                <p className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
                   {Array.isArray(tasks) && tasks.length > 0
                     ? Math.round((tasks.filter(t => t && t.status === 'completed').length / tasks.length) * 100)
                     : 0}%
@@ -851,36 +916,36 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
             </div>
 
             {weeklyTaskData.length > 0 && (
-              <div className="h-64">
+              <div className="h-40 md:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={weeklyTaskData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} />
                     <XAxis
                       dataKey="date"
                       stroke="var(--text-secondary)"
-                      tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
                     />
                     <YAxis
                       stroke="var(--text-secondary)"
-                      tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
                     />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'var(--bg-primary)',
                         border: '1px solid var(--border-color)',
                         borderRadius: '8px',
+                        fontSize: '12px',
                       }}
                     />
-                    <Bar dataKey="completed" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="completed" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
 
             {taskCategoryData.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-[var(--text-primary)] mb-4">By Category</p>
-                <div className="h-48">
+              <CollapsibleSection title="By Category" defaultOpen={false}>
+                <div className="h-32 md:h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -889,7 +954,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
+                        outerRadius={60}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -902,12 +967,13 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                           backgroundColor: 'var(--bg-primary)',
                           border: '1px solid var(--border-color)',
                           borderRadius: '8px',
+                          fontSize: '12px',
                         }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
+              </CollapsibleSection>
             )}
           </div>
         </motion.div>
@@ -916,19 +982,19 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0 }}
-          className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+          className="rounded-xl md:rounded-2xl bg-[var(--bg-secondary)] p-4 md:p-6 lg:p-8 border border-[var(--border-color)] shadow-md md:shadow-lg"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20">
-              <FaCheckCircle className="text-xl text-green-500" />
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+            <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20">
+              <FaCheckCircle className="text-lg md:text-xl text-green-500" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Habit Analytics</h2>
-              <p className="text-sm text-[var(--text-secondary)]">Track your daily habits</p>
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Habit Analytics</h2>
+              <p className="text-xs md:text-sm text-[var(--text-secondary)]">Track your daily habits</p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {Array.isArray(habits) && habits.length > 0 ? (
               habits.map((habit, i) => {
                 if (!habit || !habit._id) return null;
@@ -938,17 +1004,17 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                 return (
                   <div
                     key={habit._id}
-                    className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]"
+                    className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-[var(--text-primary)]">{habit.name || 'Unnamed Habit'}</span>
+                      <span className="text-sm md:text-base font-medium text-[var(--text-primary)]">{habit.name || 'Unnamed Habit'}</span>
                       {completedToday && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-600 dark:text-green-400">
+                        <span className="text-[10px] md:text-xs px-2 py-0.5 md:py-1 rounded-full bg-green-500/20 text-green-600 dark:text-green-400">
                           Done today
                         </span>
                       )}
                     </div>
-                    <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 md:h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{
@@ -958,14 +1024,14 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
                         className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
                       />
                     </div>
-                    <p className="text-xs text-[var(--text-tertiary)] mt-2">
+                    <p className="text-[10px] md:text-xs text-[var(--text-tertiary)] mt-1 md:mt-2">
                       {habit.completions?.length || 0} completions this month
                     </p>
                   </div>
                 );
               })
             ) : (
-              <div className="text-center py-8 text-[var(--text-secondary)]">
+              <div className="text-center py-6 md:py-8 text-[var(--text-secondary)] text-sm">
                 <p>No habits yet. Start building your routine!</p>
               </div>
             )}
@@ -975,133 +1041,151 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
 
       {/* Finance Tracker Snapshot */}
       {financeStats && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1 }}
-          className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+        <CollapsibleSection
+          title="Finance Snapshot"
+          icon={FaDollarSign}
+          defaultOpen={false}
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20">
-              <FaDollarSign className="text-xl text-green-500" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1 }}
+            className="md:rounded-2xl md:bg-[var(--bg-secondary)] md:p-6 lg:p-8 md:border md:border-[var(--border-color)] md:shadow-lg"
+          >
+            <div className="hidden md:flex items-center gap-3 mb-6">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20">
+                <FaDollarSign className="text-xl text-green-500" />
+              </div>
+              <div>
+                <h2 className="text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Finance Snapshot</h2>
+                <p className="text-sm text-[var(--text-secondary)]">Quick financial overview</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Finance Snapshot</h2>
-              <p className="text-sm text-[var(--text-secondary)]">Quick financial overview</p>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-1">Daily Average</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">
-                ${financeStats.dailyAverageSpending?.toFixed(2) || '0.00'}
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+              <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">Daily Average</p>
+                <p className="text-lg md:text-xl font-bold text-[var(--text-primary)]">
+                  ${financeStats.dailyAverageSpending?.toFixed(2) || '0.00'}
+                </p>
+              </div>
+              <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">Savings Progress</p>
+                <p className="text-lg md:text-xl font-bold text-[var(--text-primary)]">
+                  {financeStats.savingsProgress?.toFixed(0) || 0}%
+                </p>
+              </div>
+              <div className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mb-1">Income vs Expenses</p>
+                <p className="text-lg md:text-xl font-bold text-[var(--text-primary)]">
+                  {financeStats.income && financeStats.expenses
+                    ? financeStats.income > financeStats.expenses
+                      ? '+'
+                      : '-'
+                    : '—'}
+                </p>
+              </div>
             </div>
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-1">Savings Progress</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">
-                {financeStats.savingsProgress?.toFixed(0) || 0}%
-              </p>
-            </div>
-            <div className="p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-1">Income vs Expenses</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">
-                {financeStats.income && financeStats.expenses
-                  ? financeStats.income > financeStats.expenses
-                    ? '+'
-                    : '-'
-                  : '—'}
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </CollapsibleSection>
       )}
 
       {/* Achievements & Milestones */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2 }}
-        className="rounded-2xl bg-[var(--bg-secondary)] p-6 md:p-8 border border-[var(--border-color)] shadow-lg"
+      <CollapsibleSection
+        title="Achievements & Milestones"
+        icon={FaAward}
+        defaultOpen={false}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20">
-            <FaAward className="text-xl text-yellow-500" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="md:rounded-2xl md:bg-[var(--bg-secondary)] md:p-6 lg:p-8 md:border md:border-[var(--border-color)] md:shadow-lg"
+        >
+          <div className="hidden md:flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/20">
+              <FaAward className="text-xl text-yellow-500" />
+            </div>
+            <div>
+              <h2 className="text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Achievements & Milestones</h2>
+              <p className="text-sm text-[var(--text-secondary)]">Celebrate your wins</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">Achievements & Milestones</h2>
-            <p className="text-sm text-[var(--text-secondary)]">Celebrate your wins</p>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { icon: FaTrophy, label: 'Challenge Master', unlocked: activeChallenges.some(c => c.status === 'completed') },
-            { icon: FaFire, label: '7-Day Streak', unlocked: gratitudeStreak >= 7 },
-            { icon: FaHeadphones, label: 'Focus Pro', unlocked: (focusStats?.totalSessions || 0) >= 10 },
-            { icon: FaStar, label: 'Elite Level', unlocked: disciplineLevel.name === 'Elite' },
-          ].map((achievement, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.2 + i * 0.1 }}
-              className={`p-4 rounded-xl border text-center ${
-                achievement.unlocked
-                  ? 'bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border-yellow-500/30'
-                  : 'bg-[var(--bg-primary)] border-[var(--border-color)] opacity-50'
-              }`}
-            >
-              <achievement.icon
-                className={`text-3xl mb-2 mx-auto ${
-                  achievement.unlocked ? 'text-yellow-500' : 'text-[var(--text-tertiary)]'
-                }`}
-              />
-              <p
-                className={`text-xs font-medium ${
-                  achievement.unlocked ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {[
+              { icon: FaTrophy, label: 'Challenge Master', unlocked: activeChallenges.some(c => c && c.status === 'completed') },
+              { icon: FaFire, label: '7-Day Streak', unlocked: gratitudeStreak >= 7 },
+              { icon: FaHeadphones, label: 'Focus Pro', unlocked: (focusStats?.totalSessions || 0) >= 10 },
+              { icon: FaStar, label: 'Elite Level', unlocked: disciplineLevel.name === 'Elite' },
+            ].map((achievement, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.2 + i * 0.1 }}
+                className={`p-3 md:p-4 rounded-lg md:rounded-xl border text-center ${
+                  achievement.unlocked
+                    ? 'bg-gradient-to-br from-yellow-500/20 to-amber-500/20 border-yellow-500/30'
+                    : 'bg-[var(--bg-primary)] border-[var(--border-color)] opacity-50'
                 }`}
               >
-                {achievement.label}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+                <achievement.icon
+                  className={`text-2xl md:text-3xl mb-1 md:mb-2 mx-auto ${
+                    achievement.unlocked ? 'text-yellow-500' : 'text-[var(--text-tertiary)]'
+                  }`}
+                />
+                <p
+                  className={`text-[10px] md:text-xs font-medium ${
+                    achievement.unlocked ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'
+                  }`}
+                >
+                  {achievement.label}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </CollapsibleSection>
 
       {/* AI Insights Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3 }}
-        className="rounded-2xl bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-pink-500/10 p-6 md:p-8 border border-purple-500/20 shadow-lg"
+      <CollapsibleSection
+        title="AI Insights"
+        icon={FaLightbulb}
+        defaultOpen={false}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30">
-            <FaLightbulb className="text-xl text-purple-500" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3 }}
+          className="md:rounded-2xl md:bg-gradient-to-br md:from-purple-500/10 md:via-indigo-500/10 md:to-pink-500/10 md:p-6 lg:p-8 md:border md:border-purple-500/20 md:shadow-lg"
+        >
+          <div className="hidden md:flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30">
+              <FaLightbulb className="text-xl text-purple-500" />
+            </div>
+            <div>
+              <h2 className="text-xl lg:text-2xl font-bold text-[var(--text-primary)]">AI Insights</h2>
+              <p className="text-sm text-[var(--text-secondary)]">Personalized productivity tips</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">AI Insights</h2>
-            <p className="text-sm text-[var(--text-secondary)]">Personalized productivity tips</p>
-          </div>
-        </div>
 
-        <div className="space-y-3">
-          {insights.map((insight, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.3 + i * 0.1 }}
-              className="p-4 rounded-xl bg-[var(--bg-primary)] border border-purple-500/20 flex items-start gap-3"
-            >
-              <FaLightbulb className="text-lg text-purple-500 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-[var(--text-primary)]">{insight}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+          <div className="space-y-2 md:space-y-3">
+            {insights.map((insight, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.3 + i * 0.1 }}
+                className="p-3 md:p-4 rounded-lg md:rounded-xl bg-[var(--bg-primary)] border border-purple-500/20 flex items-start gap-2 md:gap-3"
+              >
+                <FaLightbulb className="text-base md:text-lg text-purple-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs md:text-sm text-[var(--text-primary)] leading-relaxed">{insight}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </CollapsibleSection>
     </div>
   );
 };
