@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaExpand, FaCompress, FaTimes, FaChartBar } from 'react-icons/fa';
+import { FaExpand, FaCompress, FaTimes, FaChartBar, FaPalette, FaMoon, FaLeaf, FaSun, FaMagic } from 'react-icons/fa';
 import { usePomodoro } from '../hooks/usePomodoro';
 import { useAmbientSound } from '../hooks/useAmbientSound';
 import { useFocusSession } from '../hooks/useFocusSession';
@@ -28,8 +28,85 @@ const FocusModePage = () => {
     }
   });
   const [currentQuote, setCurrentQuote] = useState('');
+  const [backgroundMode, setBackgroundMode] = useState(() => {
+    try {
+    const saved = localStorage.getItem('focus-background-mode');
+    return saved || 'minimal-gradient';
+    } catch {
+      return 'minimal-gradient';
+    }
+  });
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
   const containerRef = useRef(null);
   const toast = useToast();
+
+  // Background themes
+  const backgroundModes = [
+    {
+      id: 'minimal-gradient',
+      name: 'Minimal Gradient',
+      description: 'Calm blue/purple blend',
+      icon: FaPalette,
+      colors: {
+        primary: 'from-blue-500 via-purple-500 to-indigo-600',
+        secondary: 'from-indigo-600 via-purple-500 to-blue-500',
+        accent: 'from-cyan-400 to-blue-500',
+      },
+    },
+    {
+      id: 'deep-focus',
+      name: 'Deep Focus',
+      description: 'Dark abstract gradient',
+      icon: FaMoon,
+      colors: {
+        primary: 'from-gray-900 via-slate-800 to-gray-900',
+        secondary: 'from-slate-900 via-gray-800 to-slate-900',
+        accent: 'from-purple-900 to-indigo-900',
+      },
+    },
+    {
+      id: 'nature-calm',
+      name: 'Nature Calm',
+      description: 'Soft green/brown tones',
+      icon: FaLeaf,
+      colors: {
+        primary: 'from-emerald-500 via-teal-500 to-green-600',
+        secondary: 'from-amber-600 via-orange-500 to-amber-500',
+        accent: 'from-green-400 to-emerald-500',
+      },
+    },
+    {
+      id: 'sunset-glow',
+      name: 'Sunset Glow',
+      description: 'Orange/pink tones',
+      icon: FaSun,
+      colors: {
+        primary: 'from-orange-500 via-pink-500 to-rose-500',
+        secondary: 'from-rose-500 via-pink-500 to-orange-500',
+        accent: 'from-yellow-400 to-orange-500',
+      },
+    },
+    {
+      id: 'motivational-motion',
+      name: 'Motivational Motion',
+      description: 'Animated gradient',
+      icon: FaMagic,
+      colors: {
+        primary: 'from-purple-600 via-pink-500 to-indigo-600',
+        secondary: 'from-blue-600 via-cyan-500 to-teal-500',
+        accent: 'from-violet-500 to-purple-500',
+      },
+    },
+  ];
+
+  // Save background mode to localStorage
+  useEffect(() => {
+    try {
+    localStorage.setItem('focus-background-mode', backgroundMode);
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [backgroundMode]);
 
   // Custom hooks
   const pomodoro = usePomodoro(25, 5, 15);
@@ -274,21 +351,109 @@ const FocusModePage = () => {
   const dailyStats = useMemo(() => focusSession.getDailyStats(), [focusSession.sessionHistory]);
   const weeklyStats = useMemo(() => focusSession.getWeeklyStats(), [focusSession.sessionHistory]);
 
+  const selectedBackground = backgroundModes.find(m => m.id === backgroundMode) || backgroundModes[0];
+  const [gradientId] = useState(() => `focusGradient-${Math.random().toString(36).substr(2, 9)}`);
+
   return (
     <div 
       ref={containerRef}
       className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1A1A1A] via-[#1F1F1F] to-[#1A1A1A] opacity-100" />
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-indigo-900/10" />
+      {/* Dynamic Background with smooth transitions */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={backgroundMode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 overflow-hidden pointer-events-none"
+        >
+          {backgroundMode === 'motivational-motion' ? (
+            // Animated gradient for motivational motion
+            <>
+              <div className={`absolute top-0 left-0 w-full h-full bg-gradient-to-br ${selectedBackground.colors.primary} opacity-10`} />
+              <motion.div
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.15, 0.25, 0.15],
+                }}
+                transition={{
+                  duration: 12,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+                className={`absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br ${selectedBackground.colors.primary} rounded-full blur-3xl`}
+              />
+              <motion.div
+                animate={{
+                  scale: [1.1, 1, 1.1],
+                  opacity: [0.15, 0.25, 0.15],
+                }}
+                transition={{
+                  duration: 15,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: 2,
+                }}
+                className={`absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br ${selectedBackground.colors.secondary} rounded-full blur-3xl`}
+              />
+              <motion.div
+                animate={{
+                  scale: [1, 1.15, 1],
+                  opacity: [0.1, 0.2, 0.1],
+                }}
+                transition={{
+                  duration: 18,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: 4,
+                }}
+                className={`absolute top-1/2 left-1/2 w-80 h-80 bg-gradient-to-br ${selectedBackground.colors.accent} rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2`}
+              />
+            </>
+          ) : (
+            // Static gradients for other modes
+            <>
+              <div className={`absolute top-0 left-0 w-full h-full bg-gradient-to-br ${selectedBackground.colors.primary} opacity-10`} />
+              <motion.div
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.1, 0.15, 0.1],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+                className={`absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br ${selectedBackground.colors.accent} rounded-full blur-3xl opacity-30`}
+              />
+              <motion.div
+                animate={{
+                  scale: [1.1, 1, 1.1],
+                  opacity: [0.1, 0.15, 0.1],
+                }}
+                transition={{
+                  duration: 10,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: 1,
+                }}
+                className={`absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br ${selectedBackground.colors.secondary} rounded-full blur-3xl opacity-30`}
+              />
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6">
+        <div className={`flex items-center justify-between p-4 md:p-6 ${isFullscreen ? 'absolute top-0 left-0 right-0 z-20 backdrop-blur-sm bg-black/20' : ''}`}>
           <div className="flex items-center gap-4">
-            <h1 className="text-xl md:text-2xl font-bold text-white">Focus Mode</h1>
+            {!isFullscreen && (
+              <h1 className="text-xl md:text-2xl font-bold text-white">Focus Mode</h1>
+            )}
             {pomodoro.isActive && (
               <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-sm font-medium">
                 FOCUSING
@@ -297,6 +462,67 @@ const FocusModePage = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Theme selector button - visible in fullscreen */}
+            {isFullscreen && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowThemeSelector(!showThemeSelector)}
+                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                  aria-label="Select theme"
+                >
+                  <FaPalette className="text-white" />
+                </button>
+                
+                {/* Theme selector dropdown in fullscreen */}
+      <AnimatePresence>
+                  {showThemeSelector && (
+          <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full right-0 mt-2 card p-3 z-30 min-w-[200px]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="text-xs font-medium text-[var(--text-primary)] mb-2">
+                        Background Theme
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {backgroundModes.map((mode) => {
+                          const IconComponent = mode.icon;
+                          return (
+                            <motion.button
+                              key={mode.id}
+                              onClick={() => {
+                                setBackgroundMode(mode.id);
+                                setShowThemeSelector(false);
+                              }}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className={`p-2 rounded-lg border-2 transition-all ${
+                                backgroundMode === mode.id
+                                  ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/20'
+                                  : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50'
+                              }`}
+                              title={mode.name}
+                              aria-label={`Select ${mode.name} theme`}
+                            >
+                              <IconComponent 
+                                className={`text-lg mx-auto ${
+                                  backgroundMode === mode.id
+                                    ? 'text-[var(--accent-primary)]'
+                                    : 'text-[var(--text-tertiary)]'
+                                }`} 
+                              />
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+          </div>
+        )}
+
                   <button
               onClick={() => setShowAnalytics(!showAnalytics)}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
@@ -333,9 +559,9 @@ const FocusModePage = () => {
                 </div>
                 
         {/* Main content area */}
-        <main className="flex-1 flex flex-col md:flex-row gap-6 p-4 md:p-6" id="main-content">
-          {/* Left sidebar - Task selector and ambient sound */}
-          <div className="w-full md:w-80 space-y-4 flex-shrink-0">
+        <main className={`flex-1 flex flex-col ${isFullscreen ? 'md:flex-row justify-center' : 'md:flex-row'} gap-6 p-4 md:p-6 ${isFullscreen ? 'pt-20' : ''}`} id="main-content">
+          {/* Left sidebar - Task selector, ambient sound, and themes */}
+          <div className={`${isFullscreen ? 'hidden' : 'w-full md:w-80'} space-y-4 flex-shrink-0`}>
             <TaskSelector
               selectedTaskId={selectedTaskId}
               selectedGoalId={selectedGoalId}
@@ -353,8 +579,55 @@ const FocusModePage = () => {
               onStop={ambientSound.stop}
             />
 
+            {/* Background Theme Selector */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="card p-4"
+            >
+              <div className="text-sm font-medium text-[var(--text-primary)] mb-3 flex items-center gap-2">
+                <FaPalette className="text-[var(--accent-primary)]" />
+                Background Theme
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {backgroundModes.map((mode) => {
+                    const IconComponent = mode.icon;
+                    return (
+                      <motion.button
+                        key={mode.id}
+                        onClick={() => setBackgroundMode(mode.id)}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                          backgroundMode === mode.id
+                          ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 shadow-lg'
+                          : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-secondary)]'
+                        }`}
+                        title={mode.name}
+                      aria-label={`Select ${mode.name} theme`}
+                      >
+                        <IconComponent 
+                        className={`text-xl md:text-2xl mx-auto mb-1 ${
+                            backgroundMode === mode.id
+                            ? 'text-[var(--accent-primary)]'
+                            : 'text-[var(--text-tertiary)]'
+                          }`} 
+                        />
+                      <div className={`text-xs font-medium text-center ${
+                        backgroundMode === mode.id
+                          ? 'text-[var(--accent-primary)]'
+                          : 'text-[var(--text-secondary)]'
+                      }`}>
+                        {mode.name.split(' ')[0]}
+                      </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
             {/* Motivational quote */}
-            {currentQuote && (
+            {currentQuote && !isFullscreen && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -369,8 +642,8 @@ const FocusModePage = () => {
             )}
           </div>
 
-          {/* Center - Timer */}
-          <div className="flex-1 flex flex-col items-center justify-center">
+          {/* Center - Timer (centered in fullscreen) */}
+          <div className={`flex-1 flex flex-col items-center justify-center ${isFullscreen ? 'min-h-screen -mt-16' : ''}`}>
             <PomodoroTimer
               timeLeft={pomodoro.timeLeft}
               isActive={pomodoro.isActive}
@@ -393,7 +666,7 @@ const FocusModePage = () => {
             />
           </div>
 
-          {/* Right sidebar - Stats (when not in fullscreen) */}
+          {/* Right sidebar - Stats and Theme Selector (when not in fullscreen) */}
           {!isFullscreen && (
             <div className="w-full md:w-80 space-y-4 flex-shrink-0">
               <div className="card p-4">
