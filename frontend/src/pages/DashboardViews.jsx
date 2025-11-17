@@ -25,6 +25,7 @@ import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { notesAPI } from '../services/api';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
@@ -1315,15 +1316,29 @@ export const DashboardGoals = ({
 
 // Analytics View
 export const DashboardAnalytics = ({ analytics, tasks, goals, habits, user }) => {
-  return (
-    <AnalyticsDashboard
-      analytics={analytics}
-      tasks={tasks || []}
-      goals={goals || []}
-      habits={habits || []}
-      user={user}
-    />
-  );
+  try {
+    return (
+      <ErrorBoundary>
+        <AnalyticsDashboard
+          analytics={analytics}
+          tasks={tasks || []}
+          goals={goals || []}
+          habits={habits || []}
+          user={user}
+        />
+      </ErrorBoundary>
+    );
+  } catch (error) {
+    console.error('Error rendering AnalyticsDashboard:', error);
+    return (
+      <div className="p-4 md:p-8">
+        <div className="card p-6 text-center">
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Error Loading Analytics</h2>
+          <p className="text-[var(--text-secondary)]">Please refresh the page or try again later.</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 // Team View

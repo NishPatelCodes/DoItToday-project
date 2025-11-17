@@ -359,21 +359,26 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
 
   // AI Insights (placeholder)
   const insights = useMemo(() => {
-    const insightsList = [];
-    if (focusStats?.totalMinutes > 0) {
-      const weeklyAvg = focusStats.totalMinutes / 7;
-      insightsList.push(`You've focused ${Math.round(weeklyAvg)} minutes per day this week.`);
+    try {
+      const insightsList = [];
+      if (focusStats?.totalMinutes > 0) {
+        const weeklyAvg = focusStats.totalMinutes / 7;
+        insightsList.push(`You've focused ${Math.round(weeklyAvg)} minutes per day this week.`);
+      }
+      if (stats?.monthlyTaskCompletion > 80) {
+        insightsList.push('Excellent task completion rate this month! Keep it up!');
+      }
+      if (gratitudeStreak > 7) {
+        insightsList.push(`Amazing ${gratitudeStreak}-day reflection streak!`);
+      }
+      if (activeChallenges.length > 0 && stats?.challengeProgress > 50) {
+        insightsList.push('Your challenge progress is looking great!');
+      }
+      return insightsList.length > 0 ? insightsList : ['Keep building your habits day by day!'];
+    } catch (e) {
+      console.error('Error generating insights:', e);
+      return ['Keep building your habits day by day!'];
     }
-    if (stats.monthlyTaskCompletion > 80) {
-      insightsList.push('Excellent task completion rate this month! Keep it up!');
-    }
-    if (gratitudeStreak > 7) {
-      insightsList.push(`Amazing ${gratitudeStreak}-day reflection streak!`);
-    }
-    if (activeChallenges.length > 0 && challengeProgress > 50) {
-      insightsList.push('Your challenge progress is looking great!');
-    }
-    return insightsList.length > 0 ? insightsList : ['Keep building your habits day by day!'];
   }, [focusStats, stats, gratitudeStreak, activeChallenges]);
 
   if (loading) {
@@ -382,6 +387,17 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent mb-4"></div>
           <p className="text-[var(--text-secondary)]">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Safety check - ensure stats is defined
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <p className="text-[var(--text-secondary)]">Preparing analytics...</p>
         </div>
       </div>
     );
