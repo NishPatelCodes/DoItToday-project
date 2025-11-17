@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaExpand, FaCompress, FaTimes, FaChartBar } from 'react-icons/fa';
 import { usePomodoro } from '../hooks/usePomodoro';
@@ -55,11 +55,17 @@ const FocusModePage = () => {
     setCurrentQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
   }, []);
 
-  // Rotate quotes during active sessions
+  // Rotate quotes during active sessions (optimized - only when needed)
   useEffect(() => {
     if (pomodoro.isActive && !pomodoro.isPaused) {
       const interval = setInterval(() => {
-        setCurrentQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
+        setCurrentQuote(prev => {
+          let newQuote;
+          do {
+            newQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+          } while (newQuote === prev && motivationalQuotes.length > 1);
+          return newQuote;
+        });
       }, 120000); // Every 2 minutes
       return () => clearInterval(interval);
     }
@@ -259,9 +265,14 @@ const FocusModePage = () => {
     localStorage.setItem('focus-notifications', notificationsEnabled.toString());
   }, [notificationsEnabled]);
 
-  // Get analytics data
-  const dailyStats = focusSession.getDailyStats();
-  const weeklyStats = focusSession.getWeeklyStats();
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleVolumeChange = useCallback((vol) => {
+    ambientSound.setVolume(vol);
+  }, [ambientSound.setVolume]);
+
+  // Get analytics data (memoized to prevent recalculation on every render)
+  const dailyStats = useMemo(() => focusSession.getDailyStats(), [focusSession.sessionHistory]);
+  const weeklyStats = useMemo(() => focusSession.getWeeklyStats(), [focusSession.sessionHistory]);
 
   return (
     <div 
@@ -337,7 +348,7 @@ const FocusModePage = () => {
               volume={ambientSound.volume}
               isPlaying={ambientSound.isPlaying}
               onSoundChange={ambientSound.setCurrentSound}
-              onVolumeChange={ambientSound.setVolume}
+              onVolumeChange={handleVolumeChange}
               onPlay={ambientSound.play}
               onStop={ambientSound.stop}
             />

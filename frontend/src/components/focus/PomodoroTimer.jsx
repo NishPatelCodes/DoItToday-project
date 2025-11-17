@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FaPlay, FaPause, FaStop, FaRedo } from 'react-icons/fa';
 
@@ -5,7 +6,7 @@ import { FaPlay, FaPause, FaStop, FaRedo } from 'react-icons/fa';
  * Pomodoro Timer Component
  * Displays a circular countdown timer with progress ring
  */
-const PomodoroTimer = ({
+const PomodoroTimer = memo(({
   timeLeft,
   isActive,
   isPaused,
@@ -20,8 +21,8 @@ const PomodoroTimer = ({
   sessionCount,
   className = '',
 }) => {
-  const circumference = 2 * Math.PI * 90; // radius = 90
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const circumference = useMemo(() => 2 * Math.PI * 90, []); // radius = 90
+  const strokeDashoffset = useMemo(() => circumference - (progress / 100) * circumference, [circumference, progress]);
 
   return (
     <div className={`relative ${className}`}>
@@ -147,7 +148,9 @@ const PomodoroTimer = ({
       </div>
     </div>
   );
-};
+});
+
+PomodoroTimer.displayName = 'PomodoroTimer';
 
 export default PomodoroTimer;
 

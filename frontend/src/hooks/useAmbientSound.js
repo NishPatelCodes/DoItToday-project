@@ -1,218 +1,306 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
- * Custom hook for ambient sound playback
- * Supports multiple sound types with volume control and fade effects
+ * Optimized ambient sound hook with better performance and user interaction handling
  */
-// Ambient sound URLs - using free audio sources
-// Note: In production, replace with your own hosted audio files or use a service like freesound.org
 const SOUND_URLS = {
   silent: null,
-  // Using placeholder URLs - replace with actual hosted audio files
-  // For production, consider hosting your own audio files or using a CDN
-  rain: null, // Will use Web Audio API noise generation as fallback
+  rain: null,
   ocean: null,
   forest: null,
   coffee: null,
-  whiteNoise: null, // Uses Web Audio API
-  brownNoise: null, // Uses Web Audio API
+  whiteNoise: null,
+  brownNoise: null,
 };
 
-// Generate brown/white noise using Web Audio API as fallback
-const generateNoise = (type = 'white', duration = 3600) => {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const bufferSize = audioContext.sampleRate * duration;
+// Optimized noise generation - smaller buffer, more efficient
+const generateNoise = (type = 'white', audioContext) => {
+  // Use smaller buffer for better performance (1 second, looped)
+  const bufferSize = audioContext.sampleRate;
   const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
   const data = buffer.getChannelData(0);
 
-  for (let i = 0; i < bufferSize; i++) {
-    if (type === 'white') {
+  if (type === 'white') {
+    for (let i = 0; i < bufferSize; i++) {
       data[i] = Math.random() * 2 - 1;
-    } else if (type === 'brown') {
-      // Brown noise (random walk)
-      data[i] = (Math.random() * 2 - 1) * 0.5;
-      if (i > 0) {
-        data[i] = data[i - 1] * 0.99 + data[i] * 0.01;
-      }
+    }
+  } else if (type === 'brown') {
+    let lastValue = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = (Math.random() * 2 - 1) * 0.5;
+      lastValue = lastValue * 0.98 + white * 0.02;
+      data[i] = lastValue;
     }
   }
 
   const source = audioContext.createBufferSource();
   source.buffer = buffer;
   source.loop = true;
-  return { source, audioContext };
+  return source;
 };
 
 export const useAmbientSound = (initialSound = 'silent', initialVolume = 0.5) => {
   const [currentSound, setCurrentSound] = useState(() => {
-    const saved = localStorage.getItem('ambient-sound');
-    return saved || initialSound;
+    try {
+      const saved = localStorage.getItem('ambient-sound');
+      return saved || initialSound;
+    } catch {
+      return initialSound;
+    }
   });
   const [volume, setVolume] = useState(() => {
-    const saved = localStorage.getItem('ambient-volume');
-    return saved ? parseFloat(saved) : initialVolume;
+    try {
+      const saved = localStorage.getItem('ambient-volume');
+      return saved ? parseFloat(saved) : initialVolume;
+    } catch {
+      return initialVolume;
+    }
   });
   const [isPlaying, setIsPlaying] = useState(false);
   
   const audioRef = useRef(null);
   const noiseRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const gainNodeRef = useRef(null);
+  const sourceRef = useRef(null);
+  const isInitializedRef = useRef(false);
 
-  // Save settings to localStorage
+  // Initialize audio context on user interaction
+  const initializeAudioContext = useCallback(() => {
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      return audioContextRef.current;
+    }
+
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+
+      const context = new AudioContextClass();
+      audioContextRef.current = context;
+      
+      // Resume if suspended (required for some browsers)
+      if (context.state === 'suspended') {
+        context.resume().catch(() => {
+          // Silently handle resume errors
+        });
+      }
+
+      return context;
+    } catch (error) {
+      console.error('Error initializing audio context:', error);
+      return null;
+    }
+  }, []);
+
+  // Save settings to localStorage (debounced)
   useEffect(() => {
-    localStorage.setItem('ambient-sound', currentSound);
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('ambient-sound', currentSound);
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [currentSound]);
 
   useEffect(() => {
-    localStorage.setItem('ambient-volume', volume.toString());
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem('ambient-volume', volume.toString());
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [volume]);
 
-  // Handle audio playback
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    if (sourceRef.current) {
+      try {
+        sourceRef.current.stop();
+      } catch (e) {
+        // Ignore stop errors
+      }
+      sourceRef.current = null;
+    }
+    if (gainNodeRef.current) {
+      gainNodeRef.current.disconnect();
+      gainNodeRef.current = null;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (noiseRef.current) {
+      noiseRef.current = null;
+    }
+  }, []);
+
+  // Handle audio playback - optimized
   useEffect(() => {
     if (currentSound === 'silent') {
-      stop();
+      cleanup();
+      setIsPlaying(false);
       return;
     }
 
     // Handle noise generation for white/brown noise
     if (currentSound === 'whiteNoise' || currentSound === 'brownNoise') {
       if (isPlaying) {
+        cleanup(); // Clean up previous source
+        
+        const context = initializeAudioContext();
+        if (!context) {
+          setIsPlaying(false);
+          return;
+        }
+
         try {
           const noiseType = currentSound === 'whiteNoise' ? 'white' : 'brown';
-          const { source, audioContext } = generateNoise(noiseType);
-          const gainNode = audioContext.createGain();
+          const source = generateNoise(noiseType, context);
+          const gainNode = context.createGain();
           
           gainNode.gain.value = volume;
           source.connect(gainNode);
-          gainNode.connect(audioContext.destination);
+          gainNode.connect(context.destination);
           
           source.start(0);
-          noiseRef.current = { source, audioContext, gainNode };
+          sourceRef.current = source;
+          gainNodeRef.current = gainNode;
+          noiseRef.current = { source, gainNode };
         } catch (error) {
           console.error('Error generating noise:', error);
+          setIsPlaying(false);
         }
       } else {
-        if (noiseRef.current) {
-          try {
-            noiseRef.current.source.stop();
-            noiseRef.current.audioContext.close();
-          } catch (error) {
-            // Ignore errors when stopping
-          }
-          noiseRef.current = null;
-        }
+        cleanup();
       }
       return;
     }
 
     // Handle regular audio files (if URLs are provided)
-    if (SOUND_URLS[currentSound] && !audioRef.current) {
-      const audio = new Audio(SOUND_URLS[currentSound]);
-      audio.loop = true;
-      audio.volume = volume;
-      audioRef.current = audio;
+    if (SOUND_URLS[currentSound]) {
+      if (!audioRef.current) {
+        const audio = new Audio(SOUND_URLS[currentSound]);
+        audio.loop = true;
+        audio.volume = volume;
+        audioRef.current = audio;
+      }
+
+      if (audioRef.current) {
+        audioRef.current.volume = volume;
+        
+        if (isPlaying) {
+          const playPromise = audioRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(error => {
+              console.error('Error playing audio:', error);
+              setIsPlaying(false);
+            });
+          }
+        } else {
+          audioRef.current.pause();
+        }
+      }
+      return;
     }
 
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      
+    // Fallback to noise generation for ambient sounds without URLs
+    if (currentSound !== 'silent' && !SOUND_URLS[currentSound]) {
       if (isPlaying) {
-        audioRef.current.play().catch(error => {
-          console.error('Error playing audio:', error);
+        cleanup();
+        
+        const context = initializeAudioContext();
+        if (!context) {
           setIsPlaying(false);
-        });
-      } else {
-        audioRef.current.pause();
-      }
-    } else if (currentSound !== 'silent' && currentSound !== 'whiteNoise' && currentSound !== 'brownNoise' && !SOUND_URLS[currentSound]) {
-      // If no URL is provided, fall back to noise generation for ambient sounds
-      if (isPlaying) {
+          return;
+        }
+
         try {
           const noiseType = currentSound === 'rain' || currentSound === 'ocean' ? 'brown' : 'white';
-          const { source, audioContext } = generateNoise(noiseType);
-          const gainNode = audioContext.createGain();
+          const source = generateNoise(noiseType, context);
+          const gainNode = context.createGain();
           
           gainNode.gain.value = volume;
           source.connect(gainNode);
-          gainNode.connect(audioContext.destination);
+          gainNode.connect(context.destination);
           
           source.start(0);
-          noiseRef.current = { source, audioContext, gainNode };
+          sourceRef.current = source;
+          gainNodeRef.current = gainNode;
+          noiseRef.current = { source, gainNode };
         } catch (error) {
           console.error('Error generating noise:', error);
+          setIsPlaying(false);
         }
+      } else {
+        cleanup();
       }
     }
 
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, [currentSound, volume, isPlaying]);
+    return cleanup;
+  }, [currentSound, volume, isPlaying, initializeAudioContext, cleanup]);
 
-  const play = () => {
-    setIsPlaying(true);
-  };
-
-  const stop = () => {
-    setIsPlaying(false);
+  // Update volume in real-time
+  useEffect(() => {
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volume;
+    }
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      audioRef.current.volume = volume;
     }
-    if (noiseRef.current) {
-      try {
-        noiseRef.current.source.stop();
-        noiseRef.current.audioContext.close();
-      } catch (error) {
-        // Ignore errors
-      }
-      noiseRef.current = null;
-    }
-  };
+  }, [volume]);
 
-  const fadeIn = (duration = 2000) => {
-    if (audioRef.current || noiseRef.current) {
-      const gainNode = noiseRef.current?.gainNode;
-      const audio = audioRef.current;
-      
-      if (gainNode) {
-        gainNode.gain.setValueAtTime(0, gainNode.context.currentTime);
-        gainNode.gain.linearRampToValueAtTime(volume, gainNode.context.currentTime + duration / 1000);
-      } else if (audio) {
-        audio.volume = 0;
-        const interval = setInterval(() => {
-          if (audio.volume < volume) {
-            audio.volume = Math.min(audio.volume + 0.1, volume);
-          } else {
-            clearInterval(interval);
-          }
-        }, duration / 20);
-      }
+  const play = useCallback(() => {
+    // Initialize audio context on first play (user interaction)
+    if (!isInitializedRef.current) {
+      initializeAudioContext();
+      isInitializedRef.current = true;
     }
-  };
+    setIsPlaying(true);
+  }, [initializeAudioContext]);
 
-  const fadeOut = (duration = 2000) => {
-    if (audioRef.current || noiseRef.current) {
-      const gainNode = noiseRef.current?.gainNode;
-      const audio = audioRef.current;
-      
-      if (gainNode) {
-        gainNode.gain.linearRampToValueAtTime(0, gainNode.context.currentTime + duration / 1000);
-      } else if (audio) {
-        const startVolume = audio.volume;
-        const interval = setInterval(() => {
-          if (audio.volume > 0) {
-            audio.volume = Math.max(audio.volume - 0.1, 0);
-          } else {
-            clearInterval(interval);
-            stop();
-          }
-        }, duration / 20);
-      }
+  const stop = useCallback(() => {
+    setIsPlaying(false);
+    cleanup();
+  }, [cleanup]);
+
+  const fadeIn = useCallback((duration = 2000) => {
+    if (gainNodeRef.current) {
+      const now = gainNodeRef.current.context.currentTime;
+      gainNodeRef.current.gain.setValueAtTime(0, now);
+      gainNodeRef.current.gain.linearRampToValueAtTime(volume, now + duration / 1000);
+    } else if (audioRef.current) {
+      audioRef.current.volume = 0;
+      const interval = setInterval(() => {
+        if (audioRef.current && audioRef.current.volume < volume) {
+          audioRef.current.volume = Math.min(audioRef.current.volume + 0.05, volume);
+        } else {
+          clearInterval(interval);
+        }
+      }, 50);
     }
-  };
+  }, [volume]);
+
+  const fadeOut = useCallback((duration = 2000) => {
+    if (gainNodeRef.current) {
+      const now = gainNodeRef.current.context.currentTime;
+      gainNodeRef.current.gain.linearRampToValueAtTime(0, now + duration / 1000);
+    } else if (audioRef.current) {
+      const startVolume = audioRef.current.volume;
+      const interval = setInterval(() => {
+        if (audioRef.current && audioRef.current.volume > 0) {
+          audioRef.current.volume = Math.max(audioRef.current.volume - 0.05, 0);
+        } else {
+          clearInterval(interval);
+          stop();
+        }
+      }, 50);
+    }
+  }, [stop]);
 
   return {
     currentSound,
@@ -226,4 +314,3 @@ export const useAmbientSound = (initialSound = 'silent', initialVolume = 0.5) =>
     fadeOut,
   };
 };
-
