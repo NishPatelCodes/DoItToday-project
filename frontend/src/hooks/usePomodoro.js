@@ -49,39 +49,6 @@ export const usePomodoro = (initialWorkMinutes = 25, initialBreakMinutes = 5, in
     localStorage.setItem('pomodoro-auto-start', autoStart.toString());
   }, [autoStart]);
 
-  // Timer countdown logic
-  useEffect(() => {
-    if (isActive && !isPaused) {
-      if (!startTimeRef.current) {
-        startTimeRef.current = Date.now() - pausedTimeRef.current;
-      }
-
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            handleComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (isPaused && startTimeRef.current) {
-        pausedTimeRef.current = Date.now() - startTimeRef.current;
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isActive, isPaused, handleComplete]);
-
   const handleComplete = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -125,6 +92,39 @@ export const usePomodoro = (initialWorkMinutes = 25, initialBreakMinutes = 5, in
       }
     }
   }, [isBreak, sessionCount, breakMinutes, longBreakMinutes, workMinutes, autoStart]);
+
+  // Timer countdown logic
+  useEffect(() => {
+    if (isActive && !isPaused) {
+      if (!startTimeRef.current) {
+        startTimeRef.current = Date.now() - pausedTimeRef.current;
+      }
+
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            handleComplete();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (isPaused && startTimeRef.current) {
+        pausedTimeRef.current = Date.now() - startTimeRef.current;
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isActive, isPaused, handleComplete]);
 
   const start = useCallback(() => {
     setIsActive(true);
@@ -173,10 +173,12 @@ export const usePomodoro = (initialWorkMinutes = 25, initialBreakMinutes = 5, in
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }, []);
 
-  const progress = useCallback(() => {
+  const calculateProgress = useCallback(() => {
     const totalSeconds = (isBreak ? (sessionCount % 4 === 0 ? longBreakMinutes : breakMinutes) : workMinutes) * 60;
     return totalSeconds > 0 ? ((totalSeconds - timeLeft) / totalSeconds) * 100 : 0;
   }, [timeLeft, isBreak, workMinutes, breakMinutes, longBreakMinutes, sessionCount]);
+
+  const progress = calculateProgress();
 
   return {
     // State
@@ -205,7 +207,7 @@ export const usePomodoro = (initialWorkMinutes = 25, initialBreakMinutes = 5, in
     
     // Utils
     formatTime,
-    progress: progress(),
+    progress,
   };
 };
 

@@ -21,7 +21,11 @@ const FocusModePage = () => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [selectedGoalId, setSelectedGoalId] = useState(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
-    return localStorage.getItem('focus-notifications') === 'true';
+    try {
+      return localStorage.getItem('focus-notifications') === 'true';
+    } catch {
+      return false;
+    }
   });
   const [currentQuote, setCurrentQuote] = useState('');
   const containerRef = useRef(null);
@@ -149,9 +153,39 @@ const FocusModePage = () => {
     }
   };
 
+  // Play completion sound
+  const playCompletionSound = useCallback(() => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      // Silently fail if audio context is not available
+    }
+  }, []);
+
   // Track previous timer state to detect completion
   const prevTimeLeftRef = useRef(pomodoro.timeLeft);
   const prevIsActiveRef = useRef(pomodoro.isActive);
+  const currentSessionIdRef = useRef(focusSession.currentSession?._id);
+  const completeSessionRef = useRef(focusSession.completeSession);
+
+  useEffect(() => {
+    currentSessionIdRef.current = focusSession.currentSession?._id;
+    completeSessionRef.current = focusSession.completeSession;
+  }, [focusSession.currentSession?._id, focusSession.completeSession]);
 
   useEffect(() => {
     // Detect when timer completes (was active, now inactive, and timeLeft is 0)
@@ -159,7 +193,7 @@ const FocusModePage = () => {
       prevIsActiveRef.current &&
       !pomodoro.isActive &&
       pomodoro.timeLeft === 0 &&
-      focusSession.currentSession &&
+      currentSessionIdRef.current &&
       !pomodoro.isPaused
     ) {
       const handleComplete = async () => {
@@ -168,26 +202,28 @@ const FocusModePage = () => {
           : pomodoro.workMinutes;
 
         try {
-          await focusSession.completeSession(
-            focusSession.currentSession._id,
-            completedMinutes
-          );
-
-          // Show notification
-          if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification(
-              pomodoro.isBreak ? 'Break Completed!' : 'Focus Session Completed!',
-              {
-                body: pomodoro.isBreak
-                  ? 'Time to get back to work!'
-                  : `Great job! You focused for ${completedMinutes} minutes. 🎉`,
-                icon: '/favicon.svg',
-              }
+          if (completeSessionRef.current && currentSessionIdRef.current) {
+            await completeSessionRef.current(
+              currentSessionIdRef.current,
+              completedMinutes
             );
-          }
 
-          // Play completion sound
-          playCompletionSound();
+            // Show notification
+            if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification(
+                pomodoro.isBreak ? 'Break Completed!' : 'Focus Session Completed!',
+                {
+                  body: pomodoro.isBreak
+                    ? 'Time to get back to work!'
+                    : `Great job! You focused for ${completedMinutes} minutes. 🎉`,
+                  icon: '/favicon.svg',
+                }
+              );
+            }
+
+            // Play completion sound
+            playCompletionSound();
+          }
         } catch (error) {
           console.error('Error completing session:', error);
         }
@@ -199,30 +235,8 @@ const FocusModePage = () => {
     // Update refs
     prevTimeLeftRef.current = pomodoro.timeLeft;
     prevIsActiveRef.current = pomodoro.isActive;
-  }, [pomodoro.isActive, pomodoro.timeLeft, pomodoro.isBreak, pomodoro.isPaused, pomodoro.sessionCount, pomodoro.longBreakMinutes, pomodoro.breakMinutes, pomodoro.workMinutes, focusSession, notificationsEnabled]);
+  }, [pomodoro.isActive, pomodoro.timeLeft, pomodoro.isBreak, pomodoro.isPaused, pomodoro.sessionCount, pomodoro.longBreakMinutes, pomodoro.breakMinutes, pomodoro.workMinutes, notificationsEnabled, playCompletionSound]);
 
-  // Play completion sound
-  const playCompletionSound = () => {
-    try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } catch (error) {
-      // Silently fail if audio context is not available
-    }
-  };
 
   // Toggle fullscreen
   const toggleFullscreen = async () => {
@@ -250,7 +264,7 @@ const FocusModePage = () => {
   const weeklyStats = focusSession.getWeeklyStats();
 
   return (
-    <div
+    <div 
       ref={containerRef}
       className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden"
     >
@@ -272,15 +286,15 @@ const FocusModePage = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+                  <button
               onClick={() => setShowAnalytics(!showAnalytics)}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
               aria-label="Toggle analytics"
             >
               <FaChartBar className="text-white" />
-            </button>
+                  </button>
 
-            <button
+                  <button
               onClick={toggleFullscreen}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
@@ -290,7 +304,7 @@ const FocusModePage = () => {
               ) : (
                 <FaExpand className="text-white" />
               )}
-            </button>
+                  </button>
 
             <SettingsPanel
               workMinutes={pomodoro.workMinutes}
@@ -305,8 +319,8 @@ const FocusModePage = () => {
               onNotificationsChange={setNotificationsEnabled}
             />
           </div>
-        </div>
-
+                </div>
+                
         {/* Main content area */}
         <main className="flex-1 flex flex-col md:flex-row gap-6 p-4 md:p-6" id="main-content">
           {/* Left sidebar - Task selector and ambient sound */}
@@ -412,7 +426,7 @@ const FocusModePage = () => {
               onClick={() => setShowAnalytics(false)}
             />
 
-            <motion.div
+              <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -431,14 +445,14 @@ const FocusModePage = () => {
                     <FaTimes className="text-[var(--text-primary)]" />
                   </button>
                 </div>
-
+                
                 <FocusAnalytics
                   stats={focusSession.stats}
                   dailyStats={dailyStats}
                   weeklyStats={weeklyStats}
                 />
-              </div>
-            </motion.div>
+                      </div>
+                    </motion.div>
           </>
         )}
       </AnimatePresence>
