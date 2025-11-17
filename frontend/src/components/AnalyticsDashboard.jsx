@@ -12,8 +12,8 @@ import {
   FaDollarSign,
   FaAward,
   FaLightbulb,
-  FaTrendingUp,
-  FaTrendingDown,
+  FaArrowUp,
+  FaArrowDown,
   FaCalendarAlt,
 } from 'react-icons/fa';
 import {
@@ -100,9 +100,9 @@ const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, tre
               {trend && (
                 <div className="flex items-center gap-1 mt-1">
                   {trend === 'up' ? (
-                    <FaTrendingUp className="text-green-500 text-xs" />
+                    <FaArrowUp className="text-green-500 text-xs" />
                   ) : (
-                    <FaTrendingDown className="text-red-500 text-xs" />
+                    <FaArrowDown className="text-red-500 text-xs" />
                   )}
                   <span className={`text-xs font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
                     {trendValue}
