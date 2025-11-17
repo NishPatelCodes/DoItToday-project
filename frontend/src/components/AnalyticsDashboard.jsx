@@ -84,15 +84,23 @@ const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, tre
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
       whileHover={{ scale: 1.02, y: -4 }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br p-6 shadow-lg backdrop-blur-sm border border-white/10 dark:border-white/5"
+      className="relative overflow-hidden rounded-2xl p-6 shadow-lg backdrop-blur-sm border transition-all duration-300"
       style={{
-        background: gradient || 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+        background: gradient || 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.12) 100%)',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
       }}
     >
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-white/10 dark:bg-white/5 backdrop-blur-sm">
+            <div 
+              className="p-3 rounded-xl backdrop-blur-sm transition-all duration-300"
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.1)',
+              }}
+            >
               <Icon className="text-xl text-[var(--accent-primary)]" />
             </div>
             <div>
@@ -113,15 +121,26 @@ const StatCard = ({ title, value, subtitle, icon: Icon, gradient, delay = 0, tre
           </div>
         </div>
         <div className="mt-2">
-          <p className="text-3xl font-bold text-[var(--text-primary)]">
+          <p className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">
             <AnimatedNumber value={value} />
           </p>
           {subtitle && (
-            <p className="text-sm text-[var(--text-tertiary)] mt-1">{subtitle}</p>
+            <p className="text-sm text-[var(--text-tertiary)] mt-1 font-medium">{subtitle}</p>
           )}
         </div>
       </div>
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full -mr-16 -mt-16" />
+      <div 
+        className="absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 opacity-40"
+        style={{
+          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%)',
+        }}
+      />
+      <div 
+        className="absolute bottom-0 left-0 w-24 h-24 rounded-full -ml-12 -mb-12 opacity-30"
+        style={{
+          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%)',
+        }}
+      />
     </motion.div>
   );
 };
@@ -428,7 +447,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           value={stats.disciplinePoints}
           subtitle={`${disciplineLevel.name} Level`}
           icon={FaStar}
-          gradient="linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%)"
+          gradient="linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(168, 85, 247, 0.12) 100%)"
           delay={0}
         />
         <StatCard
@@ -436,7 +455,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           value={stats.focusHours}
           subtitle="Total this week"
           icon={FaHeadphones}
-          gradient="linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%)"
+          gradient="linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.08) 50%, rgba(29, 78, 216, 0.12) 100%)"
           delay={0.1}
         />
         <StatCard
@@ -444,7 +463,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           value={stats.reflectionStreak}
           subtitle="Days in a row"
           icon={FaFire}
-          gradient="linear-gradient(135deg, rgba(251, 113, 133, 0.15) 0%, rgba(239, 68, 68, 0.15) 100%)"
+          gradient="linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(219, 39, 119, 0.08) 50%, rgba(190, 24, 93, 0.12) 100%)"
           delay={0.2}
         />
         <StatCard
@@ -452,7 +471,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           value={stats.challengeProgress}
           subtitle="% Average"
           icon={FaTrophy}
-          gradient="linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%)"
+          gradient="linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(245, 158, 11, 0.08) 50%, rgba(217, 119, 6, 0.12) 100%)"
           delay={0.3}
         />
         <StatCard
@@ -460,7 +479,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
           value={stats.monthlyTaskCompletion}
           subtitle="% This month"
           icon={FaCheckCircle}
-          gradient="linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)"
+          gradient="linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(22, 163, 74, 0.08) 50%, rgba(21, 128, 61, 0.12) 100%)"
           delay={0.4}
         />
       </div>
