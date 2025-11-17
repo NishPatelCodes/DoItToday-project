@@ -349,13 +349,12 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
 
   // Get discipline level
   const getDisciplineLevel = (xp) => {
+    if (!xp && xp !== 0) return { name: 'Bronze', color: '#cd7f32', progress: 0 };
     if (xp >= 10000) return { name: 'Elite', color: '#fbbf24', progress: 100 };
     if (xp >= 5000) return { name: 'Gold', color: '#f59e0b', progress: ((xp - 5000) / 5000) * 100 };
     if (xp >= 2000) return { name: 'Silver', color: '#94a3b8', progress: ((xp - 2000) / 3000) * 100 };
     return { name: 'Bronze', color: '#cd7f32', progress: (xp / 2000) * 100 };
   };
-
-  const disciplineLevel = getDisciplineLevel(stats.disciplinePoints);
 
   // AI Insights (placeholder)
   const insights = useMemo(() => {
@@ -403,6 +402,7 @@ const AnalyticsDashboard = ({ analytics: initialAnalytics, user: initialUser, ta
     );
   }
 
+  const disciplineLevel = getDisciplineLevel(stats?.disciplinePoints || 0);
   const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
 
   return (
