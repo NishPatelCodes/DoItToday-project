@@ -48,7 +48,16 @@ const buildMilestonePlan = (goal) => {
 };
 
 const GoalMilestoneGuide = ({ goals = [], tasks = [] }) => {
-  const [selectedGoalId, setSelectedGoalId] = useState(getGoalId(goals[0]) || null);
+  // Ensure goals is always an array
+  const safeGoals = Array.isArray(goals) ? goals : [];
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+
+  const [selectedGoalId, setSelectedGoalId] = useState(() => {
+    if (safeGoals.length > 0 && safeGoals[0]) {
+      return getGoalId(safeGoals[0]) || null;
+    }
+    return null;
+  });
   const [milestoneProgress, setMilestoneProgress] = useState(() => {
     if (typeof window === 'undefined') return {};
     try {
@@ -69,15 +78,15 @@ const GoalMilestoneGuide = ({ goals = [], tasks = [] }) => {
   }, [milestoneProgress]);
 
   useEffect(() => {
-    if (!selectedGoalId && goals.length > 0) {
-      const firstGoalId = getGoalId(goals[0]);
+    if (!selectedGoalId && safeGoals.length > 0 && safeGoals[0]) {
+      const firstGoalId = getGoalId(safeGoals[0]);
       if (firstGoalId) {
         setSelectedGoalId(firstGoalId);
       }
     }
-  }, [goals, selectedGoalId]);
+  }, [safeGoals, selectedGoalId]);
 
-  if (goals.length === 0) {
+  if (safeGoals.length === 0) {
     return (
       <div className="card p-6 text-center">
         <FaFlagCheckered className="text-3xl text-[var(--accent-primary)] mx-auto mb-3" />
@@ -87,25 +96,30 @@ const GoalMilestoneGuide = ({ goals = [], tasks = [] }) => {
   }
 
   const selectedGoal =
-    goals.find((goal) => getGoalId(goal)?.toString() === selectedGoalId?.toString()) || goals[0];
+    safeGoals.find((goal) => getGoalId(goal)?.toString() === selectedGoalId?.toString()) || safeGoals[0] || null;
 
   const milestonePlan = useMemo(() => buildMilestonePlan(selectedGoal), [selectedGoal]);
 
   const linkedTasks = useMemo(() => {
     if (!selectedGoal) return [];
-    return tasks
+    return safeTasks
       .filter((task) => {
+        if (!task) return false;
         const taskGoalId = task.goalId?._id || task.goalId;
         return taskGoalId?.toString() === getGoalId(selectedGoal)?.toString();
       })
-      .sort((a, b) => new Date(a.dueDate || a.createdAt || 0) - new Date(b.dueDate || b.createdAt || 0));
-  }, [tasks, selectedGoal]);
+      .sort((a, b) => {
+        const dateA = new Date(a.dueDate || a.createdAt || 0);
+        const dateB = new Date(b.dueDate || b.createdAt || 0);
+        return dateA - dateB;
+      });
+  }, [safeTasks, selectedGoal]);
 
   const actionableTasks = linkedTasks.filter((task) => task.status !== 'completed').slice(0, 3);
 
-  const completedMilestones = milestonePlan.filter(
-    (phase) => milestoneProgress[selectedGoalId]?.[phase.id]
-  ).length;
+  const completedMilestones = selectedGoalId
+    ? milestonePlan.filter((phase) => milestoneProgress[selectedGoalId]?.[phase.id]).length
+    : 0;
   const milestoneCompletion =
     milestonePlan.length === 0 ? 0 : Math.round((completedMilestones / milestonePlan.length) * 100);
 
@@ -129,18 +143,22 @@ const GoalMilestoneGuide = ({ goals = [], tasks = [] }) => {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)]">Milestone map</p>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">{selectedGoal?.title}</h3>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">{selectedGoal?.title || 'No goal selected'}</h3>
         </div>
         <select
-          value={selectedGoalId || getGoalId(selectedGoal)}
+          value={selectedGoalId || getGoalId(selectedGoal) || ''}
           onChange={(e) => setSelectedGoalId(e.target.value)}
           className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
         >
-          {goals.map((goal) => (
-            <option key={getGoalId(goal)} value={getGoalId(goal)}>
-              {goal.title}
-            </option>
-          ))}
+          {safeGoals.map((goal) => {
+            const goalId = getGoalId(goal);
+            if (!goalId) return null;
+            return (
+              <option key={goalId} value={goalId}>
+                {goal?.title || 'Untitled Goal'}
+              </option>
+            );
+          })}
         </select>
       </div>
 
@@ -200,20 +218,23 @@ const GoalMilestoneGuide = ({ goals = [], tasks = [] }) => {
         </div>
         {actionableTasks.length > 0 ? (
           <div className="space-y-2">
-            {actionableTasks.map((task) => (
-              <div key={task._id} className="flex items-center justify-between text-sm">
-                <p className="text-[var(--text-secondary)] truncate">{task.title}</p>
-                {task.dueDate && (
-                  <span className="text-[11px] text-[var(--text-tertiary)]">
-                    {format(new Date(task.dueDate), 'MMM d')}
-                  </span>
-                )}
-              </div>
-            ))}
+            {actionableTasks.map((task) => {
+              if (!task || !task._id) return null;
+              return (
+                <div key={task._id} className="flex items-center justify-between text-sm">
+                  <p className="text-[var(--text-secondary)] truncate">{task.title || 'Untitled Task'}</p>
+                  {task.dueDate && (
+                    <span className="text-[11px] text-[var(--text-tertiary)]">
+                      {format(new Date(task.dueDate), 'MMM d')}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="text-xs text-[var(--text-tertiary)]">
-            Break this milestone into 2–3 tasks and link them to <strong>{selectedGoal?.title}</strong>.
+            Break this milestone into 2–3 tasks and link them to <strong>{selectedGoal?.title || 'this goal'}</strong>.
           </p>
         )}
       </div>

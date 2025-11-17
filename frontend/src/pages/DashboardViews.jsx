@@ -1622,7 +1622,7 @@ export const DashboardGoals = ({
       
         {/* Strategy Sidebar */}
         <div className="space-y-6">
-          <GoalMilestoneGuide goals={goals} tasks={tasks} />
+          <GoalMilestoneGuide goals={Array.isArray(goals) ? goals : []} tasks={Array.isArray(tasks) ? tasks : []} />
             </div>
       </div>
       {selectedGoalForAnalytics && (
