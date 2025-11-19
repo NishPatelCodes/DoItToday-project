@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaClock, FaCheck } from 'react-icons/fa';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import TaskCard from './TaskCard';
+import MobileCalendar from './MobileCalendar';
 
 const CalendarView = ({ tasks, goals, onDateClick, onCreateTask, onTaskToggle, onTaskDelete, onTaskEdit }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -54,11 +55,24 @@ const CalendarView = ({ tasks, goals, onDateClick, onCreateTask, onTaskToggle, o
 
   return (
     <>
-      {/* Main Calendar Area - Minimalist Style with Mobile Optimization */}
+      {/* Mobile Calendar - Vertical scrollable months */}
+      <div className="block md:hidden">
+        <MobileCalendar
+          tasks={tasks}
+          goals={goals}
+          onDateClick={onDateClick}
+          onCreateTask={onCreateTask}
+          onTaskToggle={onTaskToggle}
+          onTaskDelete={onTaskDelete}
+          onTaskEdit={onTaskEdit}
+        />
+      </div>
+
+      {/* Desktop Calendar - Grid layout (hidden on mobile) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[var(--bg-primary)] rounded-lg border border-[var(--border-color)] p-3 sm:p-4 md:p-6 overflow-x-auto"
+        className="hidden md:block bg-[var(--bg-primary)] rounded-lg border border-[var(--border-color)] p-3 sm:p-4 md:p-6 overflow-x-auto"
       >
         {/* Top Navigation - Mobile Optimized */}
         <div className="flex items-center justify-center mb-4 sm:mb-6">

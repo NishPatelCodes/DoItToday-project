@@ -1,11 +1,11 @@
 /**
  * Warm-up endpoint to prevent cold starts
- * This endpoint should be pinged every 5-10 minutes by a cron service
- * (UptimeRobot, Cron-job.org, or Vercel Cron)
+ * This endpoint should be pinged every 5-10 minutes by an external service
+ * (UptimeRobot, Cron-job.org) - Vercel Cron requires Pro plan
  * 
  * Usage:
- * - UptimeRobot: https://yourapp.com/api/warm (every 9 minutes)
- * - Vercel Cron: Already configured in vercel.json
+ * - UptimeRobot: https://yourapp.com/api/warm (every 9 minutes) - FREE
+ * - Cron-job.org: https://yourapp.com/api/warm (every 9 minutes) - FREE
  */
 
 export default function handler(req, res) {

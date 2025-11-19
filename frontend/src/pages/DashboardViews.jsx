@@ -67,6 +67,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import ChartErrorBoundary from '../components/ChartErrorBoundary';
 import { formatCurrency } from '../utils/currencyFormatter';
 import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
+import FocusPreviewCard from '../components/FocusPreviewCard';
 
 // Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
@@ -825,21 +826,8 @@ export const DashboardHome = ({
 
       {/* Lower Middle Section: Focus Mode and Momentum */}
       <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        {/* Focus Mode Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="card p-6 lg:p-8 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex-shrink-0 w-[300px] md:w-auto shadow-lg hover:shadow-xl transition-shadow"
-        >
-          <h3 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">Focus mode ready</h3>
-          <button
-            onClick={() => navigate('/dashboard/focus')}
-            className="w-full py-3 lg:py-4 px-4 rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium transition-all flex items-center justify-center gap-2 text-base lg:text-lg"
-          >
-            Start 25 min session
-          </button>
-        </motion.div>
+        {/* Focus Mode Card - New Compact Design */}
+        <FocusPreviewCard />
 
         {/* Weekly Momentum Card */}
         <motion.div

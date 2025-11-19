@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { FaExpand, FaCompress, FaTimes, FaChartBar, FaPalette, FaMoon, FaLeaf, FaSun, FaMagic } from 'react-icons/fa';
 import { usePomodoro } from '../hooks/usePomodoro';
 import { useAmbientSound } from '../hooks/useAmbientSound';
@@ -16,9 +17,10 @@ import { useToast } from '../hooks/useToast';
  * Premium focus experience with Pomodoro timer, ambient sounds, task integration, and analytics
  */
 const FocusModePage = () => {
+  const location = useLocation();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [selectedTaskId, setSelectedTaskId] = useState(location.state?.taskId || null);
   const [selectedGoalId, setSelectedGoalId] = useState(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
     try {
@@ -109,9 +111,20 @@ const FocusModePage = () => {
   }, [backgroundMode]);
 
   // Custom hooks
-  const pomodoro = usePomodoro(25, 5, 15);
+  const pomodoro = usePomodoro(
+    location.state?.duration || 25, 
+    5, 
+    15
+  );
   const ambientSound = useAmbientSound('silent', 0.5);
   const focusSession = useFocusSession();
+
+  // Update work minutes if duration is provided in location state
+  useEffect(() => {
+    if (location.state?.duration && location.state.duration !== pomodoro.workMinutes) {
+      pomodoro.setWorkMinutes(location.state.duration);
+    }
+  }, [location.state?.duration, pomodoro.workMinutes, pomodoro.setWorkMinutes]);
 
   // Motivational quotes
   const motivationalQuotes = [
@@ -207,7 +220,7 @@ const FocusModePage = () => {
   }, [pomodoro, showAnalytics, focusSession]);
 
   // Start focus session
-  const handleStart = async () => {
+  const handleStart = useCallback(async () => {
     try {
       // Start ambient sound if not silent
       if (ambientSound.currentSound !== 'silent') {
@@ -234,7 +247,18 @@ const FocusModePage = () => {
     } catch (error) {
       console.error('Error starting session:', error);
     }
-  };
+  }, [ambientSound, pomodoro, focusSession, selectedTaskId, notificationsEnabled]);
+
+  // Auto-start if requested from location state
+  useEffect(() => {
+    if (location.state?.autoStart && !pomodoro.isActive) {
+      // Small delay to ensure everything is initialized
+      const timer = setTimeout(() => {
+        handleStart();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state?.autoStart, pomodoro.isActive, handleStart]);
 
   // Play completion sound
   const playCompletionSound = useCallback(() => {
