@@ -82,7 +82,7 @@ const FocusPreviewCard = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.6 }}
-      className="relative card p-4 md:p-6 rounded-2xl bg-gradient-to-br from-[#6D28D9] to-[#4C1D95] text-white shadow-lg hover:shadow-xl transition-all overflow-hidden"
+      className="relative card p-4 md:p-6 rounded-xl bg-gradient-to-br from-[#6D28D9] to-[#4C1D95] text-white shadow-lg hover:shadow-xl transition-all overflow-hidden"
       onMouseEnter={() => setShowOptions(true)}
       onMouseLeave={() => setShowOptions(false)}
       onClick={() => isActive && navigate('/dashboard/focus')}
@@ -157,13 +157,13 @@ const FocusPreviewCard = () => {
         </div>
 
         {/* Current Task Name */}
-        <div className="text-center mb-5 min-h-[40px] flex items-center justify-center">
+        <div className="text-center mb-6 min-h-[48px] flex items-center justify-center px-4">
           {currentTask ? (
-            <p className="text-sm md:text-base font-medium px-4 line-clamp-2">
+            <p className="text-sm md:text-base font-semibold leading-snug line-clamp-2 break-words">
               {currentTask.title}
             </p>
           ) : (
-            <p className="text-sm text-white/60 italic">No task selected</p>
+            <p className="text-sm text-white/60 italic leading-normal">No task selected</p>
           )}
         </div>
 
@@ -172,13 +172,13 @@ const FocusPreviewCard = () => {
           onClick={handlePlayClick}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative w-16 h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all group z-10 mb-6"
+          className="relative w-16 h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all group z-10 mb-6 touch-manipulation focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50 focus-visible:ring-offset-2"
           aria-label={isActive ? 'Go to Focus Mode' : 'Start 25 min session'}
         >
           {isActive ? (
-            <FaPause className="text-2xl md:text-3xl text-[#6D28D9]" />
+            <FaPause className="text-2xl md:text-3xl text-[#6D28D9] flex-shrink-0" />
           ) : (
-            <FaPlay className="text-2xl md:text-3xl text-[#6D28D9] ml-1" />
+            <FaPlay className="text-2xl md:text-3xl text-[#6D28D9] ml-1 flex-shrink-0" />
           )}
           
           {/* Ripple effect */}
@@ -203,19 +203,19 @@ const FocusPreviewCard = () => {
             >
               <button
                 onClick={() => handleQuickStart(25)}
-                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium touch-manipulation"
+                className="px-3 py-2 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl transition-all font-semibold touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2"
               >
                 25m
               </button>
               <button
                 onClick={() => handleQuickStart(5)}
-                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium touch-manipulation"
+                className="px-3 py-2 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl transition-all font-semibold touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2"
               >
                 5m break
               </button>
               <button
                 onClick={() => navigate('/dashboard/focus')}
-                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium touch-manipulation"
+                className="px-3 py-2 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl transition-all font-semibold touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2"
               >
                 Custom
               </button>

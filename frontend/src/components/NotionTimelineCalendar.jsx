@@ -177,8 +177,8 @@ const NotionTimelineCalendar = ({
     return (
       <div style={style}>
         {isMonthStart && (
-          <div className="sticky top-0 z-20 bg-[var(--bg-primary)] py-3 px-4 border-b border-[var(--border-color)]">
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">
+          <div className="sticky top-0 z-20 bg-[var(--bg-primary)] py-3 px-4 border-b border-[var(--border-color)] backdrop-blur-sm bg-opacity-95">
+            <h2 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
               {format(day, 'MMMM yyyy')}
             </h2>
           </div>
@@ -216,14 +216,14 @@ const NotionTimelineCalendar = ({
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-4 py-3 shadow-sm"
+        className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-4 py-4 shadow-sm backdrop-blur-sm bg-opacity-95"
       >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] leading-tight break-words">
               {format(todayDate, 'EEEE, MMMM d')}
             </h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+            <p className="text-sm text-[var(--text-secondary)] mt-1 leading-normal">
               {totalCount > 0 
                 ? `${completedCount}/${totalCount} tasks done`
                 : 'No tasks today'
@@ -232,9 +232,9 @@ const NotionTimelineCalendar = ({
           </div>
           <button
             onClick={scrollToToday}
-            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg font-medium text-sm hover:bg-[var(--accent-hover)] transition-colors touch-manipulation"
+            className="px-4 py-2.5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-sm hover:bg-[var(--accent-hover)] transition-colors touch-manipulation min-h-[44px] flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
           >
-            Today
+            <span>Today</span>
           </button>
         </div>
       </motion.div>
@@ -270,10 +270,10 @@ const NotionTimelineCalendar = ({
                 onDateClick(todayDate);
               }
             }}
-            className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-[var(--accent-primary)] text-white rounded-full shadow-2xl flex items-center justify-center touch-manipulation"
+            className="fixed bottom-6 right-4 md:right-6 z-40 w-14 h-14 bg-[var(--accent-primary)] text-white rounded-full shadow-2xl flex items-center justify-center touch-manipulation focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
             aria-label="Add task"
           >
-            <FaPlus className="text-xl" />
+            <FaPlus className="text-xl flex-shrink-0" />
           </motion.button>
         )}
       </AnimatePresence>

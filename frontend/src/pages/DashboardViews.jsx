@@ -460,20 +460,20 @@ export const DashboardHome = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Progress</h3>
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words">Today's Progress</h3>
           </div>
           <div className="space-y-3">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-[var(--text-secondary)]">Tasks Completed</span>
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <span className="text-sm text-[var(--text-secondary)] leading-normal flex-shrink-0">Tasks Completed</span>
+                <span className="text-sm font-semibold text-[var(--text-primary)] leading-normal flex-shrink-0">
                   {todaysTasks.filter(t => t.status === 'completed').length} / {todaysTasks.length}
                 </span>
               </div>
-              <div className="w-full h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+              <div className="w-full h-2.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${todaysPlanProgress}%` }}
@@ -481,14 +481,14 @@ export const DashboardHome = ({
                   className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-blue-500 rounded-full"
                 />
               </div>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">{todaysPlanProgress}% complete</p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-normal">{todaysPlanProgress}% complete</p>
             </div>
             {nextTask && (
               <div className="pt-3 border-t border-[var(--border-color)]">
-                <p className="text-xs text-[var(--text-secondary)] mb-1">Next Task</p>
-                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
+                <p className="text-xs text-[var(--text-secondary)] mb-1.5 leading-normal">Next Task</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)] truncate leading-snug break-words">{nextTask.title}</p>
                 {nextTask.dueDate && (
-                  <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-normal">
                     {format(new Date(nextTask.dueDate), 'h:mm a')}
                   </p>
                 )}
@@ -502,30 +502,30 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Pending</h3>
+          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 leading-tight break-words">Pending</h3>
           <div className="mb-4">
-            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
-            <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
+            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 leading-tight">{pendingTasks.length}</p>
+            <p className="text-xs text-[var(--text-tertiary)] leading-normal">{format(new Date(), 'h:mm a')}</p>
           </div>
           {pendingTasks.length > 0 && (
             <div className="pt-4 border-t border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-2">Upcoming Tasks</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-2 leading-normal">Upcoming Tasks</p>
               <div className="space-y-2">
                 {pendingTasks.slice(0, 2).map(task => (
-                  <div key={task._id} className="flex items-center gap-2">
+                  <div key={task._id} className="flex items-center gap-2 min-w-0">
                     <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] flex-shrink-0"></div>
-                    <p className="text-xs text-[var(--text-primary)] truncate flex-1">{task.title}</p>
+                    <p className="text-xs text-[var(--text-primary)] truncate flex-1 leading-normal break-words min-w-0">{task.title}</p>
                     {task.dueDate && (
-                      <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0">
+                      <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 leading-normal whitespace-nowrap">
                         {format(new Date(task.dueDate), 'MMM dd')}
                       </span>
                     )}
                   </div>
                 ))}
                 {pendingTasks.length > 2 && (
-                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1 leading-normal">
                     +{pendingTasks.length - 2} more tasks
                   </p>
                 )}
@@ -539,34 +539,34 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Goals</h3>
-            <span className="text-sm font-semibold text-green-600 dark:text-green-400">{activeGoals.length}</span>
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Goals</h3>
+            <span className="text-sm font-semibold text-green-600 dark:text-green-400 flex-shrink-0 leading-normal">{activeGoals.length}</span>
           </div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <FaBullseye className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+              <FaBullseye className="text-green-600 dark:text-green-400 text-lg lg:text-xl flex-shrink-0" />
             </div>
-            <div>
-              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Active</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{activeGoals.length}</p>
+              <p className="text-xs text-[var(--text-tertiary)] leading-normal">Active</p>
             </div>
           </div>
           {activeGoals.length > 0 && (
             <div className="pt-4 border-t border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-2">Top Goals</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-2 leading-normal">Top Goals</p>
               <div className="space-y-2">
                 {activeGoals.slice(0, 2).map(goal => {
                   const progress = goal.progress || 0;
                   return (
-                    <div key={goal._id} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium text-[var(--text-primary)] truncate flex-1">{goal.title}</p>
-                        <span className="text-[10px] text-[var(--text-tertiary)] ml-2">{progress}%</span>
+                    <div key={goal._id} className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-[var(--text-primary)] truncate flex-1 leading-normal break-words min-w-0">{goal.title}</p>
+                        <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 leading-normal whitespace-nowrap">{progress}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
@@ -576,7 +576,7 @@ export const DashboardHome = ({
                   );
                 })}
                 {activeGoals.length > 2 && (
-                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1 leading-normal">
                     +{activeGoals.length - 2} more goals
                   </p>
                 )}
@@ -590,20 +590,20 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
           onClick={() => navigate('/dashboard/challenges')}
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Challenges</h3>
-            <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">{activeChallenges.length}</span>
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Challenges</h3>
+            <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400 flex-shrink-0 leading-normal">{activeChallenges.length}</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 flex items-center justify-center">
-              <FaTrophy className="text-yellow-600 dark:text-yellow-400 text-lg lg:text-xl" />
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 flex items-center justify-center flex-shrink-0">
+              <FaTrophy className="text-yellow-600 dark:text-yellow-400 text-lg lg:text-xl flex-shrink-0" />
             </div>
-            <div className="flex-1">
-              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">{activeChallenges.length}</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Active</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{activeChallenges.length}</p>
+              <p className="text-xs text-[var(--text-tertiary)] leading-normal">Active</p>
             </div>
           </div>
           {activeChallenges.length > 0 && (
@@ -654,7 +654,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="lg:col-span-2 card p-5 lg:p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+          className="lg:col-span-2 card p-4 md:p-5 lg:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -795,7 +795,7 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
+            className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-2 mb-3 lg:mb-4">
               <FaFire className="text-orange-500 text-lg lg:text-xl" />
@@ -809,7 +809,7 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
+            className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
           >
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-2 lg:mb-3">Stay consistent!</h3>
             <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
@@ -835,10 +835,10 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="card p-6 lg:p-8 rounded-2xl flex-shrink-0 w-[300px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-6 lg:p-8 rounded-xl flex-shrink-0 w-[300px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
+            <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
               <FaCompass className="text-base lg:text-lg" />
             </div>
             <div>
@@ -921,7 +921,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4 lg:mb-5">
             <div className="flex items-center gap-3">
@@ -946,7 +946,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 lg:mb-5">Quick Note</h3>
           <input
@@ -963,7 +963,7 @@ export const DashboardHome = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.0 }}
-        className="card p-6 lg:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+        className="card p-6 lg:p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between mb-4 lg:mb-6">
           <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Analytics</h3>
@@ -975,7 +975,7 @@ export const DashboardHome = ({
           </button>
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-[var(--border-color)] p-5">
+          <div className="rounded-xl border border-[var(--border-color)] p-5">
             <div className="flex items-center justify-between mb-4">
         <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
@@ -1038,7 +1038,7 @@ export const DashboardHome = ({
             </div>
           )}
           </div>
-          <div className="rounded-2xl border border-[var(--border-color)] p-5">
+          <div className="rounded-xl border border-[var(--border-color)] p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Income runway</p>

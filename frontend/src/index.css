@@ -255,11 +255,16 @@
 
   /* Elegant Minimal Buttons */
   .btn-primary {
-    @apply relative px-4 py-2 rounded-lg font-medium transition-all duration-200;
+    @apply relative px-4 py-3 rounded-xl font-medium transition-all duration-200 touch-manipulation;
     background: var(--accent-primary);
     color: white;
     box-shadow: var(--shadow-sm);
     border: none;
+    min-height: 48px;
+    line-height: 1.5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .btn-primary:hover {
@@ -272,13 +277,24 @@
     transform: translateY(0);
     box-shadow: var(--shadow-sm);
   }
+  
+  .btn-primary:focus-visible {
+    @apply outline-none ring-2 ring-offset-2;
+    ring-color: var(--accent-primary);
+    ring-offset-color: var(--bg-primary);
+  }
 
   .btn-secondary {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+    @apply px-4 py-3 rounded-xl font-medium transition-all duration-200 touch-manipulation;
     background: var(--bg-secondary);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
+    min-height: 48px;
+    line-height: 1.5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .btn-secondary:hover {
@@ -287,25 +303,41 @@
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
   }
+  
+  .btn-secondary:focus-visible {
+    @apply outline-none ring-2 ring-offset-2;
+    ring-color: var(--accent-primary);
+    ring-offset-color: var(--bg-primary);
+  }
 
   .input-field {
-    @apply w-full px-3 py-2 rounded-lg transition-all duration-200;
+    @apply w-full px-4 py-3 rounded-xl transition-all duration-200;
     background: var(--bg-secondary);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    min-height: 48px;
   }
-
+  
   .input-field::placeholder {
     color: var(--text-tertiary);
   }
-
+  
   .input-field:focus {
     @apply outline-none ring-2;
     border-color: var(--accent-primary);
     ring-color: rgba(99, 102, 241, 0.2);
     box-shadow: var(--shadow-md);
   }
+  
+  .input-field:focus-visible {
+    @apply outline-none ring-2 ring-offset-2;
+    ring-color: var(--accent-primary);
+    ring-offset-color: var(--bg-primary);
+  }
+
 
   /* OAuth Button */
   .oauth-button {
