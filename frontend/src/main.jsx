@@ -32,24 +32,47 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 });
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <ErrorBoundary>
-        <App />
-        <Toaster
-          toastOptions={{
-            className: 'toast-custom',
-            style: {
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-            },
-          }}
-        />
-      </ErrorBoundary>
-    </BrowserRouter>
-  </React.StrictMode>,
-);
+// Safely render the app
+try {
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    throw new Error('Root element not found');
+  }
+
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <BrowserRouter>
+        <ErrorBoundary>
+          <App />
+          <Toaster
+            toastOptions={{
+              className: 'toast-custom',
+              style: {
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-color)',
+              },
+            }}
+          />
+        </ErrorBoundary>
+      </BrowserRouter>
+    </React.StrictMode>,
+  );
+} catch (error) {
+  console.error('Failed to render app:', error);
+  // Fallback error display
+  document.body.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui; padding: 20px; text-align: center;">
+      <div>
+        <h1 style="color: #ef4444; margin-bottom: 16px;">Application Error</h1>
+        <p style="color: #6b7280; margin-bottom: 8px;">Failed to initialize the application.</p>
+        <p style="color: #9ca3af; font-size: 14px;">Please refresh the page or contact support if the issue persists.</p>
+        <button onclick="window.location.reload()" style="margin-top: 24px; padding: 8px 16px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer;">
+          Refresh Page
+        </button>
+      </div>
+    </div>
+  `;
+}
 
 

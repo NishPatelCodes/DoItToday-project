@@ -32,13 +32,24 @@ function App() {
         // Token is valid, keep user authenticated
         setIsValidating(false);
       } catch (error) {
-        // Token is invalid, clear it
-        logout();
+        // Token is invalid or API error, clear it
+        // Only logout if it's an auth error (401), not network errors
+        if (error.response?.status === 401) {
+          logout();
+        }
         setIsValidating(false);
       }
     };
 
-    validateToken();
+    // Add a small delay to ensure stores are initialized
+    const timer = setTimeout(() => {
+      validateToken().catch((err) => {
+        console.error('Token validation error:', err);
+        setIsValidating(false);
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 

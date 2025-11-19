@@ -1,6 +1,30 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Safely get API URL with fallback
+const getAPIUrl = () => {
+  try {
+    const envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl) {
+      return envUrl;
+    }
+    // Fallback to localhost for development
+    if (import.meta.env.DEV) {
+      return 'http://localhost:5000/api';
+    }
+    // For production, try to infer from current origin
+    if (typeof window !== 'undefined') {
+      const origin = window.location.origin;
+      // If deployed on same domain as backend, use relative path
+      return `${origin}/api`;
+    }
+    return 'http://localhost:5000/api';
+  } catch (e) {
+    console.warn('Failed to get API URL:', e);
+    return 'http://localhost:5000/api';
+  }
+};
+
+const API_URL = getAPIUrl();
 const isDev = import.meta.env.DEV;
 
 // Detect if we're using Render (production) - Render has slow cold starts
@@ -157,16 +181,23 @@ api.interceptors.request.use(
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth-storage');
-  if (token) {
-    try {
-      const authData = JSON.parse(token);
-      if (authData.state?.token) {
-        config.headers.Authorization = `Bearer ${authData.state.token}`;
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const token = localStorage.getItem('auth-storage');
+      if (token) {
+        try {
+          const authData = JSON.parse(token);
+          if (authData.state?.token) {
+            config.headers.Authorization = `Bearer ${authData.state.token}`;
+          }
+        } catch (e) {
+          // Invalid token format - ignore
+        }
       }
-    } catch (e) {
-      // Invalid token format
     }
+  } catch (e) {
+    // localStorage access failed - continue without token
+    console.warn('Failed to access localStorage for token:', e);
   }
   return config;
 });

@@ -9,6 +9,13 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
+    // Don't crash on known harmless errors
+    const errorMessage = error?.message || String(error);
+    if (errorMessage.includes('message channel closed') || 
+        errorMessage.includes('listener indicated an asynchronous response')) {
+      // These are Chrome extension errors - ignore them
+      return { hasError: false };
+    }
     return { hasError: true };
   }
 
