@@ -123,13 +123,29 @@ export const formatCurrency = (amount, currency = 'USD', options = {}) => {
     maximumFractionDigits,
   } = options;
 
+  // Ensure decimal places are valid (between 0 and 20)
+  const defaultDecimalPlaces = Math.max(0, Math.min(20, currencyConfig.decimalPlaces || 2));
+  
+  // Validate and clamp fraction digits to valid range (0-20)
+  const minDigits = minimumFractionDigits !== undefined 
+    ? Math.max(0, Math.min(20, Math.floor(minimumFractionDigits) || 0))
+    : defaultDecimalPlaces;
+  
+  const maxDigits = maximumFractionDigits !== undefined
+    ? Math.max(0, Math.min(20, Math.floor(maximumFractionDigits) || 0))
+    : defaultDecimalPlaces;
+
+  // Ensure minDigits <= maxDigits
+  const finalMinDigits = Math.min(minDigits, maxDigits);
+  const finalMaxDigits = Math.max(minDigits, maxDigits);
+
   const formattedAmount = useLocale
     ? new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: minimumFractionDigits ?? currencyConfig.decimalPlaces,
-        maximumFractionDigits: maximumFractionDigits ?? currencyConfig.decimalPlaces,
+        minimumFractionDigits: finalMinDigits,
+        maximumFractionDigits: finalMaxDigits,
         style: 'decimal',
       }).format(amount)
-    : amount.toFixed(currencyConfig.decimalPlaces);
+    : amount.toFixed(defaultDecimalPlaces);
 
   if (showSymbol) {
     // For currencies with prefix symbols
