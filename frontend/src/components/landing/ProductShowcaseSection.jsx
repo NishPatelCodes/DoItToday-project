@@ -168,11 +168,14 @@ function ProductShowcaseSection() {
                     
                     {/* Screenshot - Using CSS mockup component */}
                     <div className="relative overflow-hidden rounded-lg bg-[var(--bg-primary)] flex-1 min-h-[320px] md:min-h-[360px] lg:min-h-[380px] flex flex-col">
-                      {preview.component && (
-                        <div className="w-full h-full flex flex-col">
-                          <preview.component />
-                        </div>
-                      )}
+                      {preview.component && (() => {
+                        const Component = preview.component;
+                        return (
+                          <div className="w-full h-full flex flex-col">
+                            <Component />
+                          </div>
+                        );
+                      })()}
                       {/* Subtle border glow on hover - no white overlay */}
                       <div className="absolute inset-0 rounded-lg border-2 border-[var(--accent-primary)] opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none" />
                     </div>
@@ -202,11 +205,14 @@ function ProductShowcaseSection() {
                         
                         {/* Screenshot - Using CSS mockup component */}
                         <div className="w-full flex-1 flex flex-col pt-8">
-                          {preview.component && (
-                            <div className="w-full h-full flex flex-col">
-                              <preview.component />
-                            </div>
-                          )}
+                          {preview.component && (() => {
+                            const Component = preview.component;
+                            return (
+                              <div className="w-full h-full flex flex-col">
+                                <Component />
+                              </div>
+                            );
+                          })()}
                         </div>
                         {/* Subtle border glow on hover - no white overlay */}
                         <div className="absolute inset-0 rounded-[2.5rem] border-2 border-[var(--accent-primary)] opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none" />
