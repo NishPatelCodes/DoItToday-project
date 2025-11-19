@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import { QueryProvider } from './providers/QueryProvider.jsx';
 import './index.css';
 
 // Suppress Chrome extension errors (harmless errors from browser extensions)
@@ -42,19 +43,21 @@ try {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <BrowserRouter>
-        <ErrorBoundary>
-          <App />
-          <Toaster
-            toastOptions={{
-              className: 'toast-custom',
-              style: {
-                background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-color)',
-              },
-            }}
-          />
-        </ErrorBoundary>
+        <QueryProvider>
+          <ErrorBoundary>
+            <App />
+            <Toaster
+              toastOptions={{
+                className: 'toast-custom',
+                style: {
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)',
+                },
+              }}
+            />
+          </ErrorBoundary>
+        </QueryProvider>
       </BrowserRouter>
     </React.StrictMode>,
   );

@@ -1,14 +1,17 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './hooks/useTheme';
-import { useEffect, useState } from 'react';
-import LandingPage from './pages/LandingPage';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import OAuthCallback from './pages/OAuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import { authAPI } from './services/api';
+import { LazyWrapper } from './components/lazy/LazyWrapper';
+
+// Lazy load heavy pages for code splitting
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 
 function App() {
   const { isAuthenticated, token, logout } = useAuthStore();
@@ -73,10 +76,25 @@ function App() {
       </a>
       <Routes>
         {/* Landing page - always accessible */}
-        <Route path="/landing" element={<LandingPage />} />
+        <Route 
+          path="/landing" 
+          element={
+            <LazyWrapper>
+              <LandingPage />
+            </LazyWrapper>
+          } 
+        />
         <Route
           path="/"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <LazyWrapper>
+                <LandingPage />
+              </LazyWrapper>
+            )
+          }
         />
         <Route
           path="/login"
@@ -91,7 +109,9 @@ function App() {
           path="/dashboard/*"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <LazyWrapper minHeight="100vh">
+                <Dashboard />
+              </LazyWrapper>
             </ProtectedRoute>
           }
         />

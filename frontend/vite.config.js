@@ -1,8 +1,74 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      // Enable Fast Refresh optimizations
+      fastRefresh: true,
+      // Exclude heavy libraries from JSX transform
+      exclude: /node_modules/,
+    }),
+    // PWA plugin for offline support and caching
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg'],
+      manifest: {
+        name: 'DoItToday - Productivity App',
+        short_name: 'DoItToday',
+        description: 'Organize your day, achieve more. The all-in-one productivity platform.',
+        theme_color: '#6366f1',
+        background_color: '#ffffff',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+          },
+        ],
+      },
+      workbox: {
+        // Cache static assets
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Runtime caching for API calls
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            urlPattern: /\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5, // 5 minutes
+              },
+              networkTimeoutSeconds: 10,
+            },
+          },
+        ],
+      },
+    }),
+    // Bundle analyzer (only in analyze mode)
+    process.env.ANALYZE && visualizer({
+      open: true,
+      filename: 'dist/stats.html',
+      gzipSize: true,
+      brotliSize: true,
+    }),
+  ].filter(Boolean),
   server: {
     port: 3000,
     proxy: {
@@ -13,18 +79,80 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: true,
+    // Disable sourcemaps in production for smaller bundles
+    sourcemap: process.env.ANALYZE ? true : false,
+    // Target modern browsers for smaller bundles
+    target: 'esnext',
+    // Minify with esbuild (faster than terser)
+    minify: 'esbuild',
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        // Intelligent code splitting strategy
+        manualChunks: (id) => {
+          // Vendor chunks
+          if (id.includes('node_modules')) {
+            // React core (small, load first)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            // Heavy animation library (lazy load)
+            if (id.includes('framer-motion')) {
+              return 'framer-motion';
+            }
+            // Chart library (lazy load)
+            if (id.includes('recharts')) {
+              return 'recharts';
+            }
+            // DnD kit (lazy load)
+            if (id.includes('@dnd-kit')) {
+              return 'dnd-kit';
+            }
+            // React icons (can be large, split by usage)
+            if (id.includes('react-icons')) {
+              return 'react-icons';
+            }
+            // Date utilities
+            if (id.includes('date-fns')) {
+              return 'date-fns';
+            }
+            // Other vendor libraries
+            return 'vendor';
+          }
+        },
+        // Optimize chunk file names
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
     commonjsOptions: {
       include: [/react-icons/, /node_modules/],
     },
+    // Enable tree-shaking
+    treeshake: {
+      moduleSideEffects: false,
+    },
   },
   optimizeDeps: {
-    include: ['react-icons/fi'],
+    // Pre-bundle heavy dependencies
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'axios',
+      'zustand',
+      'date-fns',
+    ],
+    // Exclude heavy libraries that should be lazy loaded
+    exclude: ['framer-motion', 'recharts'],
+  },
+  // Enable CSS optimization
+  css: {
+    devSourcemap: false,
   },
 });
 

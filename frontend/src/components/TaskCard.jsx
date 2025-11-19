@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaCheckCircle, FaCircle, FaTrash, FaEdit, FaClock, FaUserFriends, FaStar, FaExclamationTriangle } from 'react-icons/fa';
 import { format, isPast, isToday } from 'date-fns';
@@ -6,23 +6,61 @@ import { useAuthStore } from '../store/authStore';
 import ConfirmationModal from './ConfirmationModal';
 import { playTaskCompleteSound } from '../utils/soundEffects';
 
-const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSelected = false, onSelect }) => {
+const TaskCard = memo(({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSelected = false, onSelect }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { user } = useAuthStore();
-  const isCompleted = task.status === 'completed';
-  const isOwnTask = task.userId?._id === user?.id || task.userId === user?.id;
-  const isSharedTask = task.sharedWith && task.sharedWith.length > 0;
-  const sharedWithNames = task.sharedWith?.map(f => f.name || f.email || 'Friend').join(', ') || '';
   
-  // Check if task is overdue
-  const isOverdue = task.dueDate && !isCompleted && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate));
-  const isOverdueToday = task.dueDate && !isCompleted && isToday(new Date(task.dueDate));
+  // Memoize computed values to prevent recalculation on every render
+  const isCompleted = useMemo(() => task.status === 'completed', [task.status]);
+  const isOwnTask = useMemo(() => 
+    task.userId?._id === user?.id || task.userId === user?.id,
+    [task.userId, user?.id]
+  );
+  const isSharedTask = useMemo(() => 
+    task.sharedWith && task.sharedWith.length > 0,
+    [task.sharedWith]
+  );
+  const sharedWithNames = useMemo(() => 
+    task.sharedWith?.map(f => f.name || f.email || 'Friend').join(', ') || '',
+    [task.sharedWith]
+  );
   
-  const priorityColors = {
+  // Check if task is overdue (memoized)
+  const isOverdue = useMemo(() => 
+    task.dueDate && !isCompleted && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)),
+    [task.dueDate, isCompleted]
+  );
+  const isOverdueToday = useMemo(() => 
+    task.dueDate && !isCompleted && isToday(new Date(task.dueDate)),
+    [task.dueDate, isCompleted]
+  );
+  
+  const priorityColors = useMemo(() => ({
     low: 'bg-green-100 text-green-700 border border-green-200',
     medium: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
     high: 'bg-red-100 text-red-700 border border-red-200',
-  };
+  }), []);
+  
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleToggle = useCallback(() => {
+    if (!isCompleted) {
+      playTaskCompleteSound();
+    }
+    onToggle(task._id);
+  }, [isCompleted, onToggle, task._id]);
+  
+  const handleSelect = useCallback(() => {
+    onSelect && onSelect(task._id);
+  }, [onSelect, task._id]);
+  
+  const handleEdit = useCallback(() => {
+    onEdit && onEdit(task);
+  }, [onEdit, task]);
+  
+  const handleDelete = useCallback(() => {
+    onDelete(task._id);
+    setShowDeleteConfirm(false);
+  }, [onDelete, task._id]);
 
   return (
     <motion.div
@@ -38,7 +76,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
       <div className="flex items-start gap-3">
         {isSelectMode && !isCompleted ? (
           <button
-            onClick={() => onSelect && onSelect(task._id)}
+            onClick={handleSelect}
             className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded border-2 transition-all duration-300 flex items-center justify-center ${
               isSelected
                 ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
@@ -70,14 +108,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
           </button>
         ) : (
           <button
-            onClick={() => {
-              // No confirmation needed - complete/uncomplete directly
-              // Play sound only when completing (not uncompleting)
-              if (!isCompleted) {
-                playTaskCompleteSound();
-              }
-              onToggle(task._id);
-            }}
+            onClick={handleToggle}
             className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
               isCompleted
                 ? 'bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/40 scale-100'
@@ -198,7 +229,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
           <div className="flex items-center gap-2">
             {!isCompleted && onEdit && (
               <button
-                onClick={() => onEdit(task)}
+                onClick={handleEdit}
                 className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
                 aria-label={`Edit task: ${task.title}`}
               >
@@ -219,10 +250,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
       <ConfirmationModal
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={() => {
-          onDelete(task._id);
-          setShowDeleteConfirm(false);
-        }}
+        onConfirm={handleDelete}
         title="Delete Task"
         message={`Are you sure you want to delete "${task.title}"? This action cannot be undone.`}
         confirmText="Delete"
@@ -232,7 +260,21 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
 
     </motion.div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison function for React.memo
+  return (
+    prevProps.task._id === nextProps.task._id &&
+    prevProps.task.status === nextProps.task.status &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.description === nextProps.task.description &&
+    prevProps.task.dueDate === nextProps.task.dueDate &&
+    prevProps.task.priority === nextProps.task.priority &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isSelectMode === nextProps.isSelectMode
+  );
+});
+
+TaskCard.displayName = 'TaskCard';
 
 export default TaskCard;
 

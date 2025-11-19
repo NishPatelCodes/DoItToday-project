@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaPlus,
@@ -26,6 +26,7 @@ import {
   FaList,
   FaCompass,
 } from 'react-icons/fa';
+// Recharts will be code-split via Vite config (already configured)
 import {
   ResponsiveContainer,
   LineChart,
@@ -38,17 +39,12 @@ import {
 import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, addDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
-import GoalAnalytics from '../components/GoalAnalytics';
 import HabitCard from '../components/HabitCard';
-import SmartPlanner from '../components/SmartPlanner';
-import FocusMode from '../components/FocusMode';
 import DisciplinePoints from '../components/DisciplinePoints';
-import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
 import DashboardSummary from '../components/DashboardSummary';
 import MultipleTasksModal from '../components/MultipleTasksModal';
 import ConfirmationModal from '../components/ConfirmationModal';
-import TaskKanbanBoard from '../components/TaskKanbanBoard';
 import TaskSearchFilter from '../components/TaskSearchFilter';
 import TaskFAB from '../components/TaskFAB';
 import TaskAlerts from '../components/TaskAlerts';
@@ -57,7 +53,16 @@ import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skel
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { notesAPI, financeAPI } from '../services/api';
-import AnalyticsDashboard from '../components/AnalyticsDashboard';
+import { LazyWrapper } from '../components/lazy/LazyWrapper';
+import { Suspense } from 'react';
+
+// Lazy load heavy components
+const GoalAnalytics = lazy(() => import('../components/GoalAnalytics'));
+const SmartPlanner = lazy(() => import('../components/SmartPlanner'));
+const FocusMode = lazy(() => import('../components/FocusMode'));
+const CalendarView = lazy(() => import('../components/CalendarView'));
+const TaskKanbanBoard = lazy(() => import('../components/TaskKanbanBoard'));
+const AnalyticsDashboard = lazy(() => import('../components/AnalyticsDashboard'));
 import ErrorBoundary from '../components/ErrorBoundary';
 import ChartErrorBoundary from '../components/ChartErrorBoundary';
 import { formatCurrency } from '../utils/currencyFormatter';
@@ -1662,13 +1667,15 @@ export const DashboardAnalytics = ({ analytics, tasks, goals, habits, user }) =>
   try {
     return (
       <ErrorBoundary>
-        <AnalyticsDashboard
-          analytics={analytics}
-          tasks={tasks || []}
-          goals={goals || []}
-          habits={habits || []}
-          user={user}
-        />
+        <LazyWrapper minHeight="80vh">
+          <AnalyticsDashboard
+            analytics={analytics}
+            tasks={tasks || []}
+            goals={goals || []}
+            habits={habits || []}
+            user={user}
+          />
+        </LazyWrapper>
       </ErrorBoundary>
     );
   } catch (error) {
