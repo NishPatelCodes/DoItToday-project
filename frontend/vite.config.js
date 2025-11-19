@@ -89,6 +89,7 @@ export default defineConfig({
     cssCodeSplit: true,
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
+    // Preload critical chunks for faster initial load
     rollupOptions: {
       output: {
         // Intelligent code splitting strategy

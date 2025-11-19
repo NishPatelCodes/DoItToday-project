@@ -5,7 +5,16 @@ import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { QueryProvider } from './providers/QueryProvider.jsx';
+import { startWarmup, setupVisibilityWarmup } from './utils/warmup.js';
 import './index.css';
+
+// Start warm-up system to prevent cold starts
+if (typeof window !== 'undefined') {
+  // Start warm-up when app loads
+  startWarmup();
+  // Warm up when user returns to tab
+  setupVisibilityWarmup();
+}
 
 // Suppress Chrome extension errors (harmless errors from browser extensions)
 window.addEventListener('error', (event) => {

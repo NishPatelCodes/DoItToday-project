@@ -96,6 +96,14 @@ const Sidebar = ({ isOpen, onClose }) => {
           <NavLink
             key={item.path}
             to={item.path}
+            onMouseEnter={() => {
+              // Prefetch route on hover for instant navigation
+              const link = document.createElement('link');
+              link.rel = 'prefetch';
+              link.href = item.path;
+              link.as = 'document';
+              document.head.appendChild(link);
+            }}
             onClick={() => {
               // Close sidebar on mobile when navigating
               if (window.innerWidth < 768) {
