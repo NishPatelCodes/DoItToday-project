@@ -1,7 +1,7 @@
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './hooks/useTheme';
-import { useEffect, useState, lazy, Suspense } from 'react';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import OAuthCallback from './pages/OAuthCallback';

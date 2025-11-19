@@ -1,4 +1,4 @@
-import { useState, memo, useMemo, useCallback } from 'react';
+import React, { useState, memo, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaCheckCircle, FaCircle, FaTrash, FaEdit, FaClock, FaUserFriends, FaStar, FaExclamationTriangle } from 'react-icons/fa';
 import { format, isPast, isToday } from 'date-fns';

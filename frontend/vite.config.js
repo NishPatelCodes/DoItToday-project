@@ -92,13 +92,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Intelligent code splitting strategy
+        // IMPORTANT: Let Vite handle React automatically to prevent module resolution issues
         manualChunks: (id) => {
-          // Vendor chunks
+          // Only split heavy libraries, let Vite handle React core automatically
           if (id.includes('node_modules')) {
-            // React core (small, load first)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
-            }
             // Heavy animation library (lazy load)
             if (id.includes('framer-motion')) {
               return 'framer-motion';
@@ -115,12 +112,8 @@ export default defineConfig({
             if (id.includes('react-icons')) {
               return 'react-icons';
             }
-            // Date utilities
-            if (id.includes('date-fns')) {
-              return 'date-fns';
-            }
-            // Other vendor libraries
-            return 'vendor';
+            // Don't manually chunk React - let Vite handle it automatically
+            // This prevents "Cannot read properties of undefined" errors
           }
         },
         // Optimize chunk file names

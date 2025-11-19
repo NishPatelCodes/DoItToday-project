@@ -1,5 +1,5 @@
+import React, { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { lazy, Suspense } from 'react';
 
 // Lazy load devtools (only in development, reduces bundle size)
 let ReactQueryDevtools;
