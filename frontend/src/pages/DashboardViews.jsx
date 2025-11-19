@@ -68,6 +68,7 @@ import ChartErrorBoundary from '../components/ChartErrorBoundary';
 import { formatCurrency } from '../utils/currencyFormatter';
 import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
 import FocusPreviewCard from '../components/FocusPreviewCard';
+import NotionTimelineCalendar from '../components/NotionTimelineCalendar';
 
 // Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
@@ -1023,8 +1024,8 @@ export const DashboardHome = ({
                         dataKey="productivity"
                         stroke="#8b5cf6"
                         strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
-                        activeDot={{ r: 6 }}
+                        dot={{ r: 4, strokeWidth: 2, stroke: '#8b5cf6', fill: '#8b5cf6' }}
+                        activeDot={{ r: 6, stroke: '#8b5cf6', fill: '#8b5cf6' }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -1105,8 +1106,8 @@ export const DashboardHome = ({
                         dataKey="amount"
                         stroke="#fbbf24"
                         strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
-                        activeDot={{ r: 6 }}
+                        dot={{ r: 4, strokeWidth: 2, stroke: '#fbbf24', fill: '#fbbf24' }}
+                        activeDot={{ r: 6, stroke: '#fbbf24', fill: '#fbbf24' }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -1125,15 +1126,11 @@ export const DashboardHome = ({
   );
 };
 
-// Calendar View
+// Calendar View - Notion-style Timeline
 export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask, onToggleTask, onDeleteTask, onEditTask }) => {
   return (
-    <div className="p-4 md:p-8 overflow-x-hidden">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Calendar</h1>
-        <p className="text-[var(--text-secondary)]">Plan and view your tasks by date</p>
-      </div>
-      <CalendarView
+    <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] overflow-hidden">
+      <NotionTimelineCalendar
         tasks={tasks}
         goals={goals}
         onDateClick={onDateClick}

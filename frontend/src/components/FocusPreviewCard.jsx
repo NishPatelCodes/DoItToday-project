@@ -157,7 +157,7 @@ const FocusPreviewCard = () => {
         </div>
 
         {/* Current Task Name */}
-        <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
+        <div className="text-center mb-5 min-h-[40px] flex items-center justify-center">
           {currentTask ? (
             <p className="text-sm md:text-base font-medium px-4 line-clamp-2">
               {currentTask.title}
@@ -172,7 +172,7 @@ const FocusPreviewCard = () => {
           onClick={handlePlayClick}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative w-16 h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all group"
+          className="relative w-16 h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all group z-10 mb-6"
           aria-label={isActive ? 'Go to Focus Mode' : 'Start 25 min session'}
         >
           {isActive ? (
@@ -198,24 +198,24 @@ const FocusPreviewCard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4"
+              className="relative flex justify-center gap-2 px-4 mt-2"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => handleQuickStart(25)}
-                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium"
+                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium touch-manipulation"
               >
                 25m
               </button>
               <button
                 onClick={() => handleQuickStart(5)}
-                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium"
+                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium touch-manipulation"
               >
                 5m break
               </button>
               <button
                 onClick={() => navigate('/dashboard/focus')}
-                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium"
+                className="px-3 py-1.5 text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg transition-all font-medium touch-manipulation"
               >
                 Custom
               </button>
