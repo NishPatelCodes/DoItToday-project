@@ -40,7 +40,7 @@ const GoalTracker = ({ goal, onUpdate, onDelete, onEdit, onViewAnalytics }) => {
               {goal.category}
             </span>
             <span
-              className={`leading-normal flex-shrink-0 ${isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-[var(--text-secondary)]'}`
+              className={`leading-normal flex-shrink-0 ${isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-[var(--text-secondary)]'}`}
             >
               {isOverdue
                 ? 'Overdue'
