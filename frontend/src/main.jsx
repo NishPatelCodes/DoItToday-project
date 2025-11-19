@@ -42,9 +42,9 @@ try {
 
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <BrowserRouter>
-        <QueryProvider>
-          <ErrorBoundary>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <QueryProvider>
             <App />
             <Toaster
               toastOptions={{
@@ -56,9 +56,9 @@ try {
                 },
               }}
             />
-          </ErrorBoundary>
-        </QueryProvider>
-      </BrowserRouter>
+          </QueryProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
     </React.StrictMode>,
   );
 } catch (error) {

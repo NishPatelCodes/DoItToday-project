@@ -7,11 +7,20 @@ import Register from './pages/Register';
 import OAuthCallback from './pages/OAuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import { authAPI } from './services/api';
-import { LazyWrapper } from './components/lazy/LazyWrapper';
 
 // Lazy load heavy pages for code splitting
-const LandingPage = lazy(() => import('./pages/LandingPage'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const LandingPage = lazy(() => 
+  import('./pages/LandingPage').catch((err) => {
+    console.error('Error loading LandingPage:', err);
+    return { default: () => <div className="p-4">Error loading page. Please refresh.</div> };
+  })
+);
+const Dashboard = lazy(() => 
+  import('./pages/Dashboard').catch((err) => {
+    console.error('Error loading Dashboard:', err);
+    return { default: () => <div className="p-4">Error loading dashboard. Please refresh.</div> };
+  })
+);
 
 function App() {
   const { isAuthenticated, token, logout } = useAuthStore();
@@ -79,9 +88,9 @@ function App() {
         <Route 
           path="/landing" 
           element={
-            <LazyWrapper>
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div></div>}>
               <LandingPage />
-            </LazyWrapper>
+            </Suspense>
           } 
         />
         <Route
@@ -90,9 +99,9 @@ function App() {
             isAuthenticated ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <LazyWrapper>
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div></div>}>
                 <LandingPage />
-              </LazyWrapper>
+              </Suspense>
             )
           }
         />
@@ -109,9 +118,9 @@ function App() {
           path="/dashboard/*"
           element={
             <ProtectedRoute>
-              <LazyWrapper minHeight="100vh">
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent mb-4"></div><p className="text-[var(--text-secondary)]">Loading dashboard...</p></div></div>}>
                 <Dashboard />
-              </LazyWrapper>
+              </Suspense>
             </ProtectedRoute>
           }
         />

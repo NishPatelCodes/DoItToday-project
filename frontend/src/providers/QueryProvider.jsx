@@ -2,9 +2,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, Suspense } from 'react';
 
 // Lazy load devtools (only in development, reduces bundle size)
-const ReactQueryDevtools = import.meta.env.DEV
-  ? lazy(() => import('@tanstack/react-query-devtools').then(mod => ({ default: mod.ReactQueryDevtools })))
-  : () => null;
+let ReactQueryDevtools;
+if (import.meta.env.DEV) {
+  ReactQueryDevtools = lazy(() => 
+    import('@tanstack/react-query-devtools').then((mod) => ({
+      default: mod.ReactQueryDevtools,
+    }))
+  );
+} else {
+  ReactQueryDevtools = () => null;
+}
 
 // Create a client with optimized defaults for performance
 const queryClient = new QueryClient({
@@ -31,16 +38,22 @@ const queryClient = new QueryClient({
 });
 
 export const QueryProvider = ({ children }) => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-      {/* Only show devtools in development */}
-      {import.meta.env.DEV && (
-        <Suspense fallback={null}>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </Suspense>
-      )}
-    </QueryClientProvider>
-  );
+  try {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+        {/* Only show devtools in development */}
+        {import.meta.env.DEV && (
+          <Suspense fallback={null}>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </Suspense>
+        )}
+      </QueryClientProvider>
+    );
+  } catch (error) {
+    console.error('QueryProvider error:', error);
+    // Fallback: render children without QueryProvider if there's an error
+    return <>{children}</>;
+  }
 };
 
