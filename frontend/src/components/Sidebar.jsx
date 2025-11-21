@@ -75,14 +75,14 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Logo */}
       <div className="p-4 md:p-6 border-b border-[var(--border-color)]">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg md:text-xl font-bold gradient-text">DoItToday</h1>
-            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">Task Manager</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg md:text-xl font-bold gradient-text leading-tight">DoItToday</h1>
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1 leading-normal">Task Manager</p>
           </div>
           {/* Close button for mobile */}
           <button
             onClick={onClose}
-            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors touch-manipulation min-w-[48px] min-h-[48px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-lg"
             aria-label="Close navigation menu"
           >
             <FaTimes className="text-lg" />
@@ -96,6 +96,14 @@ const Sidebar = ({ isOpen, onClose }) => {
           <NavLink
             key={item.path}
             to={item.path}
+            onMouseEnter={() => {
+              // Prefetch route on hover for instant navigation
+              const link = document.createElement('link');
+              link.rel = 'prefetch';
+              link.href = item.path;
+              link.as = 'document';
+              document.head.appendChild(link);
+            }}
             onClick={() => {
               // Close sidebar on mobile when navigating
               if (window.innerWidth < 768) {
@@ -103,15 +111,15 @@ const Sidebar = ({ isOpen, onClose }) => {
               }
             }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 ${
+              `flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl transition-all duration-200 touch-manipulation min-h-[48px] ${
                 isActive
                   ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
-              }`
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2`
             }
           >
-            <item.icon className="text-base md:text-base" />
-            <span className="text-sm md:text-sm font-medium">{item.label}</span>
+            <item.icon className="text-base flex-shrink-0 w-5 h-5" />
+            <span className="text-sm font-medium leading-relaxed truncate">{item.label}</span>
           </NavLink>
         ))}
       </nav>

@@ -232,7 +232,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="card p-4 md:p-6 w-full max-w-md max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
+            className="card p-4 md:p-6 w-full max-w-md max-h-[90vh] md:max-h-[85vh] overflow-y-auto rounded-xl mx-4"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleEscape}
             ref={modalRef}
@@ -246,10 +246,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </h2>
               <button
                 onClick={handleClose}
-                className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+                className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors touch-manipulation min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                 aria-label="Close modal"
               >
-                <FaTimes />
+                <FaTimes className="text-lg" />
               </button>
             </div>
 
@@ -269,7 +269,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
 
             <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div>
-                <label htmlFor="task-title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label htmlFor="task-title" className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Title *
                 </label>
                 <input
@@ -296,7 +296,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </div>
 
               <div>
-                <label htmlFor="task-description" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label htmlFor="task-description" className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Description
                 </label>
                 <textarea
@@ -308,7 +308,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       setErrors({ ...errors, description: '' });
                     }
                   }}
-                  className={`input-field min-h-[100px] ${errors.description ? 'border-red-500' : ''}`}
+                  className={`input-field min-h-[100px] resize-y ${errors.description ? 'border-red-500' : ''}`}
                   placeholder="Task description (optional)"
                   aria-invalid={errors.description ? 'true' : 'false'}
                   aria-describedby={errors.description ? 'description-error' : undefined}
@@ -326,7 +326,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </div>
 
               <div>
-                <label htmlFor="task-priority" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label htmlFor="task-priority" className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Priority
                 </label>
                 <select
@@ -343,7 +343,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Due Date & Time
                 </label>
                 <div className="flex gap-2">
@@ -387,42 +387,42 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     <button
                       type="button"
                       onClick={() => setDueTime('09:00')}
-                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                     >
                       9 AM
                     </button>
                     <button
                       type="button"
                       onClick={() => setDueTime('12:00')}
-                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                     >
                       12 PM
                     </button>
                     <button
                       type="button"
                       onClick={() => setDueTime('15:00')}
-                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                     >
                       3 PM
                     </button>
                     <button
                       type="button"
                       onClick={() => setDueTime('17:00')}
-                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                     >
                       5 PM
                     </button>
                     <button
                       type="button"
                       onClick={() => setDueTime('19:00')}
-                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                     >
                       7 PM
                     </button>
                     <button
                       type="button"
                       onClick={() => setDueTime('21:00')}
-                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all"
+                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                     >
                       9 PM
                     </button>
@@ -443,7 +443,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       const today = new Date();
                       setDueDate(today.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     Today
                   </button>
@@ -454,7 +454,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       tomorrow.setDate(tomorrow.getDate() + 1);
                       setDueDate(tomorrow.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     Tomorrow
                   </button>
@@ -465,7 +465,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       date.setDate(date.getDate() + 3);
                       setDueDate(date.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     In 3 days
                   </button>
@@ -476,7 +476,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       date.setDate(date.getDate() + 5);
                       setDueDate(date.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     In 5 days
                   </button>
@@ -487,7 +487,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       date.setDate(date.getDate() + 7);
                       setDueDate(date.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     In 1 week
                   </button>
@@ -498,7 +498,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       date.setDate(date.getDate() + 10);
                       setDueDate(date.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     In 10 days
                   </button>
@@ -509,7 +509,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       date.setDate(date.getDate() + 14);
                       setDueDate(date.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     In 2 weeks
                   </button>
@@ -520,7 +520,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       date.setDate(date.getDate() + 30);
                       setDueDate(date.toISOString().split('T')[0]);
                     }}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200"
+                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
                     In 1 month
                   </button>
@@ -528,7 +528,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </div>
 
               <div className="border-t border-[var(--border-color)] pt-4 mt-4">
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Associate with Goal (Optional)
                 </label>
                 {activeGoals.length === 0 ? (
@@ -576,7 +576,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       </div>
                     </div>
                     {selectedGoalId && (
-                      <p className="mt-2 text-xs text-[var(--text-secondary)]">
+                      <p className="mt-2 text-xs text-[var(--text-secondary)] leading-normal">
                         ✓ This task will help you achieve your goal
                       </p>
                     )}
@@ -585,26 +585,26 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </div>
 
               <div className="border-t border-[var(--border-color)] pt-4 mt-4">
-                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3 leading-normal">
                   <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    Share with Friends
+                    <span>Share with Friends</span>
                   </span>
                 </label>
                 {!friends || friends.length === 0 ? (
-                  <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-4 text-center">
-                    <p className="text-sm text-[var(--text-secondary)] mb-2">
+                  <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl p-4 text-center">
+                    <p className="text-sm text-[var(--text-secondary)] mb-2 leading-normal">
                       No friends added yet
                     </p>
-                    <p className="text-xs text-[var(--text-tertiary)]">
+                    <p className="text-xs text-[var(--text-tertiary)] leading-normal">
                       Add friends from the Team page to share tasks with them
                     </p>
                   </div>
                 ) : (
                   <>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-lg p-3 bg-[var(--bg-secondary)]">
+                    <div className="space-y-2 max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-xl p-3 bg-[var(--bg-secondary)]">
                       {friends.map((friend) => {
                         const friendId = friend._id || friend.id;
                         if (!friendId) {
@@ -614,7 +614,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                         return (
                           <label
                             key={friendId}
-                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                            className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all min-h-[56px] ${
                               isSelected 
                                 ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30' 
                                 : 'hover:bg-[var(--bg-tertiary)] border border-transparent'
@@ -624,7 +624,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => toggleFriend(friendId)}
-                              className="w-5 h-5 text-[var(--accent-primary)] rounded focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer"
+                              className="w-5 h-5 text-[var(--accent-primary)] rounded focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer touch-manipulation flex-shrink-0"
                             />
                             <div className="flex items-center gap-3 flex-1">
                               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
@@ -639,8 +639,8 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       })}
                     </div>
                     {selectedFriends.length > 0 && (
-                      <div className="mt-3 p-2 bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 rounded-lg">
-                        <p className="text-xs font-medium text-[var(--accent-primary)] text-center">
+                      <div className="mt-3 p-3 bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 rounded-xl">
+                        <p className="text-xs font-medium text-[var(--accent-primary)] text-center leading-normal">
                           ✓ {selectedFriends.length} friend{selectedFriends.length > 1 ? 's' : ''} selected
                         </p>
                       </div>
@@ -649,7 +649,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 )}
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-4 mt-6">
                 <button
                   type="button"
                   onClick={onClose}
@@ -658,7 +658,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary flex-1">
-                  {task ? 'Update' : 'Create'} Task
+                  <span>{task ? 'Update' : 'Create'} Task</span>
                 </button>
               </div>
             </form>

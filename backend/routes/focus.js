@@ -86,21 +86,65 @@ router.get('/stats', authenticate, async (req, res) => {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(endOfWeek.getDate() + 7);
 
+    // Get all completed sessions (for total stats)
+    const allSessions = await FocusSession.find({
+      userId: req.user._id,
+      status: 'completed',
+    });
+
+    // Get sessions this week
     const sessionsThisWeek = await FocusSession.find({
       userId: req.user._id,
       status: 'completed',
       startTime: { $gte: startOfWeek, $lte: endOfWeek },
     });
 
-    const totalMinutes = sessionsThisWeek.reduce((sum, s) => sum + (s.completedDuration || s.duration), 0);
-    const totalSessions = sessionsThisWeek.length;
-    const totalDP = sessionsThisWeek.reduce((sum, s) => sum + (s.dpEarned || 0), 0);
+    // Calculate totals
+    const totalMinutes = allSessions.reduce((sum, s) => sum + (s.completedDuration || s.duration), 0);
+    const totalSessions = allSessions.length;
+    const totalDP = allSessions.reduce((sum, s) => sum + (s.dpEarned || 0), 0);
+
+    // Calculate weekly stats
+    const weeklyMinutes = sessionsThisWeek.reduce((sum, s) => sum + (s.completedDuration || s.duration), 0);
+    const weeklySessions = sessionsThisWeek.length;
+    const weeklyDP = sessionsThisWeek.reduce((sum, s) => sum + (s.dpEarned || 0), 0);
+
+    // Daily stats for last 7 days
+    const dailyStats = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+
+      const daySessions = allSessions.filter(
+        (s) => {
+          const sessionDate = new Date(s.startTime);
+          return sessionDate >= date && sessionDate < nextDate;
+        }
+      );
+
+      const dayMinutes = daySessions.reduce((sum, s) => sum + (s.completedDuration || s.duration), 0);
+      const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+      dailyStats.push({
+        date: date.toISOString().split('T')[0],
+        label: dayLabel,
+        minutes: dayMinutes,
+        sessions: daySessions.length,
+      });
+    }
 
     res.json({
       totalMinutes,
       totalSessions,
       totalDP,
       averageSessionLength: totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0,
+      weeklyMinutes,
+      weeklySessions,
+      weeklyDP,
+      dailyStats,
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

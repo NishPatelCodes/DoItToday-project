@@ -58,7 +58,7 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="card p-4 md:p-6 w-full max-w-md max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
+            className="card p-4 md:p-6 w-full max-w-md max-h-[90vh] md:max-h-[85vh] overflow-y-auto rounded-xl mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -67,15 +67,16 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
               </h2>
               <button
                 onClick={onClose}
-                className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+                className="p-2 text-[var(--text-tertiary)] hover:text-red-600 dark:hover:text-red-400 transition-colors touch-manipulation min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                aria-label="Close modal"
               >
-                <FaTimes />
+                <FaTimes className="text-lg" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Title *
                 </label>
                 <input
@@ -89,19 +90,19 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Description
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="input-field min-h-[100px]"
+                  className="input-field min-h-[100px] resize-y"
                   placeholder="Goal description (optional)"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Deadline *
                 </label>
                 <input
@@ -172,7 +173,7 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
                   Category
                 </label>
                 <select
@@ -188,29 +189,29 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 min-h-[48px]">
                 <input
                   type="checkbox"
                   id="isSharedGoal"
                   checked={isShared}
                   onChange={(e) => setIsShared(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-5 h-5 text-[var(--accent-primary)] rounded-lg focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer touch-manipulation flex-shrink-0"
                 />
-                <label htmlFor="isSharedGoal" className="text-sm text-[var(--text-primary)]">
+                <label htmlFor="isSharedGoal" className="text-sm font-medium text-[var(--text-primary)] leading-normal cursor-pointer">
                   Share with friends
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-4 mt-6">
                 <button
                   type="button"
                   onClick={onClose}
                   className="btn-secondary flex-1"
                 >
-                  Cancel
+                  <span>Cancel</span>
                 </button>
                 <button type="submit" className="btn-primary flex-1">
-                  {goal ? 'Update' : 'Create'} Goal
+                  <span>{goal ? 'Update' : 'Create'} Goal</span>
                 </button>
               </div>
             </form>

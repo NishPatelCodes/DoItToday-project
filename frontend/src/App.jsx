@@ -1,14 +1,26 @@
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './hooks/useTheme';
-import { useEffect, useState } from 'react';
-import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import OAuthCallback from './pages/OAuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import { authAPI } from './services/api';
+
+// Lazy load heavy pages for code splitting
+const LandingPage = lazy(() => 
+  import('./pages/LandingPage').catch((err) => {
+    console.error('Error loading LandingPage:', err);
+    return { default: () => <div className="p-4">Error loading page. Please refresh.</div> };
+  })
+);
+const Dashboard = lazy(() => 
+  import('./pages/Dashboard').catch((err) => {
+    console.error('Error loading Dashboard:', err);
+    return { default: () => <div className="p-4">Error loading dashboard. Please refresh.</div> };
+  })
+);
 
 function App() {
   const { isAuthenticated, token, logout } = useAuthStore();
@@ -32,13 +44,24 @@ function App() {
         // Token is valid, keep user authenticated
         setIsValidating(false);
       } catch (error) {
-        // Token is invalid, clear it
-        logout();
+        // Token is invalid or API error, clear it
+        // Only logout if it's an auth error (401), not network errors
+        if (error.response?.status === 401) {
+          logout();
+        }
         setIsValidating(false);
       }
     };
 
-    validateToken();
+    // Add a small delay to ensure stores are initialized
+    const timer = setTimeout(() => {
+      validateToken().catch((err) => {
+        console.error('Token validation error:', err);
+        setIsValidating(false);
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
@@ -62,10 +85,25 @@ function App() {
       </a>
       <Routes>
         {/* Landing page - always accessible */}
-        <Route path="/landing" element={<LandingPage />} />
+        <Route 
+          path="/landing" 
+          element={
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div></div>}>
+              <LandingPage />
+            </Suspense>
+          } 
+        />
         <Route
           path="/"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div></div>}>
+                <LandingPage />
+              </Suspense>
+            )
+          }
         />
         <Route
           path="/login"
@@ -80,7 +118,9 @@ function App() {
           path="/dashboard/*"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent mb-4"></div><p className="text-[var(--text-secondary)]">Loading dashboard...</p></div></div>}>
+                <Dashboard />
+              </Suspense>
             </ProtectedRoute>
           }
         />

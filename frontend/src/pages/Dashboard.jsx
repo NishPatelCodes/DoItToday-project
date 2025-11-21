@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, lazy } from 'react';
 import {
   FaPlus,
   FaSignOutAlt,
@@ -10,8 +9,6 @@ import {
   FaChartLine,
   FaBars,
 } from 'react-icons/fa';
-import GratitudeJournal from '../components/GratitudeJournal';
-import NotesView from '../components/NotesView';
 import { useAuthStore } from '../store/authStore';
 import { useDataStore } from '../store/dataStore';
 import {
@@ -36,12 +33,17 @@ import {
   DashboardAnalytics,
   DashboardTeam,
 } from './DashboardViews';
-import Profile from '../components/Profile';
-import Challenges from '../components/Challenges';
-import FocusModePage from '../pages/FocusModePage';
-import FinanceTracker from '../components/FinanceTracker';
 import { useToast } from '../hooks/useToast';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
+import { LazyWrapper } from '../components/lazy/LazyWrapper';
+
+// Lazy load heavy components for code splitting
+const GratitudeJournal = lazy(() => import('../components/GratitudeJournal'));
+const NotesView = lazy(() => import('../components/NotesView'));
+const Profile = lazy(() => import('../components/Profile'));
+const Challenges = lazy(() => import('../components/Challenges'));
+const FocusModePage = lazy(() => import('../pages/FocusModePage'));
+const FinanceTracker = lazy(() => import('../components/FinanceTracker'));
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -832,6 +834,7 @@ const Dashboard = () => {
                 user={user}
                 tasks={tasks}
                 goals={goals}
+                habits={habits}
               />
             }
           />
@@ -860,42 +863,66 @@ const Dashboard = () => {
               />
               <Route
                 path="gratitude"
-                element={<GratitudeJournal />}
+                element={
+                  <LazyWrapper>
+                    <GratitudeJournal />
+                  </LazyWrapper>
+                }
               />
               <Route
                 path="notes"
-                element={<NotesView />}
+                element={
+                  <LazyWrapper>
+                    <NotesView />
+                  </LazyWrapper>
+                }
               />
               <Route
                 path="challenges"
-                element={<Challenges />}
+                element={
+                  <LazyWrapper>
+                    <Challenges />
+                  </LazyWrapper>
+                }
               />
               <Route
                 path="focus"
-                element={<FocusModePage />}
+                element={
+                  <LazyWrapper minHeight="100vh">
+                    <FocusModePage />
+                  </LazyWrapper>
+                }
               />
               <Route
                 path="finance"
-                element={<FinanceTracker />}
+                element={
+                  <LazyWrapper>
+                    <FinanceTracker />
+                  </LazyWrapper>
+                }
               />
               <Route
                 path="profile"
                 element={
-                  <Profile
-                    currentUser={user}
-                    tasks={tasks}
-                    goals={goals}
-                  />
+                  <LazyWrapper>
+                    <Profile
+                      currentUser={user}
+                      tasks={tasks}
+                      goals={goals}
+                    />
+                  </LazyWrapper>
                 }
               />
               <Route
                 path="profile/:userId"
                 element={
-                  <Profile
-                    currentUser={user}
-                    tasks={tasks}
-                    goals={goals}
-                  />
+                  <LazyWrapper>
+                    <Profile
+                      currentUser={user}
+                      tasks={tasks}
+                      goals={goals}
+                    />
+                  </LazyWrapper>
                 }
               />
         </Routes>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, memo, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FaCheckCircle, FaCircle, FaTrash, FaEdit, FaClock, FaUserFriends, FaStar, FaExclamationTriangle } from 'react-icons/fa';
 import { format, isPast, isToday } from 'date-fns';
@@ -6,40 +6,78 @@ import { useAuthStore } from '../store/authStore';
 import ConfirmationModal from './ConfirmationModal';
 import { playTaskCompleteSound } from '../utils/soundEffects';
 
-const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSelected = false, onSelect }) => {
+const TaskCard = memo(({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSelected = false, onSelect }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { user } = useAuthStore();
-  const isCompleted = task.status === 'completed';
-  const isOwnTask = task.userId?._id === user?.id || task.userId === user?.id;
-  const isSharedTask = task.sharedWith && task.sharedWith.length > 0;
-  const sharedWithNames = task.sharedWith?.map(f => f.name || f.email || 'Friend').join(', ') || '';
   
-  // Check if task is overdue
-  const isOverdue = task.dueDate && !isCompleted && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate));
-  const isOverdueToday = task.dueDate && !isCompleted && isToday(new Date(task.dueDate));
+  // Memoize computed values to prevent recalculation on every render
+  const isCompleted = useMemo(() => task.status === 'completed', [task.status]);
+  const isOwnTask = useMemo(() => 
+    task.userId?._id === user?.id || task.userId === user?.id,
+    [task.userId, user?.id]
+  );
+  const isSharedTask = useMemo(() => 
+    task.sharedWith && task.sharedWith.length > 0,
+    [task.sharedWith]
+  );
+  const sharedWithNames = useMemo(() => 
+    task.sharedWith?.map(f => f.name || f.email || 'Friend').join(', ') || '',
+    [task.sharedWith]
+  );
   
-  const priorityColors = {
+  // Check if task is overdue (memoized)
+  const isOverdue = useMemo(() => 
+    task.dueDate && !isCompleted && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)),
+    [task.dueDate, isCompleted]
+  );
+  const isOverdueToday = useMemo(() => 
+    task.dueDate && !isCompleted && isToday(new Date(task.dueDate)),
+    [task.dueDate, isCompleted]
+  );
+  
+  const priorityColors = useMemo(() => ({
     low: 'bg-green-100 text-green-700 border border-green-200',
     medium: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
     high: 'bg-red-100 text-red-700 border border-red-200',
-  };
+  }), []);
+  
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleToggle = useCallback(() => {
+    if (!isCompleted) {
+      playTaskCompleteSound();
+    }
+    onToggle(task._id);
+  }, [isCompleted, onToggle, task._id]);
+  
+  const handleSelect = useCallback(() => {
+    onSelect && onSelect(task._id);
+  }, [onSelect, task._id]);
+  
+  const handleEdit = useCallback(() => {
+    onEdit && onEdit(task);
+  }, [onEdit, task]);
+  
+  const handleDelete = useCallback(() => {
+    onDelete(task._id);
+    setShowDeleteConfirm(false);
+  }, [onDelete, task._id]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className={`card p-3 mb-2 ${
+      className={`card p-4 mb-3 rounded-xl ${
         isCompleted ? 'opacity-60' : ''
       } ${
-        isOverdue && !isCompleted ? 'border-l-4 border-l-red-500 bg-red-50/10' : ''
+        isOverdue && !isCompleted ? 'border-l-4 border-l-red-500 bg-red-50/10 dark:bg-red-900/10' : ''
       }`}
     >
       <div className="flex items-start gap-3">
         {isSelectMode && !isCompleted ? (
           <button
-            onClick={() => onSelect && onSelect(task._id)}
-            className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded border-2 transition-all duration-300 flex items-center justify-center ${
+            onClick={handleSelect}
+            className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-xl border-2 transition-all duration-300 flex items-center justify-center touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 ${
               isSelected
                 ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
                 : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)]'
@@ -70,18 +108,11 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
           </button>
         ) : (
           <button
-            onClick={() => {
-              // No confirmation needed - complete/uncomplete directly
-              // Play sound only when completing (not uncompleting)
-              if (!isCompleted) {
-                playTaskCompleteSound();
-              }
-              onToggle(task._id);
-            }}
-            className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group ${
+            onClick={handleToggle}
+            className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all duration-300 flex items-center justify-center group touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 ${
               isCompleted
                 ? 'bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 border-green-500 shadow-lg shadow-green-500/40 scale-100'
-                : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 hover:scale-105'
+                : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 hover:scale-105 active:scale-95'
             }`}
             aria-label={isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
           >
@@ -110,35 +141,35 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
         )}
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <h3
-              className={`font-medium text-[var(--text-primary)] ${
-                isCompleted ? 'text-[var(--text-secondary)]' : ''
-              } ${isOverdue && !isCompleted ? 'text-red-500' : ''}`}
+              className={`font-semibold text-[var(--text-primary)] leading-snug break-words ${
+                isCompleted ? 'text-[var(--text-secondary)] line-through' : ''
+              } ${isOverdue && !isCompleted ? 'text-red-500 dark:text-red-400' : ''}`}
             >
               {task.title}
             </h3>
             <span
-              className={`px-2 py-0.5 rounded text-xs font-medium ${priorityColors[task.priority]}`}
+              className={`px-2 py-1 rounded-lg text-xs font-medium flex-shrink-0 ${priorityColors[task.priority]} dark:bg-opacity-20 dark:border-opacity-30`}
             >
               {task.priority}
             </span>
             {isOverdue && !isCompleted && (
-              <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 border border-red-200">
+              <span className="px-2 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700 flex-shrink-0">
                 Overdue
               </span>
             )}
           </div>
 
           {task.description && (
-            <p className="text-sm text-[var(--text-secondary)] mb-2">{task.description}</p>
+            <p className="text-sm text-[var(--text-secondary)] mb-3 leading-relaxed break-words">{task.description}</p>
           )}
 
-          <div className="flex items-center gap-4 text-xs text-[var(--text-tertiary)] flex-wrap">
+          <div className="flex items-center gap-3 md:gap-4 text-xs text-[var(--text-tertiary)] flex-wrap">
             {task.dueDate && (
-              <div className={`flex items-center gap-1 ${isOverdue ? 'text-red-500' : isOverdueToday ? 'text-orange-500' : ''}`}>
-                <FaClock className="text-xs" />
-                <span>
+              <div className={`flex items-center gap-1.5 min-w-0 ${isOverdue ? 'text-red-500 dark:text-red-400' : isOverdueToday ? 'text-orange-500 dark:text-orange-400' : ''}`}>
+                <FaClock className="text-xs flex-shrink-0" />
+                <span className="leading-normal break-words">
                   {format(new Date(task.dueDate), 'MMM dd, yyyy')}
                   {(() => {
                     const date = new Date(task.dueDate);
@@ -160,57 +191,57 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
             {isOwnTask && (
               <>
                 {isCompleted && task.xpAwarded > 0 && (
-                  <div className="flex items-center gap-1 text-green-500 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
-                    <FaStar className="text-xs" />
-                    <span className="font-semibold">+{task.xpAwarded} XP</span>
+                  <div className="flex items-center gap-1.5 text-green-500 dark:text-green-400 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-lg flex-shrink-0">
+                    <FaStar className="text-xs flex-shrink-0" />
+                    <span className="font-semibold leading-normal">+{task.xpAwarded} XP</span>
                   </div>
                 )}
                 {!isCompleted && task.xpDeducted > 0 && (
-                  <div className="flex items-center gap-1 text-red-500 font-medium bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
-                    <FaExclamationTriangle className="text-xs" />
-                    <span className="font-semibold">-{task.xpDeducted} XP</span>
+                  <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400 font-medium bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-lg flex-shrink-0">
+                    <FaExclamationTriangle className="text-xs flex-shrink-0" />
+                    <span className="font-semibold leading-normal">-{task.xpDeducted} XP</span>
                   </div>
                 )}
                 {task.isOverdue && !isCompleted && task.xpDeducted === 0 && (
-                  <div className="flex items-center gap-1 text-red-500 font-medium">
-                    <FaExclamationTriangle className="text-xs" />
-                    <span>Overdue</span>
+                  <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400 font-medium flex-shrink-0">
+                    <FaExclamationTriangle className="text-xs flex-shrink-0" />
+                    <span className="leading-normal">Overdue</span>
                   </div>
                 )}
               </>
             )}
             {!isOwnTask && task.userId && (
-              <div className="flex items-center gap-1 text-[var(--accent-primary)]">
-                <FaUserFriends className="text-xs" />
-                <span>By {task.userId.name || task.userId.email || 'Friend'}</span>
+              <div className="flex items-center gap-1.5 text-[var(--accent-primary)] flex-shrink-0 min-w-0">
+                <FaUserFriends className="text-xs flex-shrink-0" />
+                <span className="leading-normal truncate">By {task.userId.name || task.userId.email || 'Friend'}</span>
               </div>
             )}
             {isSharedTask && (
-              <div className="flex items-center gap-1 text-[var(--accent-primary)]">
-                <FaUserFriends className="text-xs" />
-                <span title={sharedWithNames}>Shared with {task.sharedWith.length} friend{task.sharedWith.length > 1 ? 's' : ''}</span>
+              <div className="flex items-center gap-1.5 text-[var(--accent-primary)] flex-shrink-0 min-w-0">
+                <FaUserFriends className="text-xs flex-shrink-0" />
+                <span className="leading-normal truncate" title={sharedWithNames}>Shared with {task.sharedWith.length} friend{task.sharedWith.length > 1 ? 's' : ''}</span>
               </div>
             )}
           </div>
         </div>
 
         {!isSelectMode && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {!isCompleted && onEdit && (
               <button
-                onClick={() => onEdit(task)}
-                className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+                onClick={handleEdit}
+                className="p-2 text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                 aria-label={`Edit task: ${task.title}`}
               >
-                <FaEdit />
+                <FaEdit className="text-base" />
               </button>
             )}
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors"
+              className="p-2 text-[var(--text-tertiary)] hover:text-red-600 dark:hover:text-red-400 transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               aria-label={`Delete task: ${task.title}`}
             >
-              <FaTrash />
+              <FaTrash className="text-base" />
             </button>
           </div>
         )}
@@ -219,10 +250,7 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
       <ConfirmationModal
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={() => {
-          onDelete(task._id);
-          setShowDeleteConfirm(false);
-        }}
+        onConfirm={handleDelete}
         title="Delete Task"
         message={`Are you sure you want to delete "${task.title}"? This action cannot be undone.`}
         confirmText="Delete"
@@ -232,7 +260,21 @@ const TaskCard = ({ task, onToggle, onDelete, onEdit, isSelectMode = false, isSe
 
     </motion.div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison function for React.memo
+  return (
+    prevProps.task._id === nextProps.task._id &&
+    prevProps.task.status === nextProps.task.status &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.description === nextProps.task.description &&
+    prevProps.task.dueDate === nextProps.task.dueDate &&
+    prevProps.task.priority === nextProps.task.priority &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isSelectMode === nextProps.isSelectMode
+  );
+});
+
+TaskCard.displayName = 'TaskCard';
 
 export default TaskCard;
 

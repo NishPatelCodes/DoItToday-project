@@ -57,7 +57,7 @@ const ConfirmationModal = ({
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="card p-6 max-w-md w-full"
+            className="card p-4 md:p-6 max-w-md w-full rounded-xl mx-4"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleEscape}
             ref={modalRef}
@@ -66,44 +66,44 @@ const ConfirmationModal = ({
             aria-labelledby="confirmation-title"
             aria-describedby="confirmation-message"
           >
-            <div className="flex items-start gap-4 mb-4">
+            <div className="flex items-start gap-4 mb-6">
               <div className={`flex-shrink-0 ${styles.icon}`}>
-                <FaExclamationTriangle className="text-2xl" />
+                <FaExclamationTriangle className="text-2xl flex-shrink-0" />
               </div>
-              <div className="flex-1">
-                <h3 id="confirmation-title" className="text-lg font-semibold text-[var(--text-primary)] mb-2">
+              <div className="flex-1 min-w-0">
+                <h3 id="confirmation-title" className="text-lg md:text-xl font-semibold text-[var(--text-primary)] mb-2 leading-snug break-words">
                   {title}
                 </h3>
-                <p id="confirmation-message" className="text-sm text-[var(--text-secondary)]">
+                <p id="confirmation-message" className="text-sm text-[var(--text-secondary)] leading-relaxed break-words">
                   {message}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="p-1 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                className="p-2 text-[var(--text-tertiary)] hover:text-red-600 dark:hover:text-red-400 transition-colors touch-manipulation min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                 aria-label="Close confirmation dialog"
               >
-                <FaTimes />
+                <FaTimes className="text-lg" />
               </button>
             </div>
 
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-3 justify-end mt-6">
               <button
                 onClick={onClose}
-                className="btn-secondary px-4 py-2 rounded-lg font-medium"
+                className="btn-secondary"
                 aria-label={cancelText}
               >
-                {cancelText}
+                <span>{cancelText}</span>
               </button>
               <button
                 onClick={() => {
                   onConfirm();
                   onClose();
                 }}
-                className={`${styles.button} px-4 py-2 rounded-lg font-medium transition-colors`}
+                className={`${styles.button} px-4 py-3 rounded-xl font-semibold transition-colors touch-manipulation min-h-[48px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`}
                 aria-label={confirmText}
               >
-                {confirmText}
+                <span>{confirmText}</span>
               </button>
             </div>
           </motion.div>

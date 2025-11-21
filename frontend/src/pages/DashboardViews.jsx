@@ -1,21 +1,50 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaPlus, FaTasks, FaBullseye, FaFire, FaUserFriends, FaChartLine, FaSearch, FaEllipsisV, FaLightbulb, FaDollarSign, FaTrophy, FaFlag, FaCheckCircle, FaCheck, FaUser, FaStickyNote, FaCopy, FaTimes, FaMagic, FaCheckSquare, FaSquare, FaColumns, FaList } from 'react-icons/fa';
-import { format, isToday, isYesterday, isThisWeek, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays } from 'date-fns';
+import {
+  FaPlus,
+  FaTasks,
+  FaBullseye,
+  FaFire,
+  FaUserFriends,
+  FaChartLine,
+  FaSearch,
+  FaEllipsisV,
+  FaLightbulb,
+  FaDollarSign,
+  FaTrophy,
+  FaFlag,
+  FaCheckCircle,
+  FaCheck,
+  FaUser,
+  FaStickyNote,
+  FaCopy,
+  FaTimes,
+  FaMagic,
+  FaCheckSquare,
+  FaSquare,
+  FaColumns,
+  FaList,
+  FaCompass,
+} from 'react-icons/fa';
+// Recharts will be code-split via Vite config (already configured)
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts';
+import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, addDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
-import GoalAnalytics from '../components/GoalAnalytics';
 import HabitCard from '../components/HabitCard';
-import SmartPlanner from '../components/SmartPlanner';
-import FocusMode from '../components/FocusMode';
 import DisciplinePoints from '../components/DisciplinePoints';
-import GraphCard from '../components/GraphCard';
-import CalendarView from '../components/CalendarView';
 import FriendStatus from '../components/FriendStatus';
 import DashboardSummary from '../components/DashboardSummary';
 import MultipleTasksModal from '../components/MultipleTasksModal';
 import ConfirmationModal from '../components/ConfirmationModal';
-import TaskKanbanBoard from '../components/TaskKanbanBoard';
 import TaskSearchFilter from '../components/TaskSearchFilter';
 import TaskFAB from '../components/TaskFAB';
 import TaskAlerts from '../components/TaskAlerts';
@@ -23,7 +52,23 @@ import CompletedTasksSection from '../components/CompletedTasksSection';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { notesAPI } from '../services/api';
+import { notesAPI, financeAPI } from '../services/api';
+import { LazyWrapper } from '../components/lazy/LazyWrapper';
+import { Suspense } from 'react';
+
+// Lazy load heavy components
+const GoalAnalytics = lazy(() => import('../components/GoalAnalytics'));
+const SmartPlanner = lazy(() => import('../components/SmartPlanner'));
+const FocusMode = lazy(() => import('../components/FocusMode'));
+const CalendarView = lazy(() => import('../components/CalendarView'));
+const TaskKanbanBoard = lazy(() => import('../components/TaskKanbanBoard'));
+const AnalyticsDashboard = lazy(() => import('../components/AnalyticsDashboard'));
+import ErrorBoundary from '../components/ErrorBoundary';
+import ChartErrorBoundary from '../components/ChartErrorBoundary';
+import { formatCurrency } from '../utils/currencyFormatter';
+import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
+import FocusPreviewCard from '../components/FocusPreviewCard';
+import NotionTimelineCalendar from '../components/NotionTimelineCalendar';
 
 // Dashboard Home View - NEW DESIGN
 export const DashboardHome = ({
@@ -55,6 +100,9 @@ export const DashboardHome = ({
   const [showMenu, setShowMenu] = useState(false);
   const [notes, setNotes] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [incomeTrend, setIncomeTrend] = useState([]);
+  const [incomeMeta, setIncomeMeta] = useState({ currency: 'USD', total: 0 });
+  const [incomeLoading, setIncomeLoading] = useState(false);
 
   // Close menu and search on outside click
   useEffect(() => {
@@ -67,6 +115,29 @@ export const DashboardHome = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
 
+  const buildIncomeTrend = useCallback((transactions = []) => {
+    const now = new Date();
+    return Array.from({ length: 6 }).map((_, index) => {
+      const weeksAgo = 5 - index;
+      const start = startOfWeek(subDays(now, weeksAgo * 7), { weekStartsOn: 0 });
+      const end = endOfWeek(start, { weekStartsOn: 0 });
+      const weeklyIncome = transactions
+        .filter(
+          (transaction) =>
+            transaction?.type === 'income' &&
+            transaction.date &&
+            new Date(transaction.date) >= start &&
+            new Date(transaction.date) <= end
+        )
+        .reduce((sum, txn) => sum + (txn.amount || 0), 0);
+      return {
+        date: start.toISOString(),
+        label: format(start, 'MMM d'),
+        amount: Number(weeklyIncome.toFixed(2)),
+      };
+    });
+  }, []);
+
   // Load notes for search
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -77,6 +148,39 @@ export const DashboardHome = ({
       setNotes([]);
     }
   }, [searchQuery]);
+
+  // Load lightweight finance trend for dashboard insights
+  useEffect(() => {
+    let isMounted = true;
+    const loadFinanceTrend = async () => {
+      try {
+        setIncomeLoading(true);
+        const response = await financeAPI.getAll();
+        if (!isMounted) return;
+        const transactions = response.data?.transactions || [];
+        const currency = response.data?.accountInfo?.currency || 'USD';
+        const weeklyTrend = buildIncomeTrend(transactions);
+        const totalIncome = transactions
+          .filter((txn) => txn.type === 'income')
+          .reduce((sum, txn) => sum + (txn.amount || 0), 0);
+        setIncomeTrend(weeklyTrend);
+        setIncomeMeta({ currency, total: totalIncome });
+      } catch (error) {
+        if (isMounted) {
+          setIncomeTrend([]);
+          setIncomeMeta({ currency: 'USD', total: 0 });
+        }
+      } finally {
+        if (isMounted) {
+          setIncomeLoading(false);
+        }
+      }
+    };
+    loadFinanceTrend();
+    return () => {
+      isMounted = false;
+    };
+  }, [buildIncomeTrend]);
 
   // Filter search results
   const searchResults = useMemo(() => {
@@ -116,6 +220,18 @@ export const DashboardHome = ({
     });
   }, [tasks]);
 
+  const productivityTrend = useMemo(() => {
+    if (!analytics?.dailyProductivity || analytics.dailyProductivity.length === 0) {
+      return [];
+    }
+    return analytics.dailyProductivity.slice(-7).map((entry) => ({
+      date: entry.date,
+      label: format(new Date(entry.date), 'EEE'),
+      productivity: entry.productivity ?? 0,
+      completed: entry.completed ?? 0,
+    }));
+  }, [analytics]);
+
   // Calculate today's plan progress
   const todaysPlanProgress = useMemo(() => {
     if (todaysTasks.length === 0) return 0;
@@ -148,22 +264,69 @@ export const DashboardHome = ({
     return sortedTodaysTasks.find(t => t.status !== 'completed') || null;
   }, [sortedTodaysTasks]);
 
-  // Calculate consistency percentage
+  // Calculate consistency percentage with guardrails
   const consistencyPercentage = useMemo(() => {
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
-    const weekTasks = tasks.filter(task => {
-      if (!task.completedAt) return false;
-      const completedDate = new Date(task.completedAt);
-      return completedDate >= weekStart;
-    });
-    const totalWeekTasks = tasks.filter(task => {
-      if (!task.dueDate) return false;
+    if (!Array.isArray(tasks) || tasks.length === 0) return 0;
+    const today = new Date();
+    const weekStartDate = startOfWeek(today, { weekStartsOn: 0 });
+    const weekEndDate = endOfWeek(today, { weekStartsOn: 0 });
+    const scheduledThisWeek = tasks.filter((task) => {
+      if (!task?.dueDate) return false;
       const dueDate = new Date(task.dueDate);
-      return dueDate >= weekStart;
+      return dueDate >= weekStartDate && dueDate <= weekEndDate;
     });
-    if (totalWeekTasks.length === 0) return 0;
-    return Math.round((weekTasks.length / totalWeekTasks.length) * 100);
+    if (scheduledThisWeek.length === 0) return 0;
+    const completedThisWeek = scheduledThisWeek.filter((task) => task.status === 'completed');
+    const percentage = Math.round((completedThisWeek.length / scheduledThisWeek.length) * 100);
+    return Math.min(100, Math.max(0, percentage));
   }, [tasks]);
+
+  const weeklyFocus = useMemo(() => {
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      return { pending: [], total: 0, completed: 0 };
+    }
+    const today = new Date();
+    const weekStartDate = startOfWeek(today, { weekStartsOn: 0 });
+    const weekEndDate = endOfWeek(today, { weekStartsOn: 0 });
+    const weeklyTasks = tasks.filter((task) => {
+      if (!task?.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      return dueDate >= weekStartDate && dueDate <= weekEndDate;
+    });
+    const pending = weeklyTasks
+      .filter((task) => task.status !== 'completed')
+      .sort((a, b) => {
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      });
+    const completed = weeklyTasks.length - pending.length;
+    return {
+      pending,
+      total: weeklyTasks.length,
+      completed,
+    };
+  }, [tasks]);
+
+  const weeklyFocusPreview = weeklyFocus.pending.slice(0, 3);
+  const weeklyFocusCompletion =
+    weeklyFocus.total === 0 ? 0 : Math.round((weeklyFocus.completed / weeklyFocus.total) * 100);
+
+  const latestProductivity =
+    productivityTrend.length > 0 ? productivityTrend[productivityTrend.length - 1].productivity || 0 : 0;
+  const averageProductivity =
+    productivityTrend.length === 0
+      ? 0
+      : Math.round(
+          productivityTrend.reduce((sum, entry) => sum + (entry.productivity || 0), 0) /
+            productivityTrend.length
+        );
+
+  const latestIncome = incomeTrend.length > 0 ? incomeTrend[incomeTrend.length - 1].amount || 0 : 0;
+  const averageIncome =
+    incomeTrend.length === 0
+      ? 0
+      : incomeTrend.reduce((sum, entry) => sum + (entry.amount || 0), 0) / incomeTrend.length;
 
   // Get today's spend (placeholder - would come from finance API)
   const todaysSpend = 0;
@@ -297,20 +460,20 @@ export const DashboardHome = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Progress</h3>
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words">Today's Progress</h3>
           </div>
           <div className="space-y-3">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-[var(--text-secondary)]">Tasks Completed</span>
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <span className="text-sm text-[var(--text-secondary)] leading-normal flex-shrink-0">Tasks Completed</span>
+                <span className="text-sm font-semibold text-[var(--text-primary)] leading-normal flex-shrink-0">
                   {todaysTasks.filter(t => t.status === 'completed').length} / {todaysTasks.length}
                 </span>
               </div>
-              <div className="w-full h-3 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+              <div className="w-full h-2.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${todaysPlanProgress}%` }}
@@ -318,14 +481,14 @@ export const DashboardHome = ({
                   className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-blue-500 rounded-full"
                 />
               </div>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">{todaysPlanProgress}% complete</p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-normal">{todaysPlanProgress}% complete</p>
             </div>
             {nextTask && (
               <div className="pt-3 border-t border-[var(--border-color)]">
-                <p className="text-xs text-[var(--text-secondary)] mb-1">Next Task</p>
-                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
+                <p className="text-xs text-[var(--text-secondary)] mb-1.5 leading-normal">Next Task</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)] truncate leading-snug break-words">{nextTask.title}</p>
                 {nextTask.dueDate && (
-                  <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-normal">
                     {format(new Date(nextTask.dueDate), 'h:mm a')}
                   </p>
                 )}
@@ -339,30 +502,30 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Pending</h3>
+          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 leading-tight break-words">Pending</h3>
           <div className="mb-4">
-            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
-            <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
+            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 leading-tight">{pendingTasks.length}</p>
+            <p className="text-xs text-[var(--text-tertiary)] leading-normal">{format(new Date(), 'h:mm a')}</p>
           </div>
           {pendingTasks.length > 0 && (
             <div className="pt-4 border-t border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-2">Upcoming Tasks</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-2 leading-normal">Upcoming Tasks</p>
               <div className="space-y-2">
                 {pendingTasks.slice(0, 2).map(task => (
-                  <div key={task._id} className="flex items-center gap-2">
+                  <div key={task._id} className="flex items-center gap-2 min-w-0">
                     <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] flex-shrink-0"></div>
-                    <p className="text-xs text-[var(--text-primary)] truncate flex-1">{task.title}</p>
+                    <p className="text-xs text-[var(--text-primary)] truncate flex-1 leading-normal break-words min-w-0">{task.title}</p>
                     {task.dueDate && (
-                      <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0">
+                      <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 leading-normal whitespace-nowrap">
                         {format(new Date(task.dueDate), 'MMM dd')}
                       </span>
                     )}
                   </div>
                 ))}
                 {pendingTasks.length > 2 && (
-                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1 leading-normal">
                     +{pendingTasks.length - 2} more tasks
                   </p>
                 )}
@@ -376,34 +539,34 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Goals</h3>
-            <span className="text-sm font-semibold text-green-600 dark:text-green-400">{activeGoals.length}</span>
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Goals</h3>
+            <span className="text-sm font-semibold text-green-600 dark:text-green-400 flex-shrink-0 leading-normal">{activeGoals.length}</span>
           </div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <FaBullseye className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+              <FaBullseye className="text-green-600 dark:text-green-400 text-lg lg:text-xl flex-shrink-0" />
             </div>
-            <div>
-              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Active</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{activeGoals.length}</p>
+              <p className="text-xs text-[var(--text-tertiary)] leading-normal">Active</p>
             </div>
           </div>
           {activeGoals.length > 0 && (
             <div className="pt-4 border-t border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-2">Top Goals</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-2 leading-normal">Top Goals</p>
               <div className="space-y-2">
                 {activeGoals.slice(0, 2).map(goal => {
                   const progress = goal.progress || 0;
                   return (
-                    <div key={goal._id} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium text-[var(--text-primary)] truncate flex-1">{goal.title}</p>
-                        <span className="text-[10px] text-[var(--text-tertiary)] ml-2">{progress}%</span>
+                    <div key={goal._id} className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-[var(--text-primary)] truncate flex-1 leading-normal break-words min-w-0">{goal.title}</p>
+                        <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 leading-normal whitespace-nowrap">{progress}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
@@ -413,7 +576,7 @@ export const DashboardHome = ({
                   );
                 })}
                 {activeGoals.length > 2 && (
-                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1 leading-normal">
                     +{activeGoals.length - 2} more goals
                   </p>
                 )}
@@ -427,20 +590,20 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
           onClick={() => navigate('/dashboard/challenges')}
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Challenges</h3>
-            <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">{activeChallenges.length}</span>
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Challenges</h3>
+            <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400 flex-shrink-0 leading-normal">{activeChallenges.length}</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 flex items-center justify-center">
-              <FaTrophy className="text-yellow-600 dark:text-yellow-400 text-lg lg:text-xl" />
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 flex items-center justify-center flex-shrink-0">
+              <FaTrophy className="text-yellow-600 dark:text-yellow-400 text-lg lg:text-xl flex-shrink-0" />
             </div>
-            <div className="flex-1">
-              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">{activeChallenges.length}</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Active</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{activeChallenges.length}</p>
+              <p className="text-xs text-[var(--text-tertiary)] leading-normal">Active</p>
             </div>
           </div>
           {activeChallenges.length > 0 && (
@@ -491,7 +654,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="lg:col-span-2 card p-5 lg:p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+          className="lg:col-span-2 card p-4 md:p-5 lg:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -632,7 +795,7 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
+            className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-2 mb-3 lg:mb-4">
               <FaFire className="text-orange-500 text-lg lg:text-xl" />
@@ -646,7 +809,7 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
+            className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
           >
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-2 lg:mb-3">Stay consistent!</h3>
             <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
@@ -662,44 +825,92 @@ export const DashboardHome = ({
         </div>
       </div>
 
-      {/* Lower Middle Section: Focus Mode and Consistency */}
+      {/* Lower Middle Section: Focus Mode and Momentum */}
       <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        {/* Focus Mode Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="card p-6 lg:p-8 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex-shrink-0 w-[300px] md:w-auto shadow-lg hover:shadow-xl transition-shadow"
-        >
-          <h3 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">Focus mode ready</h3>
-          <button
-            onClick={() => navigate('/dashboard/focus')}
-            className="w-full py-3 lg:py-4 px-4 rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium transition-all flex items-center justify-center gap-2 text-base lg:text-lg"
-          >
-            Start 25 min session
-          </button>
-        </motion.div>
+        {/* Focus Mode Card - New Compact Design */}
+        <FocusPreviewCard />
 
-        {/* Consistency Card with Lightbulb */}
+        {/* Weekly Momentum Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="card p-6 lg:p-8 rounded-2xl flex-shrink-0 w-[300px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-6 lg:p-8 rounded-xl flex-shrink-0 w-[300px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center gap-3 mb-3 lg:mb-4">
-            <FaLightbulb className="text-yellow-500 text-xl lg:text-2xl" />
-            <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Stay consistent</h3>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
+              <FaCompass className="text-base lg:text-lg" />
             </div>
-          <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
-            You've done {consistencyPercentage}% of your week's plan
-          </p>
-          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 lg:h-2.5">
-            <div
-              className="bg-yellow-500 h-2 lg:h-2.5 rounded-full transition-all duration-500"
-              style={{ width: `${consistencyPercentage}%` }}
+            <div>
+              <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Momentum map</h3>
+              <p className="text-xs text-[var(--text-tertiary)]">Place the moves that matter</p>
+            </div>
+          </div>
+          {weeklyFocus.total > 0 ? (
+            <div className="space-y-3">
+              {weeklyFocusPreview.map((task) => (
+                <div
+                  key={task._id}
+                  className="flex items-center gap-3 rounded-xl border border-[var(--border-color)]/70 px-3 py-2"
+                >
+                  <span
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      task.priority === 'high'
+                        ? 'bg-red-500/15 text-red-500'
+                        : task.priority === 'medium'
+                        ? 'bg-yellow-500/15 text-yellow-500'
+                        : 'bg-blue-500/15 text-blue-500'
+                    }`}
+                  >
+                    {task.priority?.charAt(0)?.toUpperCase() || 'L'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
+                    <p className="text-[11px] text-[var(--text-tertiary)]">
+                      {task.dueDate ? format(new Date(task.dueDate), 'EEE, MMM d') : 'No due date'}
+                    </p>
+                  </div>
+                  <button
+                    className="text-[10px] font-semibold text-[var(--accent-primary)] hover:underline"
+                    onClick={() =>
+                      navigate('/dashboard/tasks', { state: { highlightTaskId: task._id } })
+                    }
+                  >
+                    Jump
+                  </button>
+                </div>
+              ))}
+              {weeklyFocus.pending.length > weeklyFocusPreview.length && (
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  +{weeklyFocus.pending.length - weeklyFocusPreview.length} more action
+                  {weeklyFocus.pending.length - weeklyFocusPreview.length === 1 ? '' : 's'} to place
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-[var(--border-color)] p-4 text-center">
+              <p className="text-sm text-[var(--text-secondary)] mb-2">No week-specific tasks yet.</p>
+              <p className="text-xs text-[var(--text-tertiary)]">Drop two anchor tasks to set the tone.</p>
+            </div>
+          )}
+          <div className="mt-5">
+            <div className="flex items-center justify-between text-[11px] text-[var(--text-tertiary)] mb-1.5">
+              <span>Weekly flow</span>
+              <span>{weeklyFocusCompletion}% locked in</span>
+            </div>
+            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-full transition-all duration-500"
+                style={{ width: `${weeklyFocusCompletion}%` }}
             />
             </div>
+          </div>
+          <button
+            onClick={() => navigate('/dashboard/tasks')}
+            className="w-full mt-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-sm font-medium text-[var(--text-primary)] transition-colors"
+          >
+            Plan the rest of the week
+          </button>
         </motion.div>
           </div>
 
@@ -710,7 +921,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between mb-4 lg:mb-5">
             <div className="flex items-center gap-3">
@@ -735,7 +946,7 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="card p-5 lg:p-6 rounded-2xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
         >
           <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 lg:mb-5">Quick Note</h3>
           <input
@@ -752,7 +963,7 @@ export const DashboardHome = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.0 }}
-        className="card p-6 lg:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+        className="card p-6 lg:p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow"
       >
         <div className="flex items-center justify-between mb-4 lg:mb-6">
           <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Analytics</h3>
@@ -763,39 +974,163 @@ export const DashboardHome = ({
             View Full Analytics →
           </button>
         </div>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="rounded-xl border border-[var(--border-color)] p-5">
+            <div className="flex items-center justify-between mb-4">
         <div>
-          <h4 className="text-sm lg:text-base font-medium text-[var(--text-secondary)] mb-4 lg:mb-6">Weekly Task Completion</h4>
-          {analytics?.weeklyCompletion ? (
-            <GraphCard
-              title=""
-              data={analytics.weeklyCompletion.map((item, index) => ({
-                name: item.week || `Week ${index + 1}`,
-                completed: item.completed || 0,
-                total: item.total || 0,
-              }))}
-              type="line"
-              dataKey="completed"
-            />
-          ) : (
-            <div className="h-64 lg:h-80 flex items-center justify-center">
-              <p className="text-[var(--text-tertiary)] text-sm lg:text-base">No analytics data available</p>
+                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
+                <p className="text-2xl font-bold text-[var(--text-primary)]">{latestProductivity}%</p>
+                <p className="text-[11px] text-[var(--text-tertiary)]">Today</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-[var(--text-tertiary)]">Avg (7d)</p>
+                <p className="text-lg font-semibold text-[var(--text-primary)]">{averageProductivity}%</p>
+              </div>
+            </div>
+            {productivityTrend.length > 0 ? (
+              <div className="h-64">
+                <ChartErrorBoundary
+                  fallback={
+                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                      <p>Chart unavailable</p>
+                      <p className="text-[11px] mt-1">Error loading productivity data.</p>
+                    </div>
+                  }
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={productivityTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                      <XAxis
+                        dataKey="label"
+                        stroke="var(--text-tertiary)"
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="var(--text-tertiary)"
+                        domain={[0, 100]}
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '12px',
+                          color: 'var(--text-primary)',
+                        }}
+                        formatter={(value) => [`${value}%`, 'Productivity']}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="productivity"
+                        stroke="#8b5cf6"
+                        strokeWidth={3}
+                        dot={{ r: 4, strokeWidth: 2, stroke: '#8b5cf6', fill: '#8b5cf6' }}
+                        activeDot={{ r: 6, stroke: '#8b5cf6', fill: '#8b5cf6' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartErrorBoundary>
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                <p>No productivity data yet.</p>
+                <p className="text-[11px] mt-1">Complete tasks to unlock the trend.</p>
             </div>
           )}
+          </div>
+          <div className="rounded-xl border border-[var(--border-color)] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Income runway</p>
+                <p className="text-2xl font-bold text-[var(--text-primary)]">
+                  {formatCurrency(latestIncome, incomeMeta.currency, { maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-[11px] text-[var(--text-tertiary)]">Last week</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-[var(--text-tertiary)]">Avg (6w)</p>
+                <p className="text-lg font-semibold text-[var(--text-primary)]">
+                  {formatCurrency(averageIncome || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-[11px] text-[var(--text-tertiary)] mt-1">
+                  Total: {formatCurrency(incomeMeta.total || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+            </div>
+            {incomeLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent"></div>
+              </div>
+            ) : incomeTrend.length > 0 ? (
+              <div className="h-64">
+                <ChartErrorBoundary
+                  fallback={
+                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                      <p>Chart unavailable</p>
+                      <p className="text-[11px] mt-1">Error loading income data.</p>
+                    </div>
+                  }
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={incomeTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                      <XAxis
+                        dataKey="label"
+                        stroke="var(--text-tertiary)"
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="var(--text-tertiary)"
+                        tickFormatter={(value) =>
+                          formatCurrency(value || 0, incomeMeta.currency, {
+                            maximumFractionDigits: 0,
+                            showSymbol: false,
+                          })
+                        }
+                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '12px',
+                          color: 'var(--text-primary)',
+                        }}
+                        formatter={(value) => [
+                          formatCurrency(value || 0, incomeMeta.currency, { maximumFractionDigits: 2 }),
+                          'Income',
+                        ]}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="amount"
+                        stroke="#fbbf24"
+                        strokeWidth={3}
+                        dot={{ r: 4, strokeWidth: 2, stroke: '#fbbf24', fill: '#fbbf24' }}
+                        activeDot={{ r: 6, stroke: '#fbbf24', fill: '#fbbf24' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartErrorBoundary>
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
+                <p>No income data captured.</p>
+                <p className="text-[11px] mt-1">Log transactions in Finance to see this fill in.</p>
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>
   );
 };
 
-// Calendar View
+// Calendar View - Notion-style Timeline
 export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask, onToggleTask, onDeleteTask, onEditTask }) => {
   return (
-    <div className="p-4 md:p-8 overflow-x-hidden">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Calendar</h1>
-        <p className="text-[var(--text-secondary)]">Plan and view your tasks by date</p>
-      </div>
-      <CalendarView
+    <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] overflow-hidden">
+      <NotionTimelineCalendar
         tasks={tasks}
         goals={goals}
         onDateClick={onDateClick}
@@ -1294,76 +1629,51 @@ export const DashboardGoals = ({
         )}
       </div>
       
-        {/* Analytics Sidebar */}
+        {/* Strategy Sidebar */}
         <div className="space-y-6">
-          {selectedGoalForAnalytics ? (
-            <GoalAnalytics goal={selectedGoalForAnalytics} tasks={tasks} />
-          ) : (
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Goal Analytics</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Select a goal to view detailed analytics and progress insights.
-              </p>
+          <ErrorBoundary>
+            <GoalMilestoneGuide goals={Array.isArray(goals) ? goals : []} tasks={Array.isArray(tasks) ? tasks : []} />
+          </ErrorBoundary>
             </div>
-          )}
-        </div>
       </div>
+      {selectedGoalForAnalytics && (
+        <GoalAnalytics
+          goal={selectedGoalForAnalytics}
+          tasks={tasks}
+          onClose={() => setSelectedGoalForAnalytics(null)}
+        />
+      )}
     </div>
   );
 };
 
 // Analytics View
-export const DashboardAnalytics = ({ analytics, tasks, goals, habits }) => {
-  return (
-    <div className="p-4 md:p-8 overflow-x-hidden">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Analytics</h1>
-        <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your productivity and progress</p>
-          </div>
-          
-      <div className="grid grid-cols-1 gap-4 md:gap-6">
-        {analytics?.taskCompletion && (
-            <GraphCard
-            title="Task Completion Over Time"
-            data={analytics.taskCompletion}
-              type="line"
-            dataKey="completed"
-            />
-          )}
-
-        {analytics?.weeklyCompletion && (
-            <GraphCard
-              title="Weekly Task Completion"
-            data={analytics.weeklyCompletion.map((item, index) => ({
-              name: item.week || `Week ${index + 1}`,
-              completed: item.completed || 0,
-              total: item.total || 0,
-            }))}
-              type="bar"
-            dataKey="completed"
+export const DashboardAnalytics = ({ analytics, tasks, goals, habits, user }) => {
+  try {
+    return (
+      <ErrorBoundary>
+        <LazyWrapper minHeight="80vh">
+          <AnalyticsDashboard
+            analytics={analytics}
+            tasks={tasks || []}
+            goals={goals || []}
+            habits={habits || []}
+            user={user}
           />
-        )}
-
-        {analytics?.goalProgress && (
-          <GraphCard
-            title="Goal Progress"
-            data={analytics.goalProgress}
-            type="area"
-            dataKey="progress"
-          />
-        )}
-
-        {analytics?.habitStreak && (
-          <GraphCard
-            title="Habit Streak"
-            data={analytics.habitStreak}
-            type="line"
-            dataKey="streak"
-          />
-        )}
+        </LazyWrapper>
+      </ErrorBoundary>
+    );
+  } catch (error) {
+    console.error('Error rendering AnalyticsDashboard:', error);
+    return (
+      <div className="p-4 md:p-8">
+        <div className="card p-6 text-center">
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Error Loading Analytics</h2>
+          <p className="text-[var(--text-secondary)]">Please refresh the page or try again later.</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
 
 // Team View
