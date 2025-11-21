@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaMagic, FaSpinner, FaTrash, FaEdit, FaPlus, FaCheck } from 'react-icons/fa';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useScrollLock } from '../hooks/useScrollLock';
 import toast from 'react-hot-toast';
 import { tasksAPI } from '../services/api';
 
@@ -13,6 +14,9 @@ const MultipleTasksModal = ({ isOpen, onClose, onGenerateTasks }) => {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const modalRef = useFocusTrap(isOpen);
+  
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
 
   const handleClose = () => {
     if (!isProcessing) {

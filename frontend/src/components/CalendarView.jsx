@@ -3,11 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronLeft, FaChevronRight, FaPlus, FaTimes, FaClock, FaTasks } from 'react-icons/fa';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import TaskCard from './TaskCard';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const CalendarView = ({ tasks, goals, onDateClick, onCreateTask, onTaskToggle, onTaskDelete, onTaskEdit }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showTasksModal, setShowTasksModal] = useState(false);
+  
+  // Lock body scroll when modal is open
+  useScrollLock(showTasksModal);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);

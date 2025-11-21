@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
   const [title, setTitle] = useState('');
@@ -8,6 +9,9 @@ const GoalModal = ({ isOpen, onClose, onSave, goal = null }) => {
   const [deadline, setDeadline] = useState('');
   const [category, setCategory] = useState('general');
   const [isShared, setIsShared] = useState(false);
+  
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) {

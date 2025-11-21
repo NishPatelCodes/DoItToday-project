@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrophy, FaCheckCircle, FaTimes, FaFire, FaRedo, FaPlus, FaFlag } from 'react-icons/fa';
 import { challengesAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const Challenges = () => {
   const [challenges, setChallenges] = useState([]);
@@ -11,6 +12,9 @@ const Challenges = () => {
   const [loading, setLoading] = useState(true);
   const [showPremadeModal, setShowPremadeModal] = useState(false);
   const toast = useToast();
+  
+  // Lock body scroll when modal is open
+  useScrollLock(showPremadeModal);
 
   const premadeChallenges = [
     {

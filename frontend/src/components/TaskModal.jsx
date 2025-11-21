@@ -4,6 +4,7 @@ import { FaTimes } from 'react-icons/fa';
 import { useDataStore } from '../store/dataStore';
 import ConfirmationModal from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { playTaskAddSound } from '../utils/soundEffects';
 
 const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
@@ -20,6 +21,9 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
   const [errors, setErrors] = useState({});
   const initialValuesRef = useRef(null);
   const modalRef = useFocusTrap(isOpen);
+  
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
 
   // Filter active goals (not 100% complete)
   const activeGoals = goals ? goals.filter(g => (g.progress || 0) < 100) : [];
@@ -202,17 +206,6 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       handleClose();
     }
   };
-
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      const originalStyle = window.getComputedStyle(document.body).overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalStyle;
-      };
-    }
-  }, [isOpen]);
 
   const toggleFriend = (friendId) => {
     setSelectedFriends(prev => 

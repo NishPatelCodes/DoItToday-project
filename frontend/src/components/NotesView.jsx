@@ -5,6 +5,7 @@ import NoteCard from './NoteCard';
 import NoteEditor from './NoteEditor';
 import { notesAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
+import { useScrollLock } from '../hooks/useScrollLock';
 import Skeleton from './Skeleton';
 
 const NotesView = () => {
@@ -19,6 +20,9 @@ const NotesView = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const toast = useToast();
+  
+  // Lock body scroll when mobile editor modal is open
+  useScrollLock(isMobile && (selectedNote || isCreating));
 
   // Debounce search query
   useEffect(() => {

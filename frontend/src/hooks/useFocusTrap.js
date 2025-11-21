@@ -83,14 +83,9 @@ export const useFocusTrap = (isOpen) => {
     container.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keydown', handleEscape);
 
-    // Prevent body scroll when modal is open
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
     return () => {
       container.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = originalOverflow;
       
       // Restore focus to the previous element
       if (previousActiveElement.current) {

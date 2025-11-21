@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaDollarSign, FaWallet, FaTimes, FaCheckCircle
 import { format } from 'date-fns';
 import { financeAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { formatCurrency } from '../utils/currencyFormatter';
 import CurrencySelector from './CurrencySelector';
 import CashFlowBars from './CashFlowBars';
@@ -618,6 +619,9 @@ const FinanceTracker = () => {
 
 // Setup Modal Component
 const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
+  
   if (!isOpen) return null;
 
   return (
@@ -773,6 +777,9 @@ const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
 
 // Transaction Modal Component
 const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCategories, incomeCategories, isEditing, baseCurrency }) => {
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
+  
   if (!isOpen) return null;
 
   return (
@@ -902,6 +909,9 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
 
 // Budget Modal Component
 const BudgetModal = ({ isOpen, onClose, onSave, form, setForm, baseCurrency }) => {
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
+  
   if (!isOpen) return null;
 
   return (

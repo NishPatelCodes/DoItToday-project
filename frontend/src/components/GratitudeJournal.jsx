@@ -5,6 +5,7 @@ import { format, isToday, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval
 import { gratitudeAPI, authAPI, friendsAPI } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../hooks/useToast';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const GratitudeJournal = () => {
   const [todayEntry, setTodayEntry] = useState(null);
@@ -19,6 +20,9 @@ const GratitudeJournal = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const toast = useToast();
   const { updateUser } = useAuthStore();
+  
+  // Lock body scroll when modal is open
+  useScrollLock(showReminder);
 
   // Form state
   const [formEntries, setFormEntries] = useState(['', '', '']);

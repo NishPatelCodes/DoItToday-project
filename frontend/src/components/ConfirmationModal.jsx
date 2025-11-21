@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const ConfirmationModal = ({ 
   isOpen, 
@@ -13,6 +14,9 @@ const ConfirmationModal = ({
   type = 'danger' // 'danger', 'warning', 'info'
 }) => {
   const modalRef = useFocusTrap(isOpen);
+  
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
   
   if (!isOpen) return null;
   

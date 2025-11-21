@@ -3,10 +3,14 @@ import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FaChartLine, FaTasks, FaCheckCircle, FaClock, FaFire } from 'react-icons/fa';
 import { analyticsAPI } from '../services/api';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const GoalAnalytics = ({ goal, tasks = [], onClose }) => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Lock body scroll when modal is open (always open when rendered)
+  useScrollLock(true);
 
   useEffect(() => {
     const loadAnalytics = async () => {

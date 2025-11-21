@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const AddFriendModal = ({ isOpen, onClose, onAdd }) => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  
+  // Lock body scroll when modal is open
+  useScrollLock(isOpen);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
