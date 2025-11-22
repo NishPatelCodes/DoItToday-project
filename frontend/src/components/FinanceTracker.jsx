@@ -22,7 +22,9 @@ const GlassCard = ({ children, className = '', delay = 0, ...props }) => (
       border border-white/10 dark:border-white/10 
       shadow-2xl rounded-2xl
       hover:bg-white/10 dark:hover:bg-white/10 
-      transition-all duration-300
+      hover:border-white/20 hover:shadow-2xl
+      hover:translate-y-[-4px]
+      transition-all duration-300 ease-out
       ${className}
     `}
     {...props}
@@ -45,29 +47,29 @@ const NetWorthHero = ({ netWorth, monthlyIncome, monthlyExpenses, baseCurrency, 
   const expensePercent = (monthlyExpenses / maxValue) * 100;
 
   return (
-    <GlassCard className="p-6 md:p-8 mb-6">
+    <GlassCard className="p-4 md:p-6 mb-6 max-h-[160px] md:max-h-[180px] flex flex-col justify-between">
       {/* Net Worth Display */}
-      <div className="text-center mb-8">
-        <p className="text-sm md:text-base text-white/60 mb-2">Net Worth</p>
+      <div className="text-center mb-3 md:mb-4">
+        <p className="text-xs md:text-sm text-zinc-100/60 mb-1">Net Worth</p>
         <motion.h1
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4"
+          className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-2"
         >
           {formatCurrency(netWorth, baseCurrency)}
         </motion.h1>
       </div>
 
       {/* Income vs Expenses Bars */}
-      <div className="space-y-4 mb-6">
+      <div className="space-y-2 mb-3">
         {/* Income Bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-white/80">Income</span>
-            <span className="text-green-400 font-semibold">{formatCurrency(monthlyIncome, baseCurrency)}</span>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-zinc-100/80">Income</span>
+            <span className="text-green-400 font-semibold text-xs">{formatCurrency(monthlyIncome, baseCurrency)}</span>
           </div>
-          <div className="relative h-12 rounded-xl overflow-hidden bg-white/5">
+          <div className="relative h-6 rounded-lg overflow-hidden bg-white/5">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${incomePercent}%` }}
@@ -78,12 +80,12 @@ const NetWorthHero = ({ netWorth, monthlyIncome, monthlyExpenses, baseCurrency, 
         </div>
 
         {/* Expenses Bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-white/80">Expenses</span>
-            <span className="text-red-400 font-semibold">{formatCurrency(monthlyExpenses, baseCurrency)}</span>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-zinc-100/80">Expenses</span>
+            <span className="text-red-400 font-semibold text-xs">{formatCurrency(monthlyExpenses, baseCurrency)}</span>
           </div>
-          <div className="relative h-12 rounded-xl overflow-hidden bg-white/5">
+          <div className="relative h-6 rounded-lg overflow-hidden bg-white/5">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${expensePercent}%` }}
@@ -101,10 +103,10 @@ const NetWorthHero = ({ netWorth, monthlyIncome, monthlyExpenses, baseCurrency, 
             key={period.value}
             onClick={() => onPeriodChange(period.value)}
             className={`
-              px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+              px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ease-out
               ${selectedPeriod === period.value
-                ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm'
-                : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                ? 'bg-white/20 text-white shadow-2xl backdrop-blur-sm'
+                : 'bg-white/5 text-zinc-100/60 hover:bg-white/10 hover:text-zinc-100/80 hover:border-white/20'
               }
             `}
           >
@@ -151,14 +153,14 @@ const QuickStatsGrid = ({ stats, baseCurrency, delay = 0.1 }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
       {statCards.map((stat, index) => (
         <GlassCard key={stat.title} delay={delay + index * 0.05} className="p-4 md:p-6">
           <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.bgGradient} flex items-center justify-center mb-3`}>
             <stat.icon className={`text-lg ${stat.color}`} />
           </div>
-          <p className="text-xs md:text-sm text-white/60 mb-1">{stat.title}</p>
-          <p className={`text-xl md:text-2xl font-bold ${stat.color}`}>
+          <p className="text-xs md:text-sm text-zinc-100/60 mb-1">{stat.title}</p>
+          <p className={`text-xl md:text-2xl font-bold text-white ${stat.color}`}>
             {stat.suffix ? `${stat.value}${stat.suffix}` : formatCurrency(stat.value, baseCurrency)}
           </p>
         </GlassCard>
@@ -176,7 +178,7 @@ const CashFlowChart = ({ data, baseCurrency, delay = 0.3 }) => {
   };
 
   return (
-    <GlassCard className="p-6 md:p-8 mb-6" delay={delay}>
+    <GlassCard className="p-6 md:p-8 my-6" delay={delay}>
       <h2 className="text-xl md:text-2xl font-bold text-white mb-6">Cash Flow Trend</h2>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={data}>
@@ -235,7 +237,9 @@ const TransactionRow = ({ transaction, baseCurrency, onEdit, onDelete, index }) 
         border border-white/10 dark:border-white/10
         rounded-xl p-4 mb-3
         hover:bg-white/10 dark:hover:bg-white/10
-        transition-all duration-300
+        hover:border-white/20 hover:shadow-2xl
+        hover:translate-y-[-4px]
+        transition-all duration-300 ease-out
         flex items-center gap-4
       "
     >
@@ -251,22 +255,22 @@ const TransactionRow = ({ transaction, baseCurrency, onEdit, onDelete, index }) 
       <div className="flex-1 min-w-0">
         <p className="text-white font-medium truncate">{transaction.description || transaction.category}</p>
         <div className="flex items-center gap-2 mt-1">
-          <span className="px-2 py-0.5 text-xs rounded-full bg-white/10 text-white/60">
+          <span className="px-2 py-0.5 text-xs rounded-full bg-white/10 text-zinc-100/60">
             {transaction.category}
           </span>
-          <span className="text-xs text-white/40">{format(new Date(transaction.date), 'MMM dd')}</span>
+          <span className="text-xs text-zinc-100/40">{format(new Date(transaction.date), 'MMM dd')}</span>
         </div>
       </div>
 
       {/* Amount */}
       <div className="flex items-center gap-3">
-        <p className={`text-lg font-bold ${isIncome ? 'text-green-400' : 'text-red-400'}`}>
+        <p className={`text-lg font-bold text-white ${isIncome ? 'text-green-400' : 'text-red-400'}`}>
           {isIncome ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount || 0), baseCurrency)}
         </p>
         {onEdit && (
           <button
             onClick={() => onEdit(transaction)}
-            className="p-2 text-white/40 hover:text-white/80 transition-colors"
+            className="p-2 text-zinc-100/40 hover:text-zinc-100/80 transition-colors duration-300 ease-out"
           >
             <FaEdit className="text-sm" />
           </button>
@@ -274,7 +278,7 @@ const TransactionRow = ({ transaction, baseCurrency, onEdit, onDelete, index }) 
         {onDelete && (
           <button
             onClick={() => onDelete(transaction._id)}
-            className="p-2 text-white/40 hover:text-red-400 transition-colors"
+            className="p-2 text-zinc-100/40 hover:text-red-400 transition-colors duration-300 ease-out"
           >
             <FaTrash className="text-sm" />
           </button>
@@ -310,7 +314,7 @@ const CategoryBreakdown = ({ transactions, baseCurrency, delay = 0.5 }) => {
   const COLORS = ['#8b5cf6', '#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
       {/* Horizontal Scrollable Pills */}
       <GlassCard className="p-6" delay={delay}>
         <h2 className="text-xl font-bold text-white mb-4">Category Breakdown</h2>
@@ -324,11 +328,13 @@ const CategoryBreakdown = ({ transactions, baseCurrency, delay = 0.5 }) => {
               className="
                 backdrop-blur-xl bg-white/10 border border-white/20
                 rounded-full px-4 py-2 flex-shrink-0
-                hover:bg-white/20 transition-all duration-300
+                hover:bg-white/20 hover:border-white/30 hover:shadow-2xl
+                hover:translate-y-[-2px]
+                transition-all duration-300 ease-out
               "
             >
               <p className="text-white text-sm font-medium">{cat.name}</p>
-              <p className="text-white/60 text-xs">{cat.percentage.toFixed(0)}%</p>
+              <p className="text-zinc-100/60 text-xs">{cat.percentage.toFixed(0)}%</p>
             </motion.div>
           ))}
         </div>
@@ -376,8 +382,8 @@ const FloatingFAB = ({ onClick }) => (
   <motion.button
     initial={{ scale: 0 }}
     animate={{ scale: 1 }}
-    whileHover={{ scale: 1.1 }}
-    whileTap={{ scale: 0.9 }}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
     onClick={onClick}
     className="
       fixed bottom-6 right-6 z-50
@@ -388,8 +394,9 @@ const FloatingFAB = ({ onClick }) => (
       shadow-2xl
       flex items-center justify-center
       text-white text-2xl
-      hover:from-purple-400/90 hover:to-indigo-400/90
-      transition-all duration-300
+      hover:bg-white/10 hover:border-white/30 hover:shadow-2xl
+      hover:translate-y-[-4px]
+      transition-all duration-300 ease-out
     "
     aria-label="Add transaction"
   >
@@ -620,20 +627,20 @@ const FinanceTracker = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-4 md:p-6 lg:p-8 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20">
+      <div className="min-h-screen p-4 md:p-6 lg:p-8 bg-black">
         <SkeletonLoader />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6 lg:p-8 bg-gradient-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20 pb-24">
+    <div className="min-h-screen p-4 md:p-6 lg:p-8 bg-black pb-24">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 md:mb-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Finance</h1>
-            <p className="text-white/60">{format(new Date(), 'EEEE, MMMM dd, yyyy')}</p>
+            <p className="text-zinc-100/60">{format(new Date(), 'EEEE, MMMM dd, yyyy')}</p>
           </div>
           <div className="flex items-center gap-3">
             <CurrencySelector
@@ -668,11 +675,11 @@ const FinanceTracker = () => {
           <CashFlowChart data={cashFlowData} baseCurrency={baseCurrency} />
 
           {/* Recent Transactions */}
-          <GlassCard className="p-6 mb-6">
+          <GlassCard className="p-6 my-6">
             <h2 className="text-xl md:text-2xl font-bold text-white mb-6">Recent Transactions</h2>
             {recentTransactions.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-white/60">No transactions yet</p>
+                <p className="text-zinc-100/60">No transactions yet</p>
               </div>
             ) : (
               <div>
@@ -695,7 +702,7 @@ const FinanceTracker = () => {
         </>
       ) : (
         <GlassCard className="p-8 text-center">
-          <p className="text-white/80 mb-4">Please set up your account to get started</p>
+          <p className="text-zinc-100/80 mb-4">Please set up your account to get started</p>
           <button onClick={() => setShowSetupModal(true)} className="btn-primary">
             Setup Account
           </button>
@@ -774,13 +781,13 @@ const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Setup Your Account</h2>
-          <button onClick={onClose} className="p-2 text-white/60 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 text-zinc-100/60 hover:text-zinc-100 transition-colors duration-300 ease-out">
             <FaTimes />
           </button>
         </div>
         <form onSubmit={onSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Account Type *</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Account Type *</label>
             <select
               value={form.accountType}
               onChange={(e) => setForm({ ...form, accountType: e.target.value })}
@@ -794,24 +801,24 @@ const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Account Name *</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Account Name *</label>
             <input
               type="text"
               value={form.accountName}
               onChange={(e) => setForm({ ...form, accountName: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-100/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               placeholder="e.g., Primary Checking Account"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Initial Balance *</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Initial Balance *</label>
             <input
               type="number"
               step="0.01"
               value={form.initialBalance}
               onChange={(e) => setForm({ ...form, initialBalance: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-100/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               placeholder="0.00"
               required
             />
@@ -854,13 +861,13 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
           <h2 className="text-2xl font-bold text-white">
             {isEditing ? 'Edit Transaction' : 'Add Transaction'}
           </h2>
-          <button onClick={onClose} className="p-2 text-white/60 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 text-zinc-100/60 hover:text-zinc-100 transition-colors duration-300 ease-out">
             <FaTimes />
           </button>
         </div>
         <form onSubmit={onSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Type *</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Type *</label>
             <select
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value, category: '' })}
@@ -871,7 +878,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Category *</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Category *</label>
             <select
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -885,30 +892,30 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Amount *</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Amount *</label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-100/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               placeholder="0.00"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Description</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Description</label>
             <input
               type="text"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-100/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               placeholder="Optional description"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">Date *</label>
+            <label className="block text-sm font-medium text-zinc-100/80 mb-2">Date *</label>
             <input
               type="date"
               value={form.date}
