@@ -22,14 +22,31 @@ import {
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { logout } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Lock scroll on mobile when sidebar is open
+  useScrollLock(isOpen && isMobile);
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -44,14 +61,10 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'hidden'; // Prevent body scroll when sidebar is open
-    } else {
-      document.body.style.overflow = '';
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
 
