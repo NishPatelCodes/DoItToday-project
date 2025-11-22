@@ -86,11 +86,11 @@ const Sidebar = ({ isOpen, onClose }) => {
   const sidebarContent = (
     <>
       {/* Logo */}
-      <div className="p-4 md:p-6 border-b border-[var(--border-color)]">
+      <div className="p-3 md:p-4 border-b border-[var(--border-color)]">
         <div className="flex items-center justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg md:text-xl font-bold gradient-text leading-tight">DoItToday</h1>
-            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1 leading-normal">Task Manager</p>
+            <h1 className="text-base md:text-lg font-bold gradient-text leading-tight">DoItToday</h1>
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-normal">Task Manager</p>
           </div>
           {/* Close button for mobile */}
           <button
@@ -104,7 +104,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 md:p-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto p-2 md:p-3 space-y-0.5">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -124,15 +124,15 @@ const Sidebar = ({ isOpen, onClose }) => {
               }
             }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl transition-all duration-200 touch-manipulation min-h-[48px] ${
+              `flex items-center gap-2.5 px-2.5 py-2 md:py-1.5 rounded-lg transition-all duration-200 touch-manipulation min-h-[40px] ${
                 isActive
                   ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2`
             }
           >
-            <item.icon className="text-base flex-shrink-0 w-5 h-5" />
-            <span className="text-sm font-medium leading-relaxed truncate">{item.label}</span>
+            <item.icon className="text-sm flex-shrink-0 w-4 h-4" />
+            <span className="text-xs md:text-sm font-medium leading-normal truncate">{item.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -159,7 +159,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Sidebar */}
       <aside className={`
         sidebar-mobile
-        w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
+        w-56 md:w-56 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
         transform transition-transform duration-300 ease-in-out
         md:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
