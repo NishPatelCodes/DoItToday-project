@@ -945,7 +945,7 @@ const TransactionModal = ({ isOpen, onClose, onSave, form, setForm, expenseCateg
   );
 };
 
-<<<<<<< HEAD
+
 // Budget Modal Component
 const BudgetModal = ({ isOpen, onClose, onSave, form, setForm, baseCurrency }) => {
   // Lock body scroll when modal is open
@@ -1028,6 +1028,6 @@ const BudgetModal = ({ isOpen, onClose, onSave, form, setForm, baseCurrency }) =
   );
 };
 
-=======
->>>>>>> d0cbc1059b85d8a00df78240ceb53d73866f0def
+
+
 export default FinanceTracker;
