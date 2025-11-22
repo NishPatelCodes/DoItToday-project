@@ -698,7 +698,7 @@ const Dashboard = () => {
     return (
       <div className="flex min-h-screen bg-[var(--bg-primary)]">
         <Sidebar isOpen={false} onClose={() => {}} />
-        <main id="main-content" className="flex-1 w-full md:ml-56 flex items-center justify-center min-h-screen" tabIndex="-1">
+        <main id="main-content" className="flex-1 w-full md:ml-52 flex items-center justify-center min-h-screen" tabIndex="-1">
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div>
             <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
@@ -724,7 +724,7 @@ const Dashboard = () => {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <main id="main-content" className="flex-1 w-full md:ml-56 pt-14 md:pt-0" tabIndex="-1">
+      <main id="main-content" className="flex-1 w-full md:ml-52 pt-14 md:pt-0" tabIndex="-1">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
