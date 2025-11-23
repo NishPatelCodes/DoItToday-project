@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 import {
   FaHome,
   FaTasks,
@@ -13,15 +14,93 @@ const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
 };
 
+const IconContainer = ({ mouseX, title, icon, href, isActive }) => {
+  const ref = useRef(null);
+  
+  const distance = useTransform(mouseX, (val) => {
+    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
+    return val - bounds.x - bounds.width / 2;
+  });
+
+  const widthSync = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
+  const width = useSpring(widthSync, { mass: 0.1, stiffness: 150, damping: 12 });
+
+  const scale = useTransform(width, [40, 80], [1, 1.5]);
+  const y = useTransform(width, [40, 80], [0, -10]);
+  const opacity = useTransform(width, [40, 80], [0, 1]);
+
+  return (
+    <NavLink 
+      to={href} 
+      ref={ref} 
+      className="relative flex items-center justify-center touch-manipulation"
+    >
+      <motion.div
+        style={{ width, height: 40 }}
+        className="relative flex items-center justify-center rounded-lg"
+      >
+        <motion.div
+          className={cn(
+            'relative flex items-center justify-center w-10 h-10 rounded-lg',
+            'transition-colors duration-200',
+            isActive
+              ? 'bg-[var(--accent-primary)] text-white shadow-lg shadow-[var(--accent-primary)]/50'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          )}
+          style={{
+            scale,
+            y,
+          }}
+        >
+          {isActive && (
+            <motion.div
+              layoutId="activeIndicator"
+              className="absolute inset-0 rounded-lg bg-[var(--accent-primary)]"
+              initial={false}
+              transition={{
+                type: 'spring',
+                stiffness: 500,
+                damping: 30,
+              }}
+              style={{
+                boxShadow: '0 0 20px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1)',
+              }}
+            />
+          )}
+          <span className="relative z-10 flex items-center justify-center">
+            {icon}
+          </span>
+        </motion.div>
+        <motion.span
+          className={cn(
+            'absolute -bottom-5 text-[10px] font-medium whitespace-nowrap',
+            'transition-colors duration-200',
+            isActive
+              ? 'text-[var(--accent-primary)] font-semibold'
+              : 'text-[var(--text-secondary)]'
+          )}
+          style={{
+            opacity,
+            y: useTransform(width, [40, 80], [0, -4]),
+          }}
+        >
+          {title}
+        </motion.span>
+      </motion.div>
+    </NavLink>
+  );
+};
+
 const BottomDock = () => {
   const location = useLocation();
+  const mouseX = useMotionValue(Infinity);
 
   const navItems = [
-    { icon: FaHome, label: 'Home', path: '/dashboard' },
-    { icon: FaTasks, label: 'Tasks', path: '/dashboard/tasks' },
-    { icon: FaStar, label: 'Hero', path: '/dashboard/hero' },
-    { icon: FaDollarSign, label: 'Finance', path: '/dashboard/finance' },
-    { icon: FaUser, label: 'Profile', path: '/dashboard/profile' },
+    { icon: <FaHome className="text-lg" />, label: 'Home', path: '/dashboard' },
+    { icon: <FaTasks className="text-lg" />, label: 'Tasks', path: '/dashboard/tasks' },
+    { icon: <FaStar className="text-lg" />, label: 'Hero', path: '/dashboard/hero' },
+    { icon: <FaDollarSign className="text-lg" />, label: 'Finance', path: '/dashboard/finance' },
+    { icon: <FaUser className="text-lg" />, label: 'Profile', path: '/dashboard/profile' },
   ];
 
   const isActive = (path) => {
@@ -55,6 +134,12 @@ const BottomDock = () => {
           stiffness: 260,
           damping: 20,
           duration: 0.5,
+        }}
+        onMouseMove={(e) => {
+          mouseX.set(e.clientX);
+        }}
+        onMouseLeave={() => {
+          mouseX.set(Infinity);
         }}
         className={cn(
           'relative mb-4 md:mb-6 flex items-center gap-1 md:gap-2',
@@ -92,97 +177,13 @@ const BottomDock = () => {
                 damping: 20,
               }}
             >
-              <NavLink
-                to={item.path}
-                className={cn(
-                  'relative flex flex-col items-center justify-center',
-                  'p-2 rounded-lg',
-                  'touch-manipulation',
-                  'min-w-[48px] min-h-[48px]',
-                  'group transition-all duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/50 focus-visible:ring-offset-2'
-                )}
-              >
-                <motion.div
-                  initial={{ scale: 1, y: 0 }}
-                  whileHover={{
-                    scale: 1.75,
-                    y: -10,
-                    transition: {
-                      type: 'tween',
-                      ease: 'easeOut',
-                      duration: 0.3,
-                    },
-                  }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 200,
-                    damping: 20,
-                  }}
-                  whileTap={{
-                    scale: 0.95,
-                    transition: {
-                      type: 'spring',
-                      stiffness: 600,
-                      damping: 20,
-                    },
-                  }}
-                  className={cn(
-                    'relative flex items-center justify-center',
-                    'w-8 h-8 md:w-9 md:h-9',
-                    'rounded-lg transition-all duration-300',
-                    active
-                      ? cn(
-                          'bg-[var(--accent-primary)] text-white',
-                          'shadow-lg shadow-[var(--accent-primary)]/50'
-                        )
-                      : cn(
-                          'text-[var(--text-secondary)]',
-                          'hover:text-[var(--text-primary)]'
-                        )
-                  )}
-                  style={
-                    active
-                      ? {
-                          filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))',
-                        }
-                      : {}
-                  }
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute inset-0 rounded-lg bg-[var(--accent-primary)]"
-                      initial={false}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 500,
-                        damping: 30,
-                      }}
-                      style={{
-                        boxShadow: '0 0 20px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1)',
-                      }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center justify-center">
-                    <item.icon className="text-base md:text-lg" />
-                  </span>
-                </motion.div>
-                <motion.span
-                  initial={{ opacity: 0.7 }}
-                  animate={{ opacity: active ? 1 : 0.7 }}
-                  transition={{ duration: 0.2 }}
-                  className={cn(
-                    'text-[9px] md:text-[10px] font-medium mt-0.5',
-                    'transition-colors duration-200',
-                    active
-                      ? 'text-[var(--accent-primary)] font-semibold'
-                      : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
-                  )}
-                >
-                  {item.label}
-                </motion.span>
-              </NavLink>
+              <IconContainer
+                mouseX={mouseX}
+                title={item.label}
+                icon={item.icon}
+                href={item.path}
+                isActive={active}
+              />
             </motion.div>
           );
         })}
