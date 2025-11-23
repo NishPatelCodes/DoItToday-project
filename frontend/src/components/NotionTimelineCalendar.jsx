@@ -85,12 +85,6 @@ const NotionTimelineCalendar = ({
   const goToToday = () => setCurrentDate(new Date());
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  
-  // Get the day of week for the first day of the month to offset the grid
-  const firstDayOfWeek = monthStart.getDay();
-  
-  // Create array with empty cells for days before month starts
-  const emptyCells = Array(firstDayOfWeek).fill(null);
 
   // Get today's tasks count
   const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
@@ -143,14 +137,14 @@ const NotionTimelineCalendar = ({
         </div>
       </motion.div>
 
-      {/* Calendar Grid */}
+      {/* Calendar Timeline */}
       <div className="flex-1 overflow-auto p-4 md:p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Week Day Headers */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="grid grid-cols-7 gap-px bg-[var(--border-color)] rounded-t-lg overflow-hidden mb-px"
+            className="grid grid-cols-7 gap-px bg-[var(--border-color)] rounded-t-lg overflow-hidden mb-2"
           >
             {weekDays.map((day, idx) => (
               <motion.div
@@ -165,32 +159,29 @@ const NotionTimelineCalendar = ({
             ))}
           </motion.div>
 
-          {/* Calendar Days Grid */}
-          <div className="grid grid-cols-7 gap-px bg-[var(--border-color)] rounded-b-lg overflow-hidden">
-            {/* Empty cells for days before month starts */}
-            {emptyCells.map((_, idx) => (
-              <div key={`empty-${idx}`} className="bg-[var(--bg-primary)] min-h-[100px] md:min-h-[120px]" />
-            ))}
-            
-            {/* Calendar Days */}
+          {/* Calendar Days - Vertical Timeline */}
+          <div className="space-y-2">
+            {/* Calendar Days - Start directly from date 1 */}
             {days.map((day, index) => {
               const dayTasks = getTasksForDate(day);
               const isTodayDay = isToday(day);
               const isPastDate = isPast(startOfDay(day)) && !isTodayDay;
               const canAddTask = !isPastDate;
 
+              const dayOfWeek = format(day, 'EEE');
+
               return (
                 <motion.div
                   key={day.toISOString()}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  whileHover={{ scale: 1.02, zIndex: 10 }}
+                  whileHover={{ scale: 1.01, x: 4 }}
                   className={`
-                    bg-[var(--bg-primary)] min-h-[100px] md:min-h-[120px] p-2 text-left transition-all relative cursor-pointer
+                    bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] p-4 transition-all relative cursor-pointer
                     ${isTodayDay 
-                      ? 'bg-gradient-to-br from-[var(--accent-primary)]/10 to-[var(--accent-primary)]/5 ring-2 ring-[var(--accent-primary)]/30' 
-                      : 'hover:bg-[var(--bg-secondary)] hover:shadow-md'
+                      ? 'bg-gradient-to-r from-[var(--accent-primary)]/10 to-transparent border-[var(--accent-primary)]/30 ring-2 ring-[var(--accent-primary)]/20' 
+                      : 'hover:bg-[var(--bg-tertiary)] hover:shadow-md hover:border-[var(--accent-primary)]/20'
                     }
                   `}
                   onClick={() => {
@@ -203,93 +194,94 @@ const NotionTimelineCalendar = ({
                     }
                   }}
                 >
-                  {/* Day Number */}
-                  <div className="flex items-center justify-between mb-1">
+                  {/* Day Header */}
+                  <div className="flex items-center gap-4 mb-3">
+                    {/* Day Number - Large */}
                     <motion.span
                       whileHover={{ scale: 1.1 }}
                       className={`
-                        text-sm md:text-base font-semibold transition-all
+                        text-2xl md:text-3xl font-bold transition-all
                         ${isTodayDay 
-                          ? 'w-7 h-7 md:w-8 md:h-8 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center shadow-lg' 
+                          ? 'w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center shadow-lg' 
                           : 'text-[var(--text-primary)]'
                         }
                       `}
                     >
                       {format(day, 'd')}
                     </motion.span>
+                    
+                    {/* Day of Week */}
+                    <span className="text-sm md:text-base font-semibold text-[var(--text-secondary)]">
+                      {dayOfWeek}
+                    </span>
                   </div>
 
                   {/* Tasks/Events */}
-                  <div className="space-y-1 mt-1">
-                    {dayTasks.slice(0, 3).map((item, idx) => {
-                      const isTask = item.title !== undefined;
-                      const isCompleted = isTask ? item.status === 'completed' : false;
-                      
-                      // Color based on priority or type
-                      let bgColor = 'bg-purple-200 dark:bg-purple-900/30';
-                      let textColor = 'text-purple-800 dark:text-purple-200';
-                      
-                      if (isTask && item.priority === 'high') {
-                        bgColor = 'bg-red-200 dark:bg-red-900/30';
-                        textColor = 'text-red-800 dark:text-red-200';
-                      } else if (isTask && item.priority === 'medium') {
-                        bgColor = 'bg-yellow-200 dark:bg-yellow-900/30';
-                        textColor = 'text-yellow-800 dark:text-yellow-200';
-                      } else if (!isTask) {
-                        bgColor = 'bg-blue-200 dark:bg-blue-900/30';
-                        textColor = 'text-blue-800 dark:text-blue-200';
-                      }
+                  <div className="space-y-2">
+                    {dayTasks.length > 0 ? (
+                      <>
+                        {dayTasks.map((item, idx) => {
+                          const isTask = item.title !== undefined;
+                          const isCompleted = isTask ? item.status === 'completed' : false;
+                          
+                          // Color based on priority or type
+                          let bgColor = 'bg-purple-200 dark:bg-purple-900/30';
+                          let textColor = 'text-purple-800 dark:text-purple-200';
+                          
+                          if (isTask && item.priority === 'high') {
+                            bgColor = 'bg-red-200 dark:bg-red-900/30';
+                            textColor = 'text-red-800 dark:text-red-200';
+                          } else if (isTask && item.priority === 'medium') {
+                            bgColor = 'bg-yellow-200 dark:bg-yellow-900/30';
+                            textColor = 'text-yellow-800 dark:text-yellow-200';
+                          } else if (!isTask) {
+                            bgColor = 'bg-blue-200 dark:bg-blue-900/30';
+                            textColor = 'text-blue-800 dark:text-blue-200';
+                          }
 
-                      return (
-                        <motion.div
-                          key={item._id || idx}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.1 }}
-                          whileHover={{ scale: 1.05, x: 4 }}
-                          className={`
-                            ${bgColor} ${textColor} 
-                            text-xs px-2 py-1 rounded truncate cursor-pointer transition-all
-                            ${isCompleted ? 'opacity-60' : ''}
-                          `}
-                          title={item.title || item.name}
+                          return (
+                            <motion.div
+                              key={item._id || idx}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.05 }}
+                              whileHover={{ scale: 1.02, x: 4 }}
+                              className={`
+                                ${bgColor} ${textColor} 
+                                text-sm px-3 py-2 rounded-lg cursor-pointer transition-all font-medium
+                                ${isCompleted ? 'opacity-60' : ''}
+                              `}
+                              title={item.title || item.name}
+                            >
+                              {item.title || item.name}
+                            </motion.div>
+                          );
+                        })}
+                      </>
+                    ) : (
+                      canAddTask && (
+                        <motion.button
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onDateClick) {
+                              onDateClick(day);
+                            } else if (onCreateTask) {
+                              onCreateTask();
+                            }
+                          }}
+                          className="w-full text-sm text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-[var(--border-color)] hover:border-[var(--accent-primary)]/50"
                         >
-                          {item.title || item.name}
-                        </motion.div>
-                      );
-                    })}
-                    {dayTasks.length > 3 && (
-                      <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-xs text-[var(--text-secondary)] px-2"
-                      >
-                        +{dayTasks.length - 3} more
-                      </motion.div>
+                          <FaPlus className="text-xs" />
+                          Add task
+                        </motion.button>
+                      )
                     )}
                   </div>
 
-                  {/* Add Button - Only for today and future dates */}
-                  {dayTasks.length === 0 && canAddTask && (
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (onDateClick) {
-                          onDateClick(day);
-                        } else if (onCreateTask) {
-                          onCreateTask();
-                        }
-                      }}
-                      className="w-full mt-2 text-xs text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors flex items-center justify-center gap-1 py-1 rounded hover:bg-[var(--accent-primary)]/10"
-                    >
-                      <FaPlus className="text-[10px]" />
-                      Add
-                    </motion.button>
-                  )}
                 </motion.div>
               );
             })}
