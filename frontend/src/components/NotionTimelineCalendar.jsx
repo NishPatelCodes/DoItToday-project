@@ -121,12 +121,16 @@ const NotionTimelineCalendar = ({
     
     // Month separator height (if this is a month start)
     if (isMonthStart) {
-      height += 60; // py-4 (32px) + border (2px) + spacing
+      height += 60; // py-4 (32px) + border (2px) + spacing (26px)
     }
     
-    // Day card base height (header section)
-    // Date header: day badge (56-64px) + date info (60px) + margins = ~100px
-    let cardHeight = 100;
+    // Day card base height calculation
+    // Header section: day badge container + date info + progress bar + margins
+    // Day badge: 56-64px (w-12 h-12 md:w-14 md:h-14)
+    // Date info section: ~60px (title + progress bar)
+    // Top/bottom padding: 16-24px (p-4 md:p-5)
+    // Header margin bottom: 20px (mb-4 md:mb-5)
+    let cardHeight = 140; // Base: padding + header + margins
     
     if (items) {
       const taskCount = items.tasks.length;
@@ -134,29 +138,33 @@ const NotionTimelineCalendar = ({
       const totalItems = taskCount + goalCount;
       
       if (totalItems > 0) {
-        // Each task/goal card: padding (32px) + content (~40px) = ~72px
-        // Space between items: space-y-2.5 (10px) or space-y-3 (12px on md)
+        // Task card breakdown:
+        // - Padding: p-3 md:p-4 = 12-16px top + 12-16px bottom = 24-32px
+        // - Content: text (~20px) + optional priority badge (~28px) = ~40-48px
+        // - Total per card: ~68-80px, average 74px
+        // - Spacing: space-y-2.5 (10px) or space-y-3 (12px), average 11px
         const visibleItems = Math.min(totalItems, 6);
-        // Use average: 72px per card + 11px spacing between
-        cardHeight += (visibleItems * 72) + ((visibleItems > 0 ? visibleItems - 1 : 0) * 11);
+        cardHeight += (visibleItems * 74) + ((visibleItems > 0 ? visibleItems - 1 : 0) * 11);
         
         // "Show more" indicator if needed
         if (totalItems > 6) {
           cardHeight += 40; // py-2.5 (20px) + text (20px)
         }
       }
-      // If no items and past date, no button shown - no extra height needed
+      // If no items, cardHeight stays at base (no button for past dates)
     } else {
       // Empty day - only show button for today/future dates
       if (!isPastDate) {
-        cardHeight += 80; // py-4 md:py-5 button (64-80px)
+        // Empty state button: py-4 md:py-5 = 32-40px + border + text = ~80px
+        cardHeight += 80;
       }
     }
     
-    // Add consistent bottom padding from parent container
-    height += cardHeight + 24; // pb-4 md:pb-6 = 16-24px
+    // Add consistent bottom padding from parent container (pb-4 md:pb-6)
+    height += cardHeight + 24; // 16-24px average
     
-    return Math.max(height, 120); // Minimum height to prevent overlap
+    // Ensure minimum height to prevent any overlap
+    return Math.max(height, 160);
   }, [days, itemsByDate]);
 
   // Scroll to today on mount
