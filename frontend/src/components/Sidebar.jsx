@@ -23,6 +23,7 @@ import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useScrollLock } from '../hooks/useScrollLock';
+import Logo from './Logo';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { logout } = useAuthStore();
@@ -88,9 +89,12 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Logo */}
       <div className="p-2.5 md:p-3 border-b border-[var(--border-color)]">
         <div className="flex items-center justify-between">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-sm md:text-base font-bold gradient-text leading-tight">DoItToday</h1>
-            <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mt-0.5 leading-normal">Task Manager</p>
+          <div className="min-w-0 flex-1 flex items-center gap-3">
+            <Logo size="md" />
+            <div>
+              <h1 className="text-sm md:text-base font-bold gradient-text leading-tight">DoItToday</h1>
+              <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mt-0.5 leading-normal">Task Manager</p>
+            </div>
           </div>
           {/* Close button for mobile */}
           <button

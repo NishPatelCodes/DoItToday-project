@@ -6,6 +6,7 @@ import { useThemeStore } from '../hooks/useTheme';
 import { authAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import ThemeToggle from '../components/landing/ThemeToggle';
+import Logo from '../components/Logo';
 import {
   FiMail,
   FiLock,
@@ -289,15 +290,18 @@ const Login = () => {
           >
             {/* Logo and Tagline - Enhanced for dark mode */}
             <div className="space-y-3">
-              <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="text-4xl lg:text-5xl font-bold gradient-text tracking-tight"
-                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-              >
-                DoItToday
-              </motion.h1>
+              <div className="flex items-center gap-4">
+                <Logo size="lg" />
+                <motion.h1
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="text-4xl lg:text-5xl font-bold gradient-text tracking-tight"
+                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                >
+                  DoItToday
+                </motion.h1>
+              </div>
               <motion.p
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -353,15 +357,18 @@ const Login = () => {
           >
             {/* Mobile Logo & Quote - Enhanced for dark mode */}
             <div className="lg:hidden text-center mb-8 space-y-4">
-              <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-3xl font-bold gradient-text tracking-tight"
-                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-              >
-                DoItToday
-              </motion.h1>
+              <div className="flex items-center justify-center gap-3">
+                <Logo size="md" />
+                <motion.h1
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-3xl font-bold gradient-text tracking-tight"
+                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                >
+                  DoItToday
+                </motion.h1>
+              </div>
               <motion.p
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
