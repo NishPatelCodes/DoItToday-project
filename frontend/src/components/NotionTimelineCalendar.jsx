@@ -178,7 +178,7 @@ const NotionTimelineCalendar = ({
       <div style={style}>
         {isMonthStart && (
           <div className="sticky top-0 z-20 bg-[var(--bg-primary)] py-3 px-4 border-b border-[var(--border-color)] backdrop-blur-sm bg-opacity-95">
-            <h2 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
+            <h2 className="text-lg font-bold text-[var(--text-primary)] leading-none">
               {format(day, 'MMMM yyyy')}
             </h2>
           </div>
@@ -216,14 +216,14 @@ const NotionTimelineCalendar = ({
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-4 py-4 shadow-sm backdrop-blur-sm bg-opacity-95"
+        className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-4 py-5 shadow-sm backdrop-blur-sm bg-opacity-95"
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] leading-tight break-words">
               {format(todayDate, 'EEEE, MMMM d')}
             </h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-1 leading-normal">
+            <p className="text-sm text-[var(--text-secondary)] mt-1.5 leading-tight">
               {totalCount > 0 
                 ? `${completedCount}/${totalCount} tasks done`
                 : 'No tasks today'

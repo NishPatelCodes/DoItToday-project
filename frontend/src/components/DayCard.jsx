@@ -101,36 +101,36 @@ const DayCard = ({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative px-4 py-4 border-b border-[var(--border-color)] ${
+      className={`relative px-4 py-5 border-b border-[var(--border-color)] ${
         isTodayProp ? 'bg-[var(--accent-primary)]/5 dark:bg-[var(--accent-primary)]/10' : ''
       }`}
     >
       {/* Date Header */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-start gap-3 mb-4">
         <div className={`flex-shrink-0 w-14 text-center ${
           isTodayProp 
             ? 'text-[var(--accent-primary)] font-bold' 
             : 'text-[var(--text-secondary)]'
         }`}>
-          <div className="text-xs uppercase tracking-wide leading-normal font-semibold">{dayName}</div>
-          <div className="text-2xl font-bold leading-tight mt-0.5">{dayNumber}</div>
+          <div className="text-xs uppercase tracking-wide leading-tight font-semibold mb-0.5">{dayName}</div>
+          <div className="text-2xl font-bold leading-none">{dayNumber}</div>
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className={`text-sm font-semibold leading-snug ${
+          <div className={`text-sm font-semibold leading-tight ${
             isTodayProp 
               ? 'text-[var(--accent-primary)]' 
               : 'text-[var(--text-primary)]'
           }`}>
             <span className="break-words">{monthDay}</span>
             {isTodayProp && (
-              <span className="ml-2 text-xs px-2 py-1 bg-[var(--accent-primary)]/20 dark:bg-[var(--accent-primary)]/30 rounded-full inline-block">
+              <span className="ml-2 text-xs px-2 py-0.5 bg-[var(--accent-primary)]/20 dark:bg-[var(--accent-primary)]/30 rounded-full inline-block align-middle">
                 Today
               </span>
             )}
           </div>
           {totalTasks > 0 && (
-            <div className="text-xs text-[var(--text-secondary)] mt-1 leading-normal">
+            <div className="text-xs text-[var(--text-secondary)] mt-1.5 leading-tight">
               {completedTasks}/{totalTasks} tasks completed
             </div>
           )}
@@ -139,7 +139,7 @@ const DayCard = ({
 
       {/* Tasks and Goals List */}
       {allItems.length > 0 ? (
-        <div className="space-y-2 ml-14 md:ml-16">
+        <div className="space-y-2.5 ml-14 md:ml-16">
           {allItems.slice(0, 5).map((item) => {
             const isTask = item.title !== undefined;
             const isCompleted = isTask ? item.status === 'completed' : item.progress >= 100;
@@ -184,8 +184,8 @@ const DayCard = ({
                       >
                         {isCompleted && <FaCheck className="text-white text-xs" />}
                       </button>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-semibold leading-snug break-words ${
+                      <div className="flex-1 min-w-0 py-0.5">
+                        <p className={`text-sm font-semibold leading-tight break-words ${
                           isCompleted 
                             ? 'text-[var(--text-tertiary)] line-through' 
                             : 'text-[var(--text-primary)]'
@@ -193,7 +193,7 @@ const DayCard = ({
                           {item.title}
                         </p>
                         {item.priority && (
-                          <span className={`inline-block mt-1.5 text-xs px-2 py-1 rounded-lg font-medium flex-shrink-0 ${
+                          <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-lg font-medium flex-shrink-0 ${
                             item.priority === 'high' 
                               ? 'bg-red-500/20 dark:bg-red-900/30 text-red-500 dark:text-red-400 border border-red-500/30 dark:border-red-700/30'
                               : item.priority === 'medium'
@@ -208,8 +208,8 @@ const DayCard = ({
                   ) : (
                     <div className="flex items-start gap-3">
                       <FaFlag className="text-yellow-500 dark:text-yellow-400 mt-0.5 flex-shrink-0 text-base" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[var(--text-primary)] leading-snug break-words">
+                      <div className="flex-1 min-w-0 py-0.5">
+                        <p className="text-sm font-semibold text-[var(--text-primary)] leading-tight break-words">
                           {item.name}
                         </p>
                         <div className="mt-2 w-full bg-[var(--bg-tertiary)] rounded-full h-2">
@@ -229,7 +229,7 @@ const DayCard = ({
           {allItems.length > 5 && (
             <button
               onClick={() => onDateClick && onDateClick(date)}
-              className="text-xs text-[var(--accent-primary)] hover:underline mt-2 leading-normal touch-manipulation py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-lg px-2"
+              className="text-xs text-[var(--accent-primary)] hover:underline mt-2 leading-tight touch-manipulation py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-lg px-2"
             >
               +{allItems.length - 5} more items
             </button>
@@ -238,7 +238,7 @@ const DayCard = ({
       ) : (
         <button
           onClick={() => onDateClick && onDateClick(date)}
-          className="ml-14 md:ml-16 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors py-3 leading-normal touch-manipulation min-h-[48px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-xl px-2"
+          className="ml-14 md:ml-16 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors py-3 leading-tight touch-manipulation min-h-[48px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-xl px-2"
         >
           No tasks · Tap to add
         </button>
