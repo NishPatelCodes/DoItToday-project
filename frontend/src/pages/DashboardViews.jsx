@@ -52,22 +52,20 @@ import CompletedTasksSection from '../components/CompletedTasksSection';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { notesAPI, financeAPI } from '../services/api';
+import { financeAPI } from '../services/api';
 import { LazyWrapper } from '../components/lazy/LazyWrapper';
 import { Suspense } from 'react';
 
 // Lazy load heavy components
 const GoalAnalytics = lazy(() => import('../components/GoalAnalytics'));
 const SmartPlanner = lazy(() => import('../components/SmartPlanner'));
-const FocusMode = lazy(() => import('../components/FocusMode'));
-const CalendarView = lazy(() => import('../components/CalendarView'));
 const TaskKanbanBoard = lazy(() => import('../components/TaskKanbanBoard'));
 const AnalyticsDashboard = lazy(() => import('../components/AnalyticsDashboard'));
+const Challenges = lazy(() => import('../components/Challenges'));
 import ErrorBoundary from '../components/ErrorBoundary';
 import ChartErrorBoundary from '../components/ChartErrorBoundary';
 import { formatCurrency } from '../utils/currencyFormatter';
 import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
-import FocusPreviewCard from '../components/FocusPreviewCard';
 import NotionTimelineCalendar from '../components/NotionTimelineCalendar';
 
 // Dashboard Home View - NEW DESIGN
@@ -98,7 +96,6 @@ export const DashboardHome = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [todaysPlanExpanded, setTodaysPlanExpanded] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
-  const [notes, setNotes] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [incomeTrend, setIncomeTrend] = useState([]);
   const [incomeMeta, setIncomeMeta] = useState({ currency: 'USD', total: 0 });
@@ -138,16 +135,6 @@ export const DashboardHome = ({
     });
   }, []);
 
-  // Load notes for search
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      notesAPI.getAll({ search: searchQuery, archived: 'false' })
-        .then(res => setNotes(res.data || []))
-        .catch(() => setNotes([]));
-    } else {
-      setNotes([]);
-    }
-  }, [searchQuery]);
 
   // Load lightweight finance trend for dashboard insights
   useEffect(() => {
@@ -184,7 +171,7 @@ export const DashboardHome = ({
 
   // Filter search results
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return { tasks: [], goals: [], notes: [] };
+    if (!searchQuery.trim()) return { tasks: [], goals: [] };
     const query = searchQuery.toLowerCase();
     return {
       tasks: tasks.filter(t => 
@@ -195,12 +182,8 @@ export const DashboardHome = ({
         g.title?.toLowerCase().includes(query) || 
         g.description?.toLowerCase().includes(query)
       ).slice(0, 5),
-      notes: notes.filter(n => 
-        n.title?.toLowerCase().includes(query) || 
-        n.content?.toLowerCase().includes(query)
-      ).slice(0, 5),
     };
-  }, [searchQuery, tasks, goals, notes]);
+  }, [searchQuery, tasks, goals]);
 
   // Get yesterday's tasks for "Same as yesterday" feature
   const yesterdaysTasks = useMemo(() => {
@@ -339,7 +322,7 @@ export const DashboardHome = ({
           <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
           <input
             type="text"
-            placeholder="Search tasks, goals, notes..."
+            placeholder="Search tasks, goals..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -364,7 +347,7 @@ export const DashboardHome = ({
 
         {/* Search Results Dropdown */}
         <AnimatePresence>
-          {showSearchResults && (searchResults.tasks.length > 0 || searchResults.goals.length > 0 || searchResults.notes.length > 0) && (
+          {showSearchResults && (searchResults.tasks.length > 0 || searchResults.goals.length > 0) && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -408,7 +391,7 @@ export const DashboardHome = ({
                       <div
                         key={goal._id}
                         onClick={() => {
-                          navigate('/dashboard/goals', { state: { highlightGoalId: goal._id } });
+                          navigate('/dashboard/tasks', { state: { highlightGoalId: goal._id } });
                           setSearchQuery('');
                           setShowSearchResults(false);
                         }}
@@ -417,32 +400,6 @@ export const DashboardHome = ({
                         <p className="text-sm font-medium text-[var(--text-primary)]">{goal.title}</p>
                         {goal.description && (
                           <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-1">{goal.description}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {searchResults.notes.length > 0 && (
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--text-secondary)]">
-                    <FaStickyNote />
-                    Notes ({searchResults.notes.length})
-                  </div>
-                  <div className="space-y-2">
-                    {searchResults.notes.map(note => (
-                      <div
-                        key={note._id}
-                        onClick={() => {
-                          navigate('/dashboard/notes', { state: { highlightNoteId: note._id } });
-                          setSearchQuery('');
-                          setShowSearchResults(false);
-                        }}
-                        className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] cursor-pointer"
-                      >
-                        <p className="text-sm font-medium text-[var(--text-primary)]">{note.title || 'Untitled Note'}</p>
-                        {note.content && (
-                          <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-1">{note.content.replace(/<[^>]*>/g, '')}</p>
                         )}
                       </div>
                     ))}
@@ -487,13 +444,13 @@ export const DashboardHome = ({
               <div className="pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-1.5 leading-normal">Next Task</p>
                 <p className="text-sm font-semibold text-[var(--text-primary)] truncate leading-snug break-words">{nextTask.title}</p>
-                {nextTask.dueDate && (
+                  {nextTask.dueDate && (
                   <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-normal">
-                    {format(new Date(nextTask.dueDate), 'h:mm a')}
-                  </p>
-                )}
+                      {format(new Date(nextTask.dueDate), 'h:mm a')}
+                    </p>
+                  )}
               </div>
-            )}
+              )}
           </div>
         </motion.div>
 
@@ -661,12 +618,12 @@ export const DashboardHome = ({
               <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
             </div>
             <div className="relative menu-container">
-              <button 
+                <button
                 onClick={() => setShowMenu(!showMenu)}
                 className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-              >
+                >
                 <FaEllipsisV />
-              </button>
+                </button>
               <AnimatePresence>
                 {showMenu && (
                   <motion.div
@@ -708,7 +665,7 @@ export const DashboardHome = ({
                         <span className="ml-auto text-xs text-[var(--text-tertiary)]">({yesterdaysTasks.length})</span>
                       )}
                     </button>
-                    <button
+                <button
                       onClick={() => {
                         navigate('/dashboard/tasks');
                         setShowMenu(false);
@@ -717,9 +674,9 @@ export const DashboardHome = ({
                     >
                       <FaTasks />
                       View All Tasks
-                    </button>
+                </button>
                   </motion.div>
-                )}
+              )}
               </AnimatePresence>
             </div>
           </div>
@@ -730,10 +687,10 @@ export const DashboardHome = ({
                   .filter(t => t.status !== 'completed')
                   .slice(0, 5)
                   .map((task) => (
-                    <div
-                      key={task._id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
-                    >
+                  <div
+                    key={task._id}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
+                  >
                       <button
                         type="button"
                         onClick={() => onToggleTask(task._id)}
@@ -748,44 +705,44 @@ export const DashboardHome = ({
                           <FaCheck className="w-3 h-3 text-white" />
                         )}
                       </button>
-                      <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[var(--text-primary)]">
-                          {task.title}
+                        {task.title}
+                      </p>
+                      {task.dueDate && (
+                        <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                          {format(new Date(task.dueDate), 'h:mm a')}
                         </p>
-                        {task.dueDate && (
-                          <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                            {format(new Date(task.dueDate), 'h:mm a')}
-                          </p>
-                        )}
-                      </div>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          task.priority === 'high'
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                            : task.priority === 'medium'
-                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                        }`}
-                      >
-                        {task.priority || 'Low'}
-                      </span>
+                      )}
                     </div>
-                  ))
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        task.priority === 'high'
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                          : task.priority === 'medium'
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                      }`}
+                    >
+                      {task.priority || 'Low'}
+                    </span>
+                  </div>
+                ))
               ) : (
                 <p className="text-sm text-[var(--text-tertiary)] text-center py-4">No pending tasks for today</p>
               )}
-                  <button
-                    onClick={() => {
-                      setEditingTask(null);
-                      setIsTaskModalOpen(true);
-                    }}
+              <button
+                onClick={() => {
+                  setEditingTask(null);
+                  setIsTaskModalOpen(true);
+                }}
                 className="w-full mt-4 py-2 px-4 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] font-medium transition-colors flex items-center justify-center gap-2"
-                  >
+              >
                 <FaPlus className="text-xs" />
                 <span>Smart Task</span>
-                  </button>
-                </div>
-              )}
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Right Side: Streak and Consistency */}
@@ -825,11 +782,8 @@ export const DashboardHome = ({
         </div>
       </div>
 
-      {/* Lower Middle Section: Focus Mode and Momentum */}
-      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        {/* Focus Mode Card - New Compact Design */}
-        <FocusPreviewCard />
-
+      {/* Lower Middle Section: Momentum */}
+      <div className="flex md:grid md:grid-cols-1 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
         {/* Weekly Momentum Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -870,15 +824,15 @@ export const DashboardHome = ({
                       {task.dueDate ? format(new Date(task.dueDate), 'EEE, MMM d') : 'No due date'}
                     </p>
                   </div>
-                  <button
+          <button
                     className="text-[10px] font-semibold text-[var(--accent-primary)] hover:underline"
                     onClick={() =>
                       navigate('/dashboard/tasks', { state: { highlightTaskId: task._id } })
                     }
                   >
                     Jump
-                  </button>
-                </div>
+          </button>
+          </div>
               ))}
               {weeklyFocus.pending.length > weeklyFocusPreview.length && (
                 <p className="text-xs text-[var(--text-tertiary)]">
@@ -903,7 +857,7 @@ export const DashboardHome = ({
                 className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-full transition-all duration-500"
                 style={{ width: `${weeklyFocusCompletion}%` }}
             />
-            </div>
+          </div>
           </div>
           <button
             onClick={() => navigate('/dashboard/tasks')}
@@ -912,7 +866,7 @@ export const DashboardHome = ({
             Plan the rest of the week
           </button>
         </motion.div>
-          </div>
+      </div>
 
       {/* Bottom Section: Today's Spend and Quick Note */}
       <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
@@ -927,9 +881,9 @@ export const DashboardHome = ({
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                 <span className="text-blue-600 dark:text-blue-400 font-semibold text-lg lg:text-xl">$</span>
-        </div>
+              </div>
               <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Spend</h3>
-      </div>
+            </div>
             <button
               onClick={() => navigate('/dashboard/finance')}
               className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
@@ -941,24 +895,9 @@ export const DashboardHome = ({
           <p className="text-xs lg:text-sm text-[var(--text-tertiary)] mt-2">Track your expenses</p>
         </motion.div>
 
-        {/* Quick Note Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
-        >
-          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 lg:mb-5">Quick Note</h3>
-          <input
-            type="text"
-            placeholder="Add text..."
-            className="w-full px-4 py-2 lg:py-3 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all text-sm lg:text-base"
-            onClick={() => navigate('/dashboard/notes')}
-          />
-        </motion.div>
       </div>
 
-      {/* Analytics Card */}
+      {/* Analytics Section - Full Integration */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -967,16 +906,21 @@ export const DashboardHome = ({
       >
         <div className="flex items-center justify-between mb-4 lg:mb-6">
           <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Analytics</h3>
-          <button
-            onClick={() => navigate('/dashboard/analytics')}
-            className="text-sm lg:text-base font-medium text-[var(--accent-primary)] hover:text-[var(--accent-hover)] transition-colors"
-          >
-            View Full Analytics →
-          </button>
         </div>
+        <ErrorBoundary>
+          <LazyWrapper minHeight="400px">
+            <AnalyticsDashboard
+              analytics={analytics}
+              tasks={tasks || []}
+              goals={goals || []}
+              habits={habits || []}
+              user={user}
+            />
+          </LazyWrapper>
+        </ErrorBoundary>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div className="rounded-xl border border-[var(--border-color)] p-5">
-            <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4">
         <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
                 <p className="text-2xl font-bold text-[var(--text-primary)]">{latestProductivity}%</p>
@@ -1030,7 +974,7 @@ export const DashboardHome = ({
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartErrorBoundary>
-              </div>
+        </div>
             ) : (
               <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
                 <p>No productivity data yet.</p>
@@ -1040,7 +984,7 @@ export const DashboardHome = ({
           </div>
           <div className="rounded-xl border border-[var(--border-color)] p-5">
             <div className="flex items-center justify-between mb-4">
-              <div>
+        <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Income runway</p>
                 <p className="text-2xl font-bold text-[var(--text-primary)]">
                   {formatCurrency(latestIncome, incomeMeta.currency, { maximumFractionDigits: 0 })}
@@ -1117,8 +1061,8 @@ export const DashboardHome = ({
               <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
                 <p>No income data captured.</p>
                 <p className="text-[11px] mt-1">Log transactions in Finance to see this fill in.</p>
-              </div>
-            )}
+            </div>
+          )}
           </div>
         </div>
       </motion.div>
@@ -1127,9 +1071,9 @@ export const DashboardHome = ({
 };
 
 // Calendar View - Notion-style Timeline
-export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask, onToggleTask, onDeleteTask, onEditTask }) => {
+export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask, onToggleTask, onDeleteTask, onEditTask, hideHeader = false }) => {
   return (
-    <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] overflow-hidden">
+    <div className={hideHeader ? "h-[calc(100vh-8rem)] md:h-[calc(100vh-10rem)] overflow-hidden" : "h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] overflow-hidden"}>
       <NotionTimelineCalendar
         tasks={tasks}
         goals={goals}
@@ -1143,21 +1087,30 @@ export const DashboardCalendar = ({ tasks, goals, onDateClick, onCreateTask, onT
   );
 };
 
-// Tasks View - REDESIGNED
+// Tasks View - REDESIGNED with Tabs
 export const DashboardTasks = ({
   tasks,
   pendingTasks,
   completedTasks,
+  goals = [],
+  activeChallenges = [],
   onToggleTask,
   onDeleteTask,
   onEditTask,
+  onUpdateGoalProgress,
+  onDeleteGoal,
+  onEditGoal,
   setIsTaskModalOpen,
+  setIsGoalModalOpen,
   setEditingTask,
+  setEditingGoal,
   onCreateMultipleTasks,
   onBulkCompleteTasks,
   onBulkDeleteTasks,
+  onCreateTask,
   user,
 }) => {
+  const [activeTab, setActiveTab] = useState('tasks'); // 'tasks', 'goals', 'challenges', 'calendar'
   const [isMultipleTasksModalOpen, setIsMultipleTasksModalOpen] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState(new Set());
@@ -1329,39 +1282,130 @@ export const DashboardTasks = ({
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-8 gap-3 md:gap-4">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl md:text-3xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">Tasks</h1>
-          <p className="text-xs md:text-base text-[var(--text-secondary)]">Manage your daily tasks with ease</p>
+          <h1 className="text-xl md:text-3xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
+            {activeTab === 'tasks' ? 'Tasks' : activeTab === 'goals' ? 'Goals' : activeTab === 'challenges' ? 'Challenges' : 'Calendar'}
+          </h1>
+          <p className="text-xs md:text-base text-[var(--text-secondary)]">
+            {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : activeTab === 'goals' ? 'Track your progress and achievements' : activeTab === 'challenges' ? 'Complete challenges and earn rewards' : 'View your schedule and timeline'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded transition-all ${
-                viewMode === 'kanban'
-                  ? 'bg-[var(--accent-primary)] text-white'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-              aria-label="Kanban view"
-              aria-pressed={viewMode === 'kanban'}
-            >
-              <FaColumns />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded transition-all ${
-                viewMode === 'list'
-                  ? 'bg-[var(--accent-primary)] text-white'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-              aria-label="List view"
-              aria-pressed={viewMode === 'list'}
-            >
-              <FaList />
-            </button>
-          </div>
+          {activeTab === 'tasks' && (
+            /* View Mode Toggle */
+            <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-1">
+        <button
+                onClick={() => setViewMode('kanban')}
+                className={`p-2 rounded transition-all ${
+                  viewMode === 'kanban'
+                    ? 'bg-[var(--accent-primary)] text-white'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+                aria-label="Kanban view"
+                aria-pressed={viewMode === 'kanban'}
+              >
+                <FaColumns />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-[var(--accent-primary)] text-white'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+                aria-label="List view"
+                aria-pressed={viewMode === 'list'}
+              >
+                <FaList />
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="mb-6 border-b border-[var(--border-color)]">
+        <div className="flex gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('tasks')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'tasks'
+                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Tasks
+          </button>
+          <button
+            onClick={() => setActiveTab('goals')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'goals'
+                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Goals
+          </button>
+          <button
+            onClick={() => setActiveTab('challenges')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'challenges'
+                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Challenges
+          </button>
+          <button
+            onClick={() => setActiveTab('calendar')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'calendar'
+                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Calendar
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'goals' && (
+        <DashboardGoals
+          goals={goals}
+          tasks={tasks}
+          onUpdateGoalProgress={onUpdateGoalProgress}
+          onDeleteGoal={onDeleteGoal}
+          onEditGoal={onEditGoal}
+          setIsGoalModalOpen={setIsGoalModalOpen}
+          setEditingGoal={setEditingGoal}
+          hideHeader={true}
+        />
+      )}
+
+      {activeTab === 'challenges' && (
+        <Suspense fallback={<Skeleton />}>
+          <Challenges />
+        </Suspense>
+      )}
+
+      {activeTab === 'calendar' && (
+        <DashboardCalendar
+          tasks={tasks}
+          goals={goals}
+          onDateClick={() => {}}
+          onCreateTask={onCreateTask || (() => {
+            setEditingTask(null);
+            setIsTaskModalOpen(true);
+          })}
+          onToggleTask={onToggleTask}
+          onDeleteTask={onDeleteTask}
+          onEditTask={onEditTask}
+          hideHeader={true}
+        />
+      )}
+
+      {activeTab === 'tasks' && (
+        <>
 
       {/* Search and Filter Bar */}
       <TaskSearchFilter
@@ -1424,7 +1468,7 @@ export const DashboardTasks = ({
                       >
                         <FaCheckCircle />
                         Complete ({selectedTasks.size})
-                      </button>
+        </button>
                       <button
                         onClick={() => setShowBulkDeleteConfirm(true)}
                         className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors flex items-center gap-2"
@@ -1474,15 +1518,15 @@ export const DashboardTasks = ({
               </button>
             </div>
           )}
-        </div>
+      </div>
 
         {/* Task Board/List */}
         {pendingFilteredTasks.length > 0 || filteredTasks.filter(t => t.status === 'completed').length > 0 ? (
           <TaskKanbanBoard
             tasks={filteredTasks}
-            onToggle={onToggleTask}
-            onDelete={onDeleteTask}
-            onEdit={onEditTask}
+                  onToggle={onToggleTask}
+                  onDelete={onDeleteTask}
+                  onEdit={onEditTask}
             onTaskMove={handleTaskMove}
             isSelectMode={isSelectMode}
             selectedTasks={selectedTasks}
@@ -1497,32 +1541,32 @@ export const DashboardTasks = ({
             }}
             viewMode={viewMode}
           />
-        ) : (
-          <div className="text-center py-12">
-            <FaTasks className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+            ) : (
+              <div className="text-center py-12">
+                <FaTasks className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
             <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
-            <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
-            <button
-              onClick={() => {
-                setEditingTask(null);
-                setIsTaskModalOpen(true);
-              }}
-              className="btn-primary"
-            >
-              <FaPlus className="inline mr-2" />
-              Create Task
-            </button>
-          </div>
-        )}
-      </div>
+                <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
+                <button
+                  onClick={() => {
+                    setEditingTask(null);
+                    setIsTaskModalOpen(true);
+                  }}
+                  className="btn-primary"
+                >
+                  <FaPlus className="inline mr-2" />
+                  Create Task
+                </button>
+              </div>
+            )}
+        </div>
 
       {/* Completed Tasks Section */}
-      {completedTasks.length > 0 && (
+        {completedTasks.length > 0 && (
         <CompletedTasksSection
           tasks={completedTasks}
-          onToggle={onToggleTask}
-          onDelete={onDeleteTask}
-          onEdit={onEditTask}
+                        onToggle={onToggleTask}
+                        onDelete={onDeleteTask}
+                        onEdit={onEditTask}
           className="mb-6"
         />
       )}
@@ -1561,6 +1605,8 @@ export const DashboardTasks = ({
         cancelText="Cancel"
         type="danger"
       />
+        </>
+      )}
     </div>
   );
 };
@@ -1574,11 +1620,13 @@ export const DashboardGoals = ({
   setIsGoalModalOpen,
   setEditingGoal,
   tasks = [],
+  hideHeader = false,
 }) => {
   const [selectedGoalForAnalytics, setSelectedGoalForAnalytics] = useState(null);
 
   return (
-    <div className="p-4 md:p-8 overflow-x-hidden">
+    <div className={hideHeader ? "overflow-x-hidden" : "p-4 md:p-8 overflow-x-hidden"}>
+      {!hideHeader && (
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Goals</h1>
@@ -1595,40 +1643,55 @@ export const DashboardGoals = ({
           <span>New Goal</span>
         </button>
       </div>
+      )}
+      {hideHeader && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => {
+              setEditingGoal(null);
+              setIsGoalModalOpen(true);
+            }}
+            className="btn-primary flex items-center gap-2"
+          >
+            <FaPlus />
+            <span>New Goal</span>
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Goals List */}
         <div className="lg:col-span-2 space-y-4">
           {goals && goals.length > 0 ? (
             goals.map((goal) => (
-          <GoalTracker
-            key={goal._id}
-            goal={goal}
-            onUpdate={onUpdateGoalProgress}
-            onDelete={onDeleteGoal}
-            onEdit={onEditGoal}
+              <GoalTracker
+                key={goal._id}
+                goal={goal}
+                onUpdate={onUpdateGoalProgress}
+                onDelete={onDeleteGoal}
+                onEdit={onEditGoal}
                 onViewAnalytics={() => setSelectedGoalForAnalytics(goal)}
               />
             ))
           ) : (
             <div className="card p-12 text-center">
-            <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
-            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
+              <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+              <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
               <p className="text-sm text-[var(--text-tertiary)] mb-6">Create your first goal to get started!</p>
-            <button
-              onClick={() => {
-                setEditingGoal(null);
-                setIsGoalModalOpen(true);
-              }}
-              className="btn-primary"
-            >
-              <FaPlus className="inline mr-2" />
-              Create Goal
-            </button>
-          </div>
-        )}
-      </div>
-      
+              <button
+                onClick={() => {
+                  setEditingGoal(null);
+                  setIsGoalModalOpen(true);
+                }}
+                className="btn-primary"
+              >
+                <FaPlus className="inline mr-2" />
+                Create Goal
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Strategy Sidebar */}
         <div className="space-y-6">
           <ErrorBoundary>
@@ -1650,7 +1713,7 @@ export const DashboardGoals = ({
 // Analytics View
 export const DashboardAnalytics = ({ analytics, tasks, goals, habits, user }) => {
   try {
-    return (
+  return (
       <ErrorBoundary>
         <LazyWrapper minHeight="80vh">
           <AnalyticsDashboard
@@ -1670,9 +1733,9 @@ export const DashboardAnalytics = ({ analytics, tasks, goals, habits, user }) =>
         <div className="card p-6 text-center">
           <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Error Loading Analytics</h2>
           <p className="text-[var(--text-secondary)]">Please refresh the page or try again later.</p>
-        </div>
       </div>
-    );
+    </div>
+  );
   }
 };
 
@@ -1769,7 +1832,7 @@ export const DashboardTeam = ({
                     (u) => (u._id || u.id)?.toString() === (friend._id || friend.id)?.toString()
                   ) + 1;
                   return (
-                    <FriendStatus
+        <FriendStatus
                       key={friend._id || friend.id}
                       friend={friend}
                       onRemove={onRemoveFriend}
@@ -1802,21 +1865,21 @@ export const DashboardTeam = ({
             {friendRequests.length > 0 && (
               <div className="card p-4 md:p-6">
                 <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Incoming Requests</h2>
-                <div className="space-y-3">
+            <div className="space-y-3">
                   {friendRequests.map((request) => (
-                    <div
+                <div
                       key={request._id || request.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
-                    >
-                      <div className="flex items-center gap-3">
+                  className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
+                >
+                  <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
                           {request.name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                           <p className="font-medium text-[var(--text-primary)]">{request.name || request.email}</p>
                           <p className="text-xs text-[var(--text-secondary)]">Wants to be friends</p>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => onAcceptFriendRequest && onAcceptFriendRequest(request._id || request.id)}
@@ -1831,11 +1894,11 @@ export const DashboardTeam = ({
                           Decline
                         </button>
                       </div>
-                    </div>
-                  ))}
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
+        )}
 
             {/* Sent Requests */}
             {sentFriendRequests.length > 0 && (
@@ -1850,7 +1913,7 @@ export const DashboardTeam = ({
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
                           {request.name?.charAt(0).toUpperCase() || 'U'}
-                        </div>
+      </div>
                         <div>
                           <p className="font-medium text-[var(--text-primary)]">{request.name || request.email}</p>
                           <p className="text-xs text-[var(--text-secondary)]">Pending</p>

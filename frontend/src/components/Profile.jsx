@@ -17,6 +17,8 @@ import {
   FaBell,
   FaEye,
   FaArrowLeft,
+  FaUserFriends,
+  FaPlus,
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
@@ -24,8 +26,29 @@ import { authAPI, friendsAPI, analyticsAPI, tasksAPI, goalsAPI } from '../servic
 import DisciplinePoints from './DisciplinePoints';
 import GraphCard from './GraphCard';
 import TaskCard from './TaskCard';
+import FriendStatus from './FriendStatus';
+import { useMemo } from 'react';
 
-const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) => {
+const Profile = ({ 
+  currentUser, 
+  tasks = [], 
+  goals = [], 
+  onViewFriendProfile,
+  friends = [],
+  friendRequests = [],
+  sentFriendRequests = [],
+  leaderboard = [],
+  onAddFriend,
+  onRemoveFriend,
+  onAcceptFriendRequest,
+  onDeclineFriendRequest,
+  onCancelFriendRequest,
+  onToggleTask,
+  onDeleteTask,
+  onEditTask,
+  setIsTaskModalOpen,
+  setEditingTask,
+}) => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { user: authUser, logout } = useAuthStore();
@@ -39,6 +62,17 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [userRank, setUserRank] = useState(null);
+  const [teamSubTab, setTeamSubTab] = useState('friends');
+
+  // Get user rank from leaderboard for Team tab
+  const teamUserRank = useMemo(() => {
+    if (!currentUser || !leaderboard.length) return null;
+    const userId = currentUser._id || currentUser.id;
+    const rankIndex = leaderboard.findIndex(
+      (user) => (user._id || user.id)?.toString() === userId?.toString()
+    );
+    return rankIndex !== -1 ? rankIndex + 1 : null;
+  }, [leaderboard, currentUser]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -146,11 +180,11 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
       <div className="mb-6 md:mb-8">
         {!isOwnProfile && (
           <button
-            onClick={() => navigate('/dashboard/team')}
+            onClick={() => navigate('/dashboard/profile')}
             className="mb-4 flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             <FaArrowLeft />
-            <span>Back to Team</span>
+            <span>Back to Profile & Team</span>
           </button>
         )}
         <div className="flex items-center gap-4">
@@ -159,7 +193,7 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
-              {user?.name || 'User'}
+              {isOwnProfile ? 'Profile & Team' : (user?.name || 'User')}
             </h1>
             <p className="text-sm md:text-base text-[var(--text-secondary)] flex items-center gap-2">
               <FaEnvelope className="text-xs" />
@@ -208,6 +242,19 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
                 }`}
               >
                 Goals
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('team');
+                  setTeamSubTab('friends');
+                }}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'team'
+                    ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                    : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                Team
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
@@ -372,6 +419,254 @@ const Profile = ({ currentUser, tasks = [], goals = [], onViewFriendProfile }) =
               <p className="text-[var(--text-secondary)]">No goals yet</p>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'team' && isOwnProfile && (
+        <div className="space-y-6">
+          {/* Team Tabs */}
+          <div className="flex gap-2 mb-6 border-b border-[var(--border-color)]">
+            <button
+              onClick={() => setTeamSubTab('friends')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                teamSubTab === 'friends'
+                  ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              Friends ({friends.length})
+            </button>
+            <button
+              onClick={() => setTeamSubTab('requests')}
+              className={`px-4 py-2 font-medium transition-colors relative ${
+                teamSubTab === 'requests'
+                  ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              Requests
+              {(friendRequests.length > 0 || sentFriendRequests.length > 0) && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              )}
+            </button>
+            <button
+              onClick={() => setTeamSubTab('leaderboard')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                teamSubTab === 'leaderboard'
+                  ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              Leaderboard
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Friends List */}
+            {teamSubTab === 'friends' && (
+              <div className="card p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">My Friends</h2>
+                  {onAddFriend && (
+                    <button
+                      onClick={onAddFriend}
+                      className="btn-primary flex items-center gap-2 px-3 py-1.5 text-sm"
+                    >
+                      <FaPlus />
+                      Add Friend
+                    </button>
+                  )}
+                </div>
+                {friends.length > 0 ? (
+                  <div className="space-y-3">
+                    {friends.map((friend) => {
+                      const friendRank = leaderboard.findIndex(
+                        (u) => (u._id || u.id)?.toString() === (friend._id || friend.id)?.toString()
+                      ) + 1;
+                      return (
+                        <FriendStatus
+                          key={friend._id || friend.id}
+                          friend={friend}
+                          onRemove={onRemoveFriend}
+                          rank={friendRank || null}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-[var(--text-tertiary)]">
+                    <FaUserFriends className="text-4xl mx-auto mb-3 opacity-50" />
+                    <p>No friends yet</p>
+                    {onAddFriend && (
+                      <button
+                        onClick={onAddFriend}
+                        className="btn-primary mt-4"
+                      >
+                        Add Your First Friend
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Friend Requests */}
+            {teamSubTab === 'requests' && (
+              <div className="space-y-6">
+                {/* Incoming Requests */}
+                {friendRequests.length > 0 && (
+                  <div className="card p-4 md:p-6">
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Incoming Requests</h2>
+                    <div className="space-y-3">
+                      {friendRequests.map((request) => (
+                        <div
+                          key={request._id || request.id}
+                          className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                              {request.name?.charAt(0).toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <p className="font-medium text-[var(--text-primary)]">{request.name || request.email}</p>
+                              <p className="text-xs text-[var(--text-secondary)]">Wants to be friends</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => onAcceptFriendRequest && onAcceptFriendRequest(request._id || request.id)}
+                              className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => onDeclineFriendRequest && onDeclineFriendRequest(request._id || request.id)}
+                              className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sent Requests */}
+                {sentFriendRequests.length > 0 && (
+                  <div className="card p-4 md:p-6">
+                    <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Sent Requests</h2>
+                    <div className="space-y-3">
+                      {sentFriendRequests.map((request) => (
+                        <div
+                          key={request._id || request.id}
+                          className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-tertiary)]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                              {request.name?.charAt(0).toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <p className="font-medium text-[var(--text-primary)]">{request.name || request.email}</p>
+                              <p className="text-xs text-[var(--text-secondary)]">Pending</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => onCancelFriendRequest && onCancelFriendRequest(request._id || request.id)}
+                            className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {friendRequests.length === 0 && sentFriendRequests.length === 0 && (
+                  <div className="card p-8 text-center text-[var(--text-tertiary)]">
+                    <p>No pending requests</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Leaderboard */}
+            {teamSubTab === 'leaderboard' && (
+              <>
+                <div className="card p-4 md:p-6">
+                  <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)] mb-4">Leaderboard</h2>
+                  {leaderboard && leaderboard.length > 0 ? (
+                    <div className="space-y-3">
+                      {leaderboard.map((user, index) => {
+                        const isCurrentUser = currentUser && (
+                          (user._id || user.id)?.toString() === (currentUser._id || currentUser.id)?.toString()
+                        );
+                        return (
+                          <div
+                            key={user._id || user.id}
+                            className={`flex items-center justify-between p-3 rounded-lg ${
+                              isCurrentUser 
+                                ? 'bg-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)]' 
+                                : 'bg-[var(--bg-tertiary)]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
+                                index === 0 
+                                  ? 'bg-yellow-500 text-white' 
+                                  : index === 1
+                                  ? 'bg-gray-400 text-white'
+                                  : index === 2
+                                  ? 'bg-orange-500 text-white'
+                                  : 'bg-[var(--accent-primary)] text-white'
+                              }`}>
+                                {index === 0 ? <FaTrophy /> : index + 1}
+                              </div>
+                              <div>
+                                <p className={`font-medium ${isCurrentUser ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                                  {user.name} {isCurrentUser && '(You)'}
+                                </p>
+                                <p className="text-sm text-[var(--text-secondary)]">
+                                  {user.xp || 0} XP • {(user.level || 1) >= 10 ? 'Max Level' : `Level ${user.level || 1}`}
+                                </p>
+                              </div>
+                            </div>
+                            {index === 0 && <FaTrophy className="text-yellow-500 text-xl" />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-[var(--text-tertiary)]">
+                      <FaTrophy className="text-4xl mx-auto mb-3 opacity-50" />
+                      <p>No leaderboard data yet</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Your Rank Card */}
+                {teamUserRank && (
+                  <div className="card p-4 md:p-6 bg-gradient-to-br from-[var(--accent-primary)]/10 to-[var(--accent-primary)]/5">
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Your Rank</h3>
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-2xl">
+                        {teamUserRank}
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-[var(--text-primary)]">
+                          {currentUser?.xp || 0} XP
+                        </p>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {(currentUser?.level || 1) >= 10 ? 'Max Level' : `Level ${currentUser?.level || 1}`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 

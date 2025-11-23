@@ -7,7 +7,6 @@ import {
   FaBullseye,
   FaUserFriends,
   FaChartLine,
-  FaBars,
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useDataStore } from '../store/dataStore';
@@ -23,27 +22,20 @@ import {
 import TaskModal from '../components/TaskModal';
 import GoalModal from '../components/GoalModal';
 import AddFriendModal from '../components/AddFriendModal';
-import Sidebar from '../components/Sidebar';
+import BottomDock from '../components/BottomDock';
 import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import {
   DashboardHome,
-  DashboardCalendar,
   DashboardTasks,
-  DashboardGoals,
-  DashboardAnalytics,
-  DashboardTeam,
 } from './DashboardViews';
 import { useToast } from '../hooks/useToast';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { LazyWrapper } from '../components/lazy/LazyWrapper';
 
 // Lazy load heavy components for code splitting
-const GratitudeJournal = lazy(() => import('../components/GratitudeJournal'));
-const NotesView = lazy(() => import('../components/NotesView'));
 const Profile = lazy(() => import('../components/Profile'));
-const Challenges = lazy(() => import('../components/Challenges'));
-const FocusModePage = lazy(() => import('../pages/FocusModePage'));
 const FinanceTracker = lazy(() => import('../components/FinanceTracker'));
+const HeroPage = lazy(() => import('../pages/HeroPage'));
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -76,7 +68,6 @@ const Dashboard = () => {
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [editingGoal, setEditingGoal] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeChallenges, setActiveChallenges] = useState([]);
 
   useEffect(() => {
@@ -697,34 +688,21 @@ const Dashboard = () => {
   if (loading && tasks.length === 0) {
     return (
       <div className="flex min-h-screen bg-[var(--bg-primary)]">
-        <Sidebar isOpen={false} onClose={() => {}} />
-        <main id="main-content" className="flex-1 w-full md:ml-52 flex items-center justify-center min-h-screen" tabIndex="-1">
+        <main id="main-content" className="flex-1 w-full flex items-center justify-center min-h-screen pb-24" tabIndex="-1">
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div>
             <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
           </div>
         </main>
+        <BottomDock />
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-primary)]">
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsSidebarOpen(true)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)] text-[var(--text-primary)] shadow-lg"
-        aria-label="Open navigation menu"
-        aria-expanded={isSidebarOpen}
-      >
-        <FaBars className="text-lg" />
-      </button>
-
-      {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
       {/* Main Content */}
-      <main id="main-content" className="flex-1 w-full md:ml-52 pt-14 md:pt-0" tabIndex="-1">
+      <main id="main-content" className="flex-1 w-full pb-24" tabIndex="-1">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
@@ -775,156 +753,112 @@ const Dashboard = () => {
             }
           />
           <Route
-            path="calendar"
-            element={
-              <DashboardCalendar
-                tasks={tasks}
-                goals={goals}
-                onDateClick={(date) => {
-                  // Date clicked - could add functionality here
-                }}
-                onCreateTask={() => {
-                  setEditingTask(null);
-                  setIsTaskModalOpen(true);
-                }}
-                onToggleTask={handleToggleTask}
-                onDeleteTask={handleDeleteTask}
-                onEditTask={handleEditTask}
-              />
-            }
-          />
-          <Route
             path="tasks"
             element={
               <DashboardTasks
                 tasks={tasks}
                 pendingTasks={pendingTasks}
                 completedTasks={completedTasks}
+                goals={goals}
+                activeChallenges={activeChallenges}
                 onToggleTask={handleToggleTask}
                 onDeleteTask={handleDeleteTask}
                 onEditTask={handleEditTask}
-                setIsTaskModalOpen={setIsTaskModalOpen}
-                setEditingTask={setEditingTask}
-                onCreateMultipleTasks={handleCreateMultipleTasks}
-                onBulkCompleteTasks={handleBulkCompleteTasks}
-                onBulkDeleteTasks={handleBulkDeleteTasks}
-                user={user}
-              />
-            }
-          />
-          <Route
-            path="goals"
-            element={
-              <DashboardGoals
-                goals={goals}
-                tasks={tasks}
                 onUpdateGoalProgress={handleUpdateGoalProgress}
                 onDeleteGoal={handleDeleteGoal}
                 onEditGoal={handleEditGoal}
+                setIsTaskModalOpen={setIsTaskModalOpen}
                 setIsGoalModalOpen={setIsGoalModalOpen}
+                setEditingTask={setEditingTask}
                 setEditingGoal={setEditingGoal}
+                onCreateMultipleTasks={handleCreateMultipleTasks}
+                onBulkCompleteTasks={handleBulkCompleteTasks}
+                onBulkDeleteTasks={handleBulkDeleteTasks}
+                onCreateTask={() => {
+                  setEditingTask(null);
+                  setIsTaskModalOpen(true);
+                }}
+                user={user}
               />
             }
           />
           <Route
-            path="analytics"
+            path="hero"
             element={
-              <DashboardAnalytics
-                analytics={analytics}
-                user={user}
-                tasks={tasks}
-                goals={goals}
-                habits={habits}
-              />
+              <LazyWrapper>
+                <HeroPage />
+              </LazyWrapper>
             }
           />
-              <Route
-                path="team"
-                element={
-                  <DashboardTeam
-                    friends={friends}
-                    friendRequests={friendRequests}
-                    sentFriendRequests={sentFriendRequests}
-                    leaderboard={leaderboard}
-                    tasks={tasks}
-                    onAddFriend={() => setIsFriendModalOpen(true)}
-                    onRemoveFriend={handleRemoveFriend}
-                    onAcceptFriendRequest={handleAcceptFriendRequest}
-                    onDeclineFriendRequest={handleDeclineFriendRequest}
-                    onCancelFriendRequest={handleCancelFriendRequest}
-                    onToggleTask={handleToggleTask}
-                    onDeleteTask={handleDeleteTask}
-                    onEditTask={handleEditTask}
-                    setIsTaskModalOpen={setIsTaskModalOpen}
-                    setEditingTask={setEditingTask}
-                    currentUser={user}
-                  />
-                }
-              />
-              <Route
-                path="gratitude"
-                element={
-                  <LazyWrapper>
-                    <GratitudeJournal />
-                  </LazyWrapper>
-                }
-              />
-              <Route
-                path="notes"
-                element={
-                  <LazyWrapper>
-                    <NotesView />
-                  </LazyWrapper>
-                }
-              />
-              <Route
-                path="challenges"
-                element={
-                  <LazyWrapper>
-                    <Challenges />
-                  </LazyWrapper>
-                }
-              />
-              <Route
-                path="focus"
-                element={
-                  <LazyWrapper minHeight="100vh">
-                    <FocusModePage />
-                  </LazyWrapper>
-                }
-              />
-              <Route
-                path="finance"
-                element={
-                  <LazyWrapper>
-                    <FinanceTracker />
-                  </LazyWrapper>
-                }
-              />
-              <Route
-                path="profile"
-                element={
-                  <LazyWrapper>
-                    <Profile
-                      currentUser={user}
-                      tasks={tasks}
-                      goals={goals}
-                    />
-                  </LazyWrapper>
-                }
-              />
-              <Route
-                path="profile/:userId"
-                element={
-                  <LazyWrapper>
-                    <Profile
-                      currentUser={user}
-                      tasks={tasks}
-                      goals={goals}
-                    />
-                  </LazyWrapper>
-                }
-              />
+          <Route
+            path="finance"
+            element={
+              <LazyWrapper>
+                <FinanceTracker />
+              </LazyWrapper>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <LazyWrapper>
+                <Profile
+                  currentUser={user}
+                  tasks={tasks}
+                  goals={goals}
+                  friends={friends}
+                  friendRequests={friendRequests}
+                  sentFriendRequests={sentFriendRequests}
+                  leaderboard={leaderboard}
+                  onAddFriend={() => setIsFriendModalOpen(true)}
+                  onRemoveFriend={handleRemoveFriend}
+                  onAcceptFriendRequest={handleAcceptFriendRequest}
+                  onDeclineFriendRequest={handleDeclineFriendRequest}
+                  onCancelFriendRequest={handleCancelFriendRequest}
+                  onToggleTask={handleToggleTask}
+                  onDeleteTask={handleDeleteTask}
+                  onEditTask={handleEditTask}
+                  setIsTaskModalOpen={setIsTaskModalOpen}
+                  setEditingTask={setEditingTask}
+                />
+              </LazyWrapper>
+            }
+          />
+          <Route
+            path="profile/:userId"
+            element={
+              <LazyWrapper>
+                <Profile
+                  currentUser={user}
+                  tasks={tasks}
+                  goals={goals}
+                  friends={friends}
+                  friendRequests={friendRequests}
+                  sentFriendRequests={sentFriendRequests}
+                  leaderboard={leaderboard}
+                  onAddFriend={() => setIsFriendModalOpen(true)}
+                  onRemoveFriend={handleRemoveFriend}
+                  onAcceptFriendRequest={handleAcceptFriendRequest}
+                  onDeclineFriendRequest={handleDeclineFriendRequest}
+                  onCancelFriendRequest={handleCancelFriendRequest}
+                  onToggleTask={handleToggleTask}
+                  onDeleteTask={handleDeleteTask}
+                  onEditTask={handleEditTask}
+                  setIsTaskModalOpen={setIsTaskModalOpen}
+                  setEditingTask={setEditingTask}
+                />
+              </LazyWrapper>
+            }
+          />
+          {/* Redirects for old routes */}
+          <Route path="goals" element={<Navigate to="/dashboard/tasks" replace />} />
+          <Route path="challenges" element={<Navigate to="/dashboard/tasks" replace />} />
+          <Route path="calendar" element={<Navigate to="/dashboard/tasks" replace />} />
+          <Route path="analytics" element={<Navigate to="/dashboard" replace />} />
+          <Route path="team" element={<Navigate to="/dashboard/profile" replace />} />
+          <Route path="focus" element={<Navigate to="/dashboard" replace />} />
+          <Route path="notes" element={<Navigate to="/dashboard" replace />} />
+          <Route path="gratitude" element={<Navigate to="/dashboard" replace />} />
         </Routes>
 
         {/* Modals */}
@@ -954,6 +888,7 @@ const Dashboard = () => {
           onAdd={handleAddFriend}
         />
       </main>
+      <BottomDock />
     </div>
   );
 };
