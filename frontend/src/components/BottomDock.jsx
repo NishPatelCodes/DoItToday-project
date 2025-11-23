@@ -46,6 +46,7 @@ const BottomDock = () => {
       {/* Backdrop blur layer for premium glassmorphism */}
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)]/80 via-transparent to-transparent pointer-events-none" />
       
+      {/* Compact glassmorphic box - Aceternity UI style */}
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -55,33 +56,26 @@ const BottomDock = () => {
           damping: 20,
           duration: 0.5,
         }}
-        whileHover={{
-          y: -4,
-          transition: {
-            type: 'spring',
-            stiffness: 400,
-            damping: 17,
-          },
-        }}
         className={cn(
-          'relative mb-4 md:mb-6 flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2.5 md:py-3',
+          'relative mb-4 md:mb-6 flex items-center gap-1 md:gap-2',
           'pointer-events-auto',
-          // Premium glassmorphism
-          'bg-[var(--bg-secondary)]/80',
-          'backdrop-blur-xl backdrop-saturate-150',
-          // Borders and shadows
-          'border border-[var(--border-color)]/50',
-          'rounded-3xl md:rounded-2xl',
-          'shadow-[0_8px_32px_0_rgba(0,0,0,0.12)]',
-          'shadow-[0_0_0_1px_rgba(255,255,255,0.1)_inset]',
+          // Compact padding - tight-fitting like Aceternity UI
+          'p-2',
+          // Grayish-black glassmorphic background - Aceternity UI style
+          'bg-black/40',
+          'backdrop-blur-lg',
+          // Border top with white/10
+          'border-t border-white/10',
+          // Rounded corners
+          'rounded-xl',
+          // Shadows
+          'shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]',
           // Mobile full-width, desktop centered
           'w-[calc(100%-2rem)] max-w-md md:max-w-none md:w-auto',
-          // Safe area padding for mobile (using env() for iOS notch support)
-          'pb-4 md:pb-0'
         )}
         style={{
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
         }}
       >
         {navItems.map((item, index) => {
@@ -102,22 +96,28 @@ const BottomDock = () => {
                 to={item.path}
                 className={cn(
                   'relative flex flex-col items-center justify-center',
-                  'p-2.5 md:p-3 rounded-xl',
+                  'p-2 rounded-lg',
                   'touch-manipulation',
-                  'min-w-[56px] min-h-[56px] md:min-w-[60px] md:min-h-[60px]',
+                  'min-w-[48px] min-h-[48px]',
                   'group transition-all duration-200',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/50 focus-visible:ring-offset-2'
                 )}
               >
                 <motion.div
+                  initial={{ scale: 1, y: 0 }}
                   whileHover={{
-                    scale: 1.2,
-                    y: -4,
+                    scale: 1.75,
+                    y: -10,
                     transition: {
-                      type: 'spring',
-                      stiffness: 400,
-                      damping: 17,
+                      type: 'tween',
+                      ease: 'easeOut',
+                      duration: 0.3,
                     },
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 200,
+                    damping: 20,
                   }}
                   whileTap={{
                     scale: 0.95,
@@ -129,25 +129,22 @@ const BottomDock = () => {
                   }}
                   className={cn(
                     'relative flex items-center justify-center',
-                    'w-10 h-10 md:w-11 md:h-11',
-                    'rounded-xl transition-all duration-300',
+                    'w-8 h-8 md:w-9 md:h-9',
+                    'rounded-lg transition-all duration-300',
                     active
                       ? cn(
                           'bg-[var(--accent-primary)] text-white',
-                          'shadow-lg shadow-[var(--accent-primary)]/50',
-                          // Premium glow effect for active state
-                          'drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]'
+                          'shadow-lg shadow-[var(--accent-primary)]/50'
                         )
                       : cn(
                           'text-[var(--text-secondary)]',
-                          'hover:text-[var(--text-primary)]',
-                          'hover:bg-[var(--bg-tertiary)]/50'
+                          'hover:text-[var(--text-primary)]'
                         )
                   )}
                   style={
                     active
                       ? {
-                          filter: 'drop-shadow(0 0 12px rgba(139, 92, 246, 0.7)) drop-shadow(0 0 4px rgba(139, 92, 246, 0.4))',
+                          filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))',
                         }
                       : {}
                   }
@@ -155,7 +152,7 @@ const BottomDock = () => {
                   {active && (
                     <motion.div
                       layoutId="activeIndicator"
-                      className="absolute inset-0 rounded-xl bg-[var(--accent-primary)]"
+                      className="absolute inset-0 rounded-lg bg-[var(--accent-primary)]"
                       initial={false}
                       transition={{
                         type: 'spring',
@@ -168,7 +165,7 @@ const BottomDock = () => {
                     />
                   )}
                   <span className="relative z-10 flex items-center justify-center">
-                    <item.icon className="text-lg md:text-xl" />
+                    <item.icon className="text-base md:text-lg" />
                   </span>
                 </motion.div>
                 <motion.span
@@ -176,7 +173,7 @@ const BottomDock = () => {
                   animate={{ opacity: active ? 1 : 0.7 }}
                   transition={{ duration: 0.2 }}
                   className={cn(
-                    'text-[10px] md:text-[11px] font-medium mt-1',
+                    'text-[9px] md:text-[10px] font-medium mt-0.5',
                     'transition-colors duration-200',
                     active
                       ? 'text-[var(--accent-primary)] font-semibold'
