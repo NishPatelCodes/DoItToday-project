@@ -101,19 +101,19 @@ const DayCard = ({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative px-4 py-5 border-b border-[var(--border-color)] ${
+      className={`relative px-4 pt-6 pb-6 border-b border-[var(--border-color)] ${
         isTodayProp ? 'bg-[var(--accent-primary)]/5 dark:bg-[var(--accent-primary)]/10' : ''
       }`}
     >
       {/* Date Header */}
-      <div className="flex items-start gap-3 mb-4">
+      <div className="flex items-start gap-3 mb-5">
         <div className={`flex-shrink-0 w-14 text-center ${
           isTodayProp 
             ? 'text-[var(--accent-primary)] font-bold' 
             : 'text-[var(--text-secondary)]'
         }`}>
-          <div className="text-xs uppercase tracking-wide leading-tight font-semibold mb-0.5">{dayName}</div>
-          <div className="text-2xl font-bold leading-none">{dayNumber}</div>
+          <div className="text-xs uppercase tracking-wide leading-tight font-semibold mb-1">{dayName}</div>
+          <div className="text-2xl font-bold leading-none mt-0.5">{dayNumber}</div>
         </div>
         
         <div className="flex-1 min-w-0">
@@ -139,7 +139,7 @@ const DayCard = ({
 
       {/* Tasks and Goals List */}
       {allItems.length > 0 ? (
-        <div className="space-y-2.5 ml-14 md:ml-16">
+        <div className="space-y-3 ml-14 md:ml-16 pb-1">
           {allItems.slice(0, 5).map((item) => {
             const isTask = item.title !== undefined;
             const isCompleted = isTask ? item.status === 'completed' : item.progress >= 100;
@@ -170,7 +170,7 @@ const DayCard = ({
                 </div>
 
                 {/* Task/Goal Card */}
-                <div className="relative bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] p-3 min-h-[56px]">
+                <div className="relative bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] p-3.5 min-h-[56px]">
                   {isTask ? (
                     <div className="flex items-start gap-3">
                       <button
@@ -236,12 +236,14 @@ const DayCard = ({
           )}
         </div>
       ) : (
-        <button
-          onClick={() => onDateClick && onDateClick(date)}
-          className="ml-14 md:ml-16 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors py-3 leading-tight touch-manipulation min-h-[48px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-xl px-2"
-        >
-          No tasks · Tap to add
-        </button>
+        <div className="ml-14 md:ml-16 pb-1">
+          <button
+            onClick={() => onDateClick && onDateClick(date)}
+            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors py-3 leading-tight touch-manipulation min-h-[48px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-xl px-2"
+          >
+            No tasks · Tap to add
+          </button>
+        </div>
       )}
     </motion.div>
   );

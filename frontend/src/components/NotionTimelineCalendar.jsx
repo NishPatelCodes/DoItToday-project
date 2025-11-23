@@ -120,31 +120,31 @@ const NotionTimelineCalendar = ({
     const dateKey = format(startOfDay(day), 'yyyy-MM-dd');
     const items = itemsByDate[dateKey];
     
-    // Base height for day card
-    let height = 120; // Header + padding
+    // Base height for day card (increased padding)
+    let height = 140; // Header + padding (pt-6 pb-6 = 24px top + 24px bottom + content)
     
     if (items) {
       const taskCount = items.tasks.length;
       const goalCount = items.goals.length;
       const totalItems = taskCount + goalCount;
       
-      // Each task/goal is ~60px, minimum 1 item shown
-      height += Math.max(1, Math.min(totalItems, 5)) * 60;
+      // Each task/goal is ~64px with spacing, minimum 1 item shown
+      height += Math.max(1, Math.min(totalItems, 5)) * 64;
       
       // If more than 5 items, add "show more" indicator
       if (totalItems > 5) {
         height += 40;
       }
     } else {
-      // Empty day - smaller height
-      height = 100;
+      // Empty day - smaller height but still with proper padding
+      height = 120;
     }
     
     // Add month separator height if needed
     if (index > 0) {
       const prevDay = days[index - 1];
       if (!isSameMonth(day, prevDay)) {
-        height += 50; // Month separator
+        height += 56; // Month separator (py-4 = 32px + border)
       }
     }
     
@@ -177,7 +177,7 @@ const NotionTimelineCalendar = ({
     return (
       <div style={style}>
         {isMonthStart && (
-          <div className="sticky top-0 z-20 bg-[var(--bg-primary)] py-3 px-4 border-b border-[var(--border-color)] backdrop-blur-sm bg-opacity-95">
+          <div className="sticky top-0 z-20 bg-[var(--bg-primary)] py-4 px-4 border-b-2 border-[var(--border-color)] backdrop-blur-sm bg-opacity-95 mb-0">
             <h2 className="text-lg font-bold text-[var(--text-primary)] leading-none">
               {format(day, 'MMMM yyyy')}
             </h2>
