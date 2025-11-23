@@ -6,21 +6,18 @@ import {
   isToday, 
   isSameDay, 
   startOfDay, 
-  endOfDay,
   addDays,
   subDays,
-  startOfMonth,
   isSameMonth,
-  differenceInDays,
   parseISO,
 } from 'date-fns';
-import { FaPlus, FaCheck, FaTrash, FaCircle } from 'react-icons/fa';
+import { FaPlus, FaChevronUp, FaCalendarAlt } from 'react-icons/fa';
 import DayCard from './DayCard';
-import { useToast } from '../hooks/useToast';
 
 /**
- * Notion-style vertical infinite timeline calendar
- * Premium mobile-first calendar with virtualization
+ * Modern Calendar Component
+ * Clean, responsive design optimized for mobile and desktop
+ * Shows day-wise tasks in a beautiful timeline layout
  */
 const NotionTimelineCalendar = ({ 
   tasks, 
@@ -34,17 +31,17 @@ const NotionTimelineCalendar = ({
   const [todayDate] = useState(() => new Date());
   const [scrollOffset, setScrollOffset] = useState(0);
   const [showFAB, setShowFAB] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [listHeight, setListHeight] = useState(600);
   const listRef = useRef(null);
   const todayIndexRef = useRef(null);
   const containerRef = useRef(null);
-  const toast = useToast();
 
   // Calculate list height based on viewport
   useEffect(() => {
     const updateHeight = () => {
       if (containerRef.current) {
-        const headerHeight = 120; // Today header height
+        const headerHeight = 100;
         setListHeight(window.innerHeight - headerHeight);
       }
     };
@@ -66,7 +63,6 @@ const NotionTimelineCalendar = ({
       currentDate = addDays(currentDate, 1);
     }
     
-    // Find today's index
     const todayIndex = daysArray.findIndex(day => isToday(day));
     if (todayIndex !== -1) {
       todayIndexRef.current = todayIndex;
@@ -79,7 +75,6 @@ const NotionTimelineCalendar = ({
   const itemsByDate = useMemo(() => {
     const grouped = {};
     
-    // Process tasks
     tasks.forEach(task => {
       if (task.dueDate) {
         try {
@@ -95,7 +90,6 @@ const NotionTimelineCalendar = ({
       }
     });
     
-    // Process goals
     goals.forEach(goal => {
       if (goal.deadline) {
         try {
@@ -114,37 +108,43 @@ const NotionTimelineCalendar = ({
     return grouped;
   }, [tasks, goals]);
 
-  // Calculate item heights (variable sizing for virtualization)
+  // Calculate item heights for virtualization
   const getItemSize = useCallback((index) => {
     const day = days[index];
     const dateKey = format(startOfDay(day), 'yyyy-MM-dd');
     const items = itemsByDate[dateKey];
     
-    // Base height for day card (increased padding)
-    let height = 140; // Header + padding (pt-6 pb-6 = 24px top + 24px bottom + content)
+    // Base height for day card
+    let height = 120;
     
     if (items) {
       const taskCount = items.tasks.length;
       const goalCount = items.goals.length;
       const totalItems = taskCount + goalCount;
       
-      // Each task/goal is ~64px with spacing, minimum 1 item shown
-      height += Math.max(1, Math.min(totalItems, 5)) * 64;
-      
-      // If more than 5 items, add "show more" indicator
-      if (totalItems > 5) {
-        height += 40;
+      // Each task/goal card is ~70px with spacing
+      if (totalItems > 0) {
+        const visibleItems = Math.min(totalItems, 6);
+        height += visibleItems * 70;
+        
+        // Add spacing for "show more" button if needed
+        if (totalItems > 6) {
+          height += 50;
+        }
+      } else {
+        // Empty state button
+        height += 80;
       }
     } else {
-      // Empty day - smaller height but still with proper padding
-      height = 120;
+      // Empty day with add button
+      height = 200;
     }
     
     // Add month separator height if needed
     if (index > 0) {
       const prevDay = days[index - 1];
       if (!isSameMonth(day, prevDay)) {
-        height += 56; // Month separator (py-4 = 32px + border)
+        height += 60;
       }
     }
     
@@ -160,10 +160,11 @@ const NotionTimelineCalendar = ({
     }
   }, []);
 
-  // Handle scroll to show/hide FAB
+  // Handle scroll to show/hide FAB and scroll to top button
   const handleScroll = useCallback(({ scrollOffset }) => {
     setScrollOffset(scrollOffset);
-    setShowFAB(scrollOffset < 100); // Hide FAB when scrolled down
+    setShowFAB(scrollOffset < 100);
+    setShowScrollTop(scrollOffset > 500);
   }, []);
 
   // Render each item in the virtualized list
@@ -177,22 +178,24 @@ const NotionTimelineCalendar = ({
     return (
       <div style={style}>
         {isMonthStart && (
-          <div className="sticky top-0 z-20 bg-[var(--bg-primary)] py-4 px-4 border-b-2 border-[var(--border-color)] backdrop-blur-sm bg-opacity-95 mb-0">
-            <h2 className="text-lg font-bold text-[var(--text-primary)] leading-none">
+          <div className="sticky top-0 z-20 bg-[var(--bg-primary)] py-4 px-4 md:px-6 border-b-2 border-[var(--border-color)] backdrop-blur-md bg-opacity-95">
+            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
               {format(day, 'MMMM yyyy')}
             </h2>
           </div>
         )}
-        <DayCard
-          date={day}
-          tasks={items.tasks}
-          goals={items.goals}
-          isToday={isTodayDay}
-          onDateClick={onDateClick}
-          onTaskToggle={onTaskToggle}
-          onTaskDelete={onTaskDelete}
-          onTaskEdit={onTaskEdit}
-        />
+        <div className="px-4 md:px-6">
+          <DayCard
+            date={day}
+            tasks={items.tasks}
+            goals={items.goals}
+            isToday={isTodayDay}
+            onDateClick={onDateClick}
+            onTaskToggle={onTaskToggle}
+            onTaskDelete={onTaskDelete}
+            onTaskEdit={onTaskEdit}
+          />
+        </div>
       </div>
     );
   }, [days, itemsByDate, onDateClick, onTaskToggle, onTaskDelete, onTaskEdit]);
@@ -210,37 +213,48 @@ const NotionTimelineCalendar = ({
     }
   }, []);
 
+  // Scroll to top handler
+  const scrollToTop = useCallback(() => {
+    if (listRef.current) {
+      listRef.current.scrollToItem(0, 'start');
+    }
+  }, []);
+
   return (
     <div className="relative h-full flex flex-col bg-[var(--bg-primary)]">
-      {/* Sticky Today Header */}
+      {/* Modern Sticky Header */}
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-color)] px-4 py-5 shadow-sm backdrop-blur-sm bg-opacity-95"
+        className="sticky top-0 z-30 bg-[var(--bg-primary)]/95 backdrop-blur-lg border-b border-[var(--border-color)] px-4 md:px-6 py-4 shadow-sm"
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] leading-tight break-words">
-              {format(todayDate, 'EEEE, MMMM d')}
-            </h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-1.5 leading-tight">
+            <div className="flex items-center gap-3 mb-1">
+              <FaCalendarAlt className="text-[var(--accent-primary)] text-xl md:text-2xl flex-shrink-0" />
+              <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] leading-tight">
+                {format(todayDate, 'EEEE, MMMM d')}
+              </h1>
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] ml-8 md:ml-11">
               {totalCount > 0 
-                ? `${completedCount}/${totalCount} tasks done`
-                : 'No tasks today'
+                ? `${completedCount} of ${totalCount} tasks completed`
+                : 'No tasks scheduled for today'
               }
             </p>
           </div>
           <button
             onClick={scrollToToday}
-            className="px-4 py-2.5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-sm hover:bg-[var(--accent-hover)] transition-colors touch-manipulation min-h-[44px] flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
+            className="px-4 py-2.5 bg-[var(--accent-primary)] text-white rounded-xl font-semibold text-sm hover:bg-[var(--accent-hover)] transition-all shadow-lg shadow-[var(--accent-primary)]/30 touch-manipulation min-h-[44px] flex-shrink-0"
           >
-            <span>Today</span>
+            <span className="hidden sm:inline">Go to Today</span>
+            <span className="sm:hidden">Today</span>
           </button>
         </div>
       </motion.div>
 
       {/* Virtualized Timeline */}
-      <div ref={containerRef} className="flex-1 relative">
+      <div ref={containerRef} className="flex-1 relative overflow-hidden">
         <VariableSizeList
           ref={listRef}
           height={listHeight}
@@ -248,14 +262,15 @@ const NotionTimelineCalendar = ({
           itemSize={getItemSize}
           width="100%"
           onScroll={handleScroll}
-          overscanCount={5}
+          overscanCount={3}
         >
           {Row}
         </VariableSizeList>
       </div>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Buttons */}
       <AnimatePresence>
+        {/* Add Task FAB */}
         {showFAB && (
           <motion.button
             initial={{ scale: 0, opacity: 0 }}
@@ -270,10 +285,27 @@ const NotionTimelineCalendar = ({
                 onDateClick(todayDate);
               }
             }}
-            className="fixed bottom-6 right-4 md:right-6 z-40 w-14 h-14 bg-[var(--accent-primary)] text-white rounded-full shadow-2xl flex items-center justify-center touch-manipulation focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
+            className="fixed bottom-6 right-4 md:right-6 z-40 w-14 h-14 bg-[var(--accent-primary)] text-white rounded-full shadow-2xl flex items-center justify-center touch-manipulation hover:bg-[var(--accent-hover)] transition-colors"
             aria-label="Add task"
           >
-            <FaPlus className="text-xl flex-shrink-0" />
+            <FaPlus className="text-xl" />
+          </motion.button>
+        )}
+
+        {/* Scroll to Top Button */}
+        {showScrollTop && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={scrollToTop}
+            className="fixed bottom-6 right-4 md:right-6 z-40 w-12 h-12 bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-full shadow-xl border border-[var(--border-color)] flex items-center justify-center touch-manipulation hover:bg-[var(--bg-tertiary)] transition-colors"
+            aria-label="Scroll to top"
+            style={{ bottom: showFAB ? '88px' : '24px' }}
+          >
+            <FaChevronUp className="text-lg" />
           </motion.button>
         )}
       </AnimatePresence>
