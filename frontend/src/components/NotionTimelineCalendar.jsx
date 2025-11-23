@@ -191,9 +191,6 @@ const NotionTimelineCalendar = ({
             goals={items.goals}
             isToday={isTodayDay}
             onDateClick={onDateClick}
-            onTaskToggle={onTaskToggle}
-            onTaskDelete={onTaskDelete}
-            onTaskEdit={onTaskEdit}
           />
         </div>
       </div>
