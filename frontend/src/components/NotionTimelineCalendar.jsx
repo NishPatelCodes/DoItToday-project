@@ -9,6 +9,7 @@ import {
   addDays,
   subDays,
   isSameMonth,
+  isPast,
   parseISO,
 } from 'date-fns';
 import { FaPlus, FaChevronUp, FaCalendarAlt } from 'react-icons/fa';
@@ -108,47 +109,54 @@ const NotionTimelineCalendar = ({
     return grouped;
   }, [tasks, goals]);
 
-  // Calculate item heights for virtualization
+  // Calculate item heights for virtualization - precise calculations
   const getItemSize = useCallback((index) => {
     const day = days[index];
     const dateKey = format(startOfDay(day), 'yyyy-MM-dd');
     const items = itemsByDate[dateKey];
+    const isMonthStart = index === 0 || !isSameMonth(day, days[index - 1]);
+    const isPastDate = isPast(startOfDay(day)) && !isToday(day);
     
-    // Base height for day card
-    let height = 120;
+    let height = 0;
+    
+    // Month separator height (if this is a month start)
+    if (isMonthStart) {
+      height += 60; // py-4 (32px) + border (2px) + spacing
+    }
+    
+    // Day card base height (header section)
+    // Date header: day badge (56-64px) + date info (60px) + margins = ~100px
+    let cardHeight = 100;
     
     if (items) {
       const taskCount = items.tasks.length;
       const goalCount = items.goals.length;
       const totalItems = taskCount + goalCount;
       
-      // Each task/goal card is ~70px with spacing
       if (totalItems > 0) {
+        // Each task/goal card: padding (32px) + content (~40px) = ~72px
+        // Space between items: space-y-2.5 (10px) or space-y-3 (12px on md)
         const visibleItems = Math.min(totalItems, 6);
-        height += visibleItems * 70;
+        // Use average: 72px per card + 11px spacing between
+        cardHeight += (visibleItems * 72) + ((visibleItems > 0 ? visibleItems - 1 : 0) * 11);
         
-        // Add spacing for "show more" button if needed
+        // "Show more" indicator if needed
         if (totalItems > 6) {
-          height += 50;
+          cardHeight += 40; // py-2.5 (20px) + text (20px)
         }
-      } else {
-        // Empty state button
-        height += 80;
       }
+      // If no items and past date, no button shown - no extra height needed
     } else {
-      // Empty day with add button
-      height = 200;
-    }
-    
-    // Add month separator height if needed
-    if (index > 0) {
-      const prevDay = days[index - 1];
-      if (!isSameMonth(day, prevDay)) {
-        height += 60;
+      // Empty day - only show button for today/future dates
+      if (!isPastDate) {
+        cardHeight += 80; // py-4 md:py-5 button (64-80px)
       }
     }
     
-    return height;
+    // Add consistent bottom padding from parent container
+    height += cardHeight + 24; // pb-4 md:pb-6 = 16-24px
+    
+    return Math.max(height, 120); // Minimum height to prevent overlap
   }, [days, itemsByDate]);
 
   // Scroll to today on mount
@@ -184,7 +192,7 @@ const NotionTimelineCalendar = ({
             </h2>
           </div>
         )}
-        <div className="px-4 md:px-6">
+        <div className="px-4 md:px-6 pb-4 md:pb-6">
           <DayCard
             date={day}
             tasks={items.tasks}
@@ -195,7 +203,7 @@ const NotionTimelineCalendar = ({
         </div>
       </div>
     );
-  }, [days, itemsByDate, onDateClick, onTaskToggle, onTaskDelete, onTaskEdit]);
+  }, [days, itemsByDate, onDateClick]);
 
   // Get today's progress
   const todayItems = itemsByDate[format(startOfDay(todayDate), 'yyyy-MM-dd')] || { tasks: [], goals: [] };

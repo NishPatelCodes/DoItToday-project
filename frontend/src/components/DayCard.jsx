@@ -29,10 +29,8 @@ const DayCard = ({
   const fullDate = format(date, 'EEEE, MMMM d, yyyy');
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`relative mb-4 md:mb-6 ${
+    <div
+      className={`relative ${
         isTodayProp 
           ? 'bg-gradient-to-r from-[var(--accent-primary)]/10 via-[var(--accent-primary)]/5 to-transparent rounded-2xl p-4 md:p-6 border-2 border-[var(--accent-primary)]/30' 
           : 'bg-[var(--bg-secondary)] rounded-xl p-4 md:p-5 border border-[var(--border-color)]'
