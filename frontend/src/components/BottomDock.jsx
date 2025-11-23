@@ -157,9 +157,9 @@ const BottomDock = () => {
           'backdrop-blur-xl backdrop-saturate-150',
           // Rounded corners
           'rounded-2xl',
-          // Mobile: full-width with margins, Desktop: centered
-          'w-[calc(100%-1rem)] max-w-md',
-          'md:w-auto md:max-w-none',
+          // Mobile: narrower width, perfectly centered
+          'w-auto max-w-[320px] mx-auto',
+          'md:w-auto md:max-w-none md:mx-0',
           // Bottom margin - responsive
           'mb-2 md:mb-4',
           // Gap between icons - responsive
