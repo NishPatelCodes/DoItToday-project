@@ -18,8 +18,6 @@ import {
   FaCreditCard,
   FaLightbulb,
   FaCalendarAlt,
-  FaTrendingUp,
-  FaTrendingDown,
 } from 'react-icons/fa';
 import { format, subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth } from 'date-fns';
 import { financeAPI } from '../services/api';
@@ -727,7 +725,7 @@ const FinanceTracker = () => {
           title="Monthly Income"
           value={stats.monthlyIncome}
           subtitle="This month"
-          icon={FaTrendingUp}
+          icon={FaArrowUp}
           gradient="linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(22, 163, 74, 0.08) 50%, rgba(21, 128, 61, 0.12) 100%)"
           delay={0.1}
           trend={stats.incomeTrend > 0 ? 'up' : stats.incomeTrend < 0 ? 'down' : null}
@@ -738,7 +736,7 @@ const FinanceTracker = () => {
           title="Monthly Expenses"
           value={stats.monthlyExpenses}
           subtitle="This month"
-          icon={FaTrendingDown}
+          icon={FaArrowDown}
           gradient="linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.08) 50%, rgba(185, 28, 28, 0.12) 100%)"
           delay={0.2}
           trend={stats.expenseTrend > 0 ? 'up' : stats.expenseTrend < 0 ? 'down' : null}
