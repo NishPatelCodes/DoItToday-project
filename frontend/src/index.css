@@ -463,6 +463,46 @@
     color: #f4f4f5 !important;
   }
 
+  /* Select and Option Dark Mode Styling */
+  select {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+  }
+
+  html[data-theme='dark'] select {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #f4f4f5 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  select option {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  html[data-theme='dark'] select option {
+    background-color: #1a1a1a !important;
+    color: #f4f4f5 !important;
+  }
+
+  /* Ensure select dropdown menu respects dark mode */
+  select:focus {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  html[data-theme='dark'] select:focus {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #f4f4f5 !important;
+  }
+
+  /* Additional styling for select when open */
+  html[data-theme='dark'] select:active,
+  html[data-theme='dark'] select:focus {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
   /* Notes Editor */
   .note-editor input,
   .note-editor textarea {
