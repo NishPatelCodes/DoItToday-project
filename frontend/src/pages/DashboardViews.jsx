@@ -315,7 +315,7 @@ export const DashboardHome = ({
   const todaysSpend = 0;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 xl:p-10 bg-[var(--bg-primary)] min-h-screen max-w-[1920px] mx-auto overflow-x-hidden">
+    <div className="p-4 md:p-6 lg:p-8 bg-[var(--bg-primary)] min-h-screen max-w-[1920px] mx-auto overflow-x-hidden space-y-4 md:space-y-6 lg:space-y-8">
       {/* Search Bar */}
       <div className="mb-6 relative">
         <div className="relative">
@@ -411,13 +411,20 @@ export const DashboardHome = ({
         </AnimatePresence>
       </div>
 
-      {/* Top Section: Today's Progress, Pending, Goals, Challenges - Improved desktop grid */}
-      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+      {/* Top Section: Today's Progress, Pending, Goals, Challenges - Match Analytics/Finance grid */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
         {/* Today's Progress Bar Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ delay: 0, duration: 0.5 }}
+          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
+          style={{
+            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.12) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+          }}
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words">Today's Progress</h3>
@@ -458,8 +465,14 @@ export const DashboardHome = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
+          style={{
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.12) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+          }}
         >
           <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 leading-tight break-words">Pending</h3>
           <div className="mb-4">
@@ -495,8 +508,14 @@ export const DashboardHome = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
+          style={{
+            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+          }}
         >
           <div className="flex items-center justify-between mb-4 gap-2">
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Goals</h3>
@@ -546,9 +565,15 @@ export const DashboardHome = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-          onClick={() => navigate('/dashboard/challenges')}
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
+          onClick={() => navigate('/dashboard/tasks?tab=challenges')}
+          style={{
+            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(219, 39, 119, 0.12) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+          }}
         >
           <div className="flex items-center justify-between mb-4 gap-2">
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Challenges</h3>
@@ -605,13 +630,13 @@ export const DashboardHome = ({
       </div>
 
       {/* Middle Section */}
-      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
         {/* Today's Plan List Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="lg:col-span-2 card p-4 md:p-5 lg:p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="lg:col-span-2 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -746,13 +771,19 @@ export const DashboardHome = ({
         </motion.div>
 
         {/* Right Side: Streak and Consistency */}
-        <div className="flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
+        <div className="flex lg:flex-col gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
           {/* Streak Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
+            whileHover={{ scale: 1.02, y: -4 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 flex-shrink-0 w-[200px] lg:w-auto"
+            style={{
+              background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(219, 39, 119, 0.12) 100%)',
+              borderColor: 'rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+            }}
           >
             <div className="flex items-center gap-2 mb-3 lg:mb-4">
               <FaFire className="text-orange-500 text-lg lg:text-xl" />
@@ -765,8 +796,14 @@ export const DashboardHome = ({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[200px] lg:w-auto shadow-sm hover:shadow-md transition-shadow"
+            whileHover={{ scale: 1.02, y: -4 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 flex-shrink-0 w-[200px] lg:w-auto"
+            style={{
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%)',
+              borderColor: 'rgba(255, 255, 255, 0.08)',
+              boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+            }}
           >
             <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-2 lg:mb-3">Stay consistent!</h3>
             <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
@@ -783,13 +820,13 @@ export const DashboardHome = ({
       </div>
 
       {/* Lower Middle Section: Momentum */}
-      <div className="flex md:grid md:grid-cols-1 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+      <div className="grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
         {/* Weekly Momentum Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="card p-4 md:p-6 lg:p-8 rounded-xl flex-shrink-0 w-[300px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          transition={{ delay: 0.7, duration: 0.5 }}
+          className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0 w-full"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
@@ -868,14 +905,20 @@ export const DashboardHome = ({
         </motion.div>
       </div>
 
-      {/* Bottom Section: Today's Spend and Quick Note */}
-      <div className="flex md:grid md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+      {/* Bottom Section: Today's Spend */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
         {/* Today's Spend Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="card p-4 md:p-5 lg:p-6 rounded-xl flex-shrink-0 w-[280px] md:w-auto shadow-sm hover:shadow-md transition-shadow"
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 flex-shrink-0 w-full"
+          style={{
+            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+          }}
         >
           <div className="flex items-center justify-between mb-4 lg:mb-5">
             <div className="flex items-center gap-3">
@@ -901,12 +944,9 @@ export const DashboardHome = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0 }}
-        className="card p-6 lg:p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+        transition={{ delay: 1.0, duration: 0.5 }}
+        className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]"
       >
-        <div className="flex items-center justify-between mb-4 lg:mb-6">
-          <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Analytics</h3>
-        </div>
         <ErrorBoundary>
           <LazyWrapper minHeight="400px">
             <AnalyticsDashboard
@@ -918,8 +958,8 @@ export const DashboardHome = ({
             />
           </LazyWrapper>
         </ErrorBoundary>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="rounded-xl border border-[var(--border-color)] p-5">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 md:gap-4 lg:gap-6 mt-4 md:mt-6">
+          <div className="rounded-xl md:rounded-2xl border border-[var(--border-color)] p-4 md:p-6 bg-[var(--bg-secondary)]">
         <div className="flex items-center justify-between mb-4">
         <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
@@ -1278,22 +1318,28 @@ export const DashboardTasks = ({
   }, [filteredTasks]);
 
   return (
-    <div className="p-4 md:p-8 overflow-x-hidden relative min-h-screen pb-24">
+    <div className="p-4 md:p-6 lg:p-8 overflow-x-hidden relative min-h-screen pb-24 space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-8 gap-3 md:gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-4 md:mb-6 lg:mb-8"
+      >
+        <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
+          {activeTab === 'tasks' ? 'Tasks' : activeTab === 'goals' ? 'Goals' : activeTab === 'challenges' ? 'Challenges' : 'Calendar'}
+        </h1>
+        <p className="text-sm md:text-base text-[var(--text-secondary)]">
+          {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : activeTab === 'goals' ? 'Track your progress and achievements' : activeTab === 'challenges' ? 'Complete challenges and earn rewards' : 'View your schedule and timeline'}
+        </p>
+      </motion.div>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl md:text-3xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
-            {activeTab === 'tasks' ? 'Tasks' : activeTab === 'goals' ? 'Goals' : activeTab === 'challenges' ? 'Challenges' : 'Calendar'}
-          </h1>
-          <p className="text-xs md:text-base text-[var(--text-secondary)]">
-            {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : activeTab === 'goals' ? 'Track your progress and achievements' : activeTab === 'challenges' ? 'Complete challenges and earn rewards' : 'View your schedule and timeline'}
-          </p>
         </div>
         <div className="flex items-center gap-3">
           {activeTab === 'tasks' && (
             /* View Mode Toggle */
             <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-1">
-        <button
+              <button
                 onClick={() => setViewMode('kanban')}
                 className={`p-2 rounded transition-all ${
                   viewMode === 'kanban'
@@ -1425,7 +1471,7 @@ export const DashboardTasks = ({
       />
 
       {/* Main Task Board/List */}
-      <div className="card p-6 mb-6">
+      <div className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-6">
           <div className="flex items-center gap-3 md:gap-4">
             <h2 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">
@@ -1625,24 +1671,32 @@ export const DashboardGoals = ({
   const [selectedGoalForAnalytics, setSelectedGoalForAnalytics] = useState(null);
 
   return (
-    <div className={hideHeader ? "overflow-x-hidden" : "p-4 md:p-8 overflow-x-hidden"}>
+    <div className={hideHeader ? "overflow-x-hidden" : "p-4 md:p-6 lg:p-8 overflow-x-hidden space-y-4 md:space-y-6 lg:space-y-8"}>
       {!hideHeader && (
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2">Goals</h1>
-          <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your progress and achievements</p>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-4 md:mb-6 lg:mb-8"
+      >
+        <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">Goals</h1>
+        <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your progress and achievements</p>
+      </motion.div>
+      )}
+      {!hideHeader && (
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4 md:mb-6">
+          <div>
+            <button
+              onClick={() => {
+                setEditingGoal(null);
+                setIsGoalModalOpen(true);
+              }}
+              className="btn-primary flex items-center gap-2"
+            >
+              <FaPlus />
+              <span>New Goal</span>
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => {
-            setEditingGoal(null);
-            setIsGoalModalOpen(true);
-          }}
-          className="btn-primary flex items-center gap-2"
-        >
-          <FaPlus />
-          <span>New Goal</span>
-        </button>
-      </div>
       )}
       {hideHeader && (
         <div className="flex justify-end mb-4">
@@ -1659,9 +1713,9 @@ export const DashboardGoals = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
         {/* Goals List */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-3 md:space-y-4">
           {goals && goals.length > 0 ? (
             goals.map((goal) => (
               <GoalTracker
@@ -1674,7 +1728,7 @@ export const DashboardGoals = ({
               />
             ))
           ) : (
-            <div className="card p-12 text-center">
+            <div className="rounded-xl md:rounded-2xl p-8 md:p-12 text-center border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-md md:shadow-lg">
               <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
               <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
               <p className="text-sm text-[var(--text-tertiary)] mb-6">Create your first goal to get started!</p>
@@ -1693,11 +1747,11 @@ export const DashboardGoals = ({
         </div>
 
         {/* Strategy Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-3 md:space-y-4 lg:space-y-6">
           <ErrorBoundary>
             <GoalMilestoneGuide goals={Array.isArray(goals) ? goals : []} tasks={Array.isArray(tasks) ? tasks : []} />
           </ErrorBoundary>
-            </div>
+        </div>
       </div>
       {selectedGoalForAnalytics && (
         <GoalAnalytics
