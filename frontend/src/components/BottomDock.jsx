@@ -33,7 +33,7 @@ const IconContainer = ({ mouseX, title, icon, href, isActive }) => {
     <NavLink 
       to={href} 
       ref={ref} 
-      className="relative flex items-center justify-center touch-manipulation"
+      className="relative flex items-center justify-center touch-manipulation min-w-[48px] min-h-[48px]"
     >
       <motion.div
         style={{ width, height: 40 }}
@@ -41,7 +41,7 @@ const IconContainer = ({ mouseX, title, icon, href, isActive }) => {
       >
         <motion.div
           className={cn(
-            'relative flex items-center justify-center w-10 h-10 rounded-lg',
+            'relative flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-lg',
             'transition-colors duration-200',
             isActive
               ? 'bg-[var(--accent-primary)] text-white shadow-lg shadow-[var(--accent-primary)]/50'
@@ -73,8 +73,9 @@ const IconContainer = ({ mouseX, title, icon, href, isActive }) => {
         </motion.div>
         <motion.span
           className={cn(
-            'absolute -bottom-5 text-[10px] font-medium whitespace-nowrap',
+            'absolute -bottom-5 md:-bottom-6 text-[9px] md:text-[10px] font-medium whitespace-nowrap',
             'transition-colors duration-200',
+            'hidden md:block', // Hide labels on mobile, show on desktop
             isActive
               ? 'text-[var(--accent-primary)] font-semibold'
               : 'text-[var(--text-secondary)]'
@@ -122,10 +123,16 @@ const BottomDock = () => {
         paddingBottom: 'env(safe-area-inset-bottom, 1rem)',
       }}
     >
-      {/* Backdrop blur layer for premium glassmorphism */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)]/80 via-transparent to-transparent pointer-events-none" />
+      {/* Backdrop blur layer for premium glassmorphism - theme-aware */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to top, var(--bg-primary) 0%, transparent 100%)',
+          opacity: 0.8,
+        }}
+      />
       
-      {/* Compact glassmorphic box - Aceternity UI style */}
+      {/* Compact glassmorphic box - Optimized for light/dark themes and mobile */}
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -142,25 +149,32 @@ const BottomDock = () => {
           mouseX.set(Infinity);
         }}
         className={cn(
-          'relative mb-4 md:mb-6 flex items-center gap-1 md:gap-2',
+          'relative flex items-center',
           'pointer-events-auto',
-          // Compact padding - tight-fitting like Aceternity UI
-          'p-2',
-          // Grayish-black glassmorphic background - Aceternity UI style
-          'bg-black/40',
-          'backdrop-blur-lg',
-          // Border top with white/10
-          'border-t border-white/10',
+          // Compact padding - optimized for mobile
+          'p-2 md:p-2.5',
+          // Premium glassmorphic background - theme-aware
+          'backdrop-blur-xl backdrop-saturate-150',
           // Rounded corners
-          'rounded-xl',
-          // Shadows
-          'shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]',
-          // Mobile full-width, desktop centered
-          'w-[calc(100%-2rem)] max-w-md md:max-w-none md:w-auto',
+          'rounded-2xl',
+          // Mobile: full-width with margins, Desktop: centered
+          'w-[calc(100%-1rem)] max-w-md',
+          'md:w-auto md:max-w-none',
+          // Bottom margin - responsive
+          'mb-2 md:mb-4',
+          // Gap between icons - responsive
+          'gap-1 md:gap-2',
         )}
         style={{
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          // Light mode: Premium white glassmorphism
+          // Dark mode: Dark glassmorphism
+          backgroundColor: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderTop: '1px solid var(--border-color)',
+          // Light mode: subtle shadow, Dark mode: stronger shadow
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
         {navItems.map((item, index) => {
