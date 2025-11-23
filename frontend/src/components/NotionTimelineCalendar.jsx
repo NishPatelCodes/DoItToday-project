@@ -7,8 +7,6 @@ import {
   startOfDay, 
   startOfMonth,
   endOfMonth,
-  startOfWeek,
-  endOfWeek,
   eachDayOfInterval,
   isSameMonth,
   isPast,
@@ -16,7 +14,7 @@ import {
   subMonths,
   parseISO,
 } from 'date-fns';
-import { FaChevronLeft, FaChevronRight, FaPlus, FaCalendarAlt } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
 
 /**
  * Monthly Grid Calendar Component
@@ -36,9 +34,8 @@ const NotionTimelineCalendar = ({
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  // Only show dates from current month (1-30/31)
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   // Group tasks and goals by date
   const itemsByDate = useMemo(() => {
@@ -88,6 +85,12 @@ const NotionTimelineCalendar = ({
   const goToToday = () => setCurrentDate(new Date());
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  
+  // Get the day of week for the first day of the month to offset the grid
+  const firstDayOfWeek = monthStart.getDay();
+  
+  // Create array with empty cells for days before month starts
+  const emptyCells = Array(firstDayOfWeek).fill(null);
 
   // Get today's tasks count
   const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
@@ -98,69 +101,80 @@ const NotionTimelineCalendar = ({
 
   return (
     <div className="relative h-full flex flex-col bg-[var(--bg-primary)]">
-      {/* Header */}
+      {/* Header - Centered */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="sticky top-0 z-30 bg-[var(--bg-primary)]/95 backdrop-blur-lg border-b border-[var(--border-color)] px-4 md:px-6 py-4 shadow-sm"
       >
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3">
-            <FaCalendarAlt className="text-[var(--accent-primary)] text-xl md:text-2xl flex-shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
-              {format(currentDate, 'MMMM yyyy')}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={goToToday}
-              className="px-3 py-1.5 text-sm text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors font-medium"
-            >
-              Today
-            </button>
-            <button
-              onClick={prevMonth}
-              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors text-[var(--text-secondary)]"
-              aria-label="Previous month"
-            >
-              <FaChevronLeft />
-            </button>
-            <button
-              onClick={nextMonth}
-              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors text-[var(--text-secondary)]"
-              aria-label="Next month"
-            >
-              <FaChevronRight />
-            </button>
-          </div>
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <button
+            onClick={prevMonth}
+            className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-all hover:scale-110 active:scale-95 text-[var(--text-secondary)]"
+            aria-label="Previous month"
+          >
+            <FaChevronLeft />
+          </button>
+          
+          <motion.h1 
+            key={format(currentDate, 'yyyy-MM')}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] min-w-[200px] text-center"
+          >
+            {format(currentDate, 'MMMM yyyy')}
+          </motion.h1>
+          
+          <button
+            onClick={nextMonth}
+            className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-all hover:scale-110 active:scale-95 text-[var(--text-secondary)]"
+            aria-label="Next month"
+          >
+            <FaChevronRight />
+          </button>
         </div>
-        {totalCount > 0 && (
-          <p className="text-sm text-[var(--text-secondary)] ml-8 md:ml-11">
-            {completedCount} of {totalCount} tasks completed today
-          </p>
-        )}
+        <div className="flex justify-center">
+          <button
+            onClick={goToToday}
+            className="px-4 py-1.5 text-sm text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 rounded-lg transition-all font-medium hover:scale-105"
+          >
+            Today
+          </button>
+        </div>
       </motion.div>
 
       {/* Calendar Grid */}
       <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Week Day Headers */}
-          <div className="grid grid-cols-7 gap-px bg-[var(--border-color)] rounded-t-lg overflow-hidden mb-px">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="grid grid-cols-7 gap-px bg-[var(--border-color)] rounded-t-lg overflow-hidden mb-px"
+          >
             {weekDays.map((day, idx) => (
-              <div
+              <motion.div
                 key={idx}
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: idx * 0.05 }}
                 className="bg-[var(--bg-secondary)] py-3 px-2 text-center text-xs md:text-sm font-semibold text-[var(--text-primary)]"
               >
                 {day}
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Calendar Days Grid */}
           <div className="grid grid-cols-7 gap-px bg-[var(--border-color)] rounded-b-lg overflow-hidden">
+            {/* Empty cells for days before month starts */}
+            {emptyCells.map((_, idx) => (
+              <div key={`empty-${idx}`} className="bg-[var(--bg-primary)] min-h-[100px] md:min-h-[120px]" />
+            ))}
+            
+            {/* Calendar Days */}
             {days.map((day, index) => {
               const dayTasks = getTasksForDate(day);
-              const isCurrentMonth = isSameMonth(day, currentDate);
               const isTodayDay = isToday(day);
               const isPastDate = isPast(startOfDay(day)) && !isTodayDay;
               const canAddTask = !isPastDate;
@@ -168,28 +182,41 @@ const NotionTimelineCalendar = ({
               return (
                 <motion.div
                   key={day.toISOString()}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.01 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.02 }}
+                  whileHover={{ scale: 1.02, zIndex: 10 }}
                   className={`
-                    bg-[var(--bg-primary)] min-h-[100px] md:min-h-[120px] p-2 text-left transition-all relative
-                    ${!isCurrentMonth ? 'opacity-40' : ''}
-                    ${isTodayDay ? 'bg-[var(--accent-primary)]/5' : 'hover:bg-[var(--bg-secondary)]'}
+                    bg-[var(--bg-primary)] min-h-[100px] md:min-h-[120px] p-2 text-left transition-all relative cursor-pointer
+                    ${isTodayDay 
+                      ? 'bg-gradient-to-br from-[var(--accent-primary)]/10 to-[var(--accent-primary)]/5 ring-2 ring-[var(--accent-primary)]/30' 
+                      : 'hover:bg-[var(--bg-secondary)] hover:shadow-md'
+                    }
                   `}
+                  onClick={() => {
+                    if (canAddTask && dayTasks.length === 0) {
+                      if (onDateClick) {
+                        onDateClick(day);
+                      } else if (onCreateTask) {
+                        onCreateTask();
+                      }
+                    }
+                  }}
                 >
                   {/* Day Number */}
                   <div className="flex items-center justify-between mb-1">
-                    <span
+                    <motion.span
+                      whileHover={{ scale: 1.1 }}
                       className={`
-                        text-sm md:text-base font-semibold
+                        text-sm md:text-base font-semibold transition-all
                         ${isTodayDay 
-                          ? 'w-7 h-7 md:w-8 md:h-8 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center' 
+                          ? 'w-7 h-7 md:w-8 md:h-8 rounded-full bg-[var(--accent-primary)] text-white flex items-center justify-center shadow-lg' 
                           : 'text-[var(--text-primary)]'
                         }
                       `}
                     >
                       {format(day, 'd')}
-                    </span>
+                    </motion.span>
                   </div>
 
                   {/* Tasks/Events */}
@@ -214,35 +241,54 @@ const NotionTimelineCalendar = ({
                       }
 
                       return (
-                        <div
+                        <motion.div
                           key={item._id || idx}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.1 }}
+                          whileHover={{ scale: 1.05, x: 4 }}
                           className={`
                             ${bgColor} ${textColor} 
-                            text-xs px-2 py-1 rounded truncate
-                            ${isCompleted ? 'opacity-60 line-through' : ''}
+                            text-xs px-2 py-1 rounded truncate cursor-pointer transition-all
+                            ${isCompleted ? 'opacity-60' : ''}
                           `}
                           title={item.title || item.name}
                         >
                           {item.title || item.name}
-                        </div>
+                        </motion.div>
                       );
                     })}
                     {dayTasks.length > 3 && (
-                      <div className="text-xs text-[var(--text-secondary)] px-2">
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-xs text-[var(--text-secondary)] px-2"
+                      >
                         +{dayTasks.length - 3} more
-                      </div>
+                      </motion.div>
                     )}
                   </div>
 
-                  {/* Empty State - Only for today and future dates */}
+                  {/* Add Button - Only for today and future dates */}
                   {dayTasks.length === 0 && canAddTask && (
-                    <button
-                      onClick={() => onDateClick && onDateClick(day)}
-                      className="w-full mt-2 text-xs text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onDateClick) {
+                          onDateClick(day);
+                        } else if (onCreateTask) {
+                          onCreateTask();
+                        }
+                      }}
+                      className="w-full mt-2 text-xs text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors flex items-center justify-center gap-1 py-1 rounded hover:bg-[var(--accent-primary)]/10"
                     >
-                      <FaPlus className="inline mr-1" />
+                      <FaPlus className="text-[10px]" />
                       Add
-                    </button>
+                    </motion.button>
                   )}
                 </motion.div>
               );
@@ -250,25 +296,6 @@ const NotionTimelineCalendar = ({
           </div>
         </div>
       </div>
-
-      {/* Floating Action Button */}
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => {
-          if (onCreateTask) {
-            onCreateTask();
-          } else if (onDateClick) {
-            onDateClick(new Date());
-          }
-        }}
-        className="fixed bottom-6 right-4 md:right-6 z-40 w-14 h-14 bg-[var(--accent-primary)] text-white rounded-full shadow-2xl flex items-center justify-center touch-manipulation hover:bg-[var(--accent-hover)] transition-colors"
-        aria-label="Add task"
-      >
-        <FaPlus className="text-xl" />
-      </motion.button>
     </div>
   );
 };
