@@ -997,13 +997,13 @@ export const DashboardHome = ({
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartErrorBoundary>
-        </div>
+              </div>
             ) : (
               <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
                 <p>No productivity data yet.</p>
                 <p className="text-[11px] mt-1">Complete tasks to unlock the trend.</p>
-            </div>
-          )}
+              </div>
+            )}
           </div>
           <div className="rounded-xl border border-[var(--border-color)] p-5">
             <div className="flex items-center justify-between mb-4">
@@ -1084,8 +1084,8 @@ export const DashboardHome = ({
               <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
                 <p>No income data captured.</p>
                 <p className="text-[11px] mt-1">Log transactions in Finance to see this fill in.</p>
-            </div>
-          )}
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
