@@ -27,6 +27,8 @@ import {
   FaCompass,
   FaClock,
   FaArrowRight,
+  FaChevronLeft,
+  FaChevronRight,
 } from 'react-icons/fa';
 import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration, CatWorkingIllustration, SquirrelChecklistIllustration, FoxReadingIllustration } from '../components/Illustrations';
 // Recharts will be code-split via Vite config (already configured)
@@ -322,27 +324,45 @@ export const DashboardHome = ({
   }, [tasks]);
 
   const roadmapRef = useRef(null);
-  const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
+  const [currentDayIndex, setCurrentDayIndex] = useState(1); // Default to middle day
 
-  // Auto-scroll to today on mount
+  // Update currentDayIndex when tasksByDay changes to center on today
   useEffect(() => {
-    if (roadmapRef.current && !hasScrolledToToday) {
-      const todayIndex = tasksByDay.findIndex((day) => isToday(day.date));
-      if (todayIndex !== -1) {
-        const dayElement = roadmapRef.current.querySelector(`[data-day-index="${todayIndex}"]`);
-        if (dayElement) {
-          setTimeout(() => {
-            dayElement.scrollIntoView({
-              behavior: 'smooth',
-              block: 'nearest',
-              inline: 'center',
-            });
-            setHasScrolledToToday(true);
-          }, 300);
-        }
-      }
+    const todayIndex = tasksByDay.findIndex((day) => isToday(day.date));
+    if (todayIndex !== -1) {
+      setCurrentDayIndex(todayIndex);
     }
-  }, [tasksByDay, hasScrolledToToday]);
+  }, [tasksByDay]);
+
+  // Get 3 days to display (centered around currentDayIndex when possible)
+  const visibleDays = useMemo(() => {
+    if (tasksByDay.length === 0) return [];
+    if (tasksByDay.length <= 3) return tasksByDay;
+    
+    // Try to center around currentDayIndex
+    let startIndex = currentDayIndex - 1;
+    if (startIndex < 0) startIndex = 0;
+    if (startIndex + 3 > tasksByDay.length) {
+      startIndex = tasksByDay.length - 3;
+    }
+    
+    return tasksByDay.slice(startIndex, startIndex + 3);
+  }, [tasksByDay, currentDayIndex]);
+
+  const canGoPrevious = currentDayIndex > 0;
+  const canGoNext = currentDayIndex < tasksByDay.length - 1;
+
+  const goToPrevious = () => {
+    if (canGoPrevious) {
+      setCurrentDayIndex((prev) => Math.max(0, prev - 1));
+    }
+  };
+
+  const goToNext = () => {
+    if (canGoNext) {
+      setCurrentDayIndex((prev) => Math.min(tasksByDay.length - 1, prev + 1));
+    }
+  };
 
   const latestProductivity =
     productivityTrend.length > 0 ? productivityTrend[productivityTrend.length - 1].productivity || 0 : 0;
@@ -848,223 +868,296 @@ export const DashboardHome = ({
         </div>
       </div>
 
-      {/* Lower Middle Section: Weekly Roadmap */}
+      {/* Lower Middle Section: Momentum Map - Premium 3-Day View */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.5 }}
-        className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]"
+        className="rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 shadow-2xl border border-[var(--border-color)]/50 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] backdrop-blur-xl"
+        style={{
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(99, 102, 241, 0.02) 100%)',
+        }}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
-            <FaCompass className="text-base lg:text-lg" />
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <motion.div
+              animate={{
+                y: [0, -4, 0],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center backdrop-blur-sm border border-blue-500/20"
+            >
+              <FaCompass className="text-xl text-blue-400" />
+            </motion.div>
+            <div>
+              <h3 className="text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Momentum Map</h3>
+              <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Your 3-day flow</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Weekly Roadmap</h3>
-            <p className="text-xs text-[var(--text-tertiary)]">Your week at a glance</p>
+          
+          {/* Navigation Arrows */}
+          <div className="flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={goToPrevious}
+              disabled={!canGoPrevious}
+              className={`p-2.5 rounded-xl transition-all ${
+                canGoPrevious
+                  ? 'bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] cursor-pointer'
+                  : 'bg-[var(--bg-tertiary)]/50 text-[var(--text-tertiary)] cursor-not-allowed opacity-50'
+              }`}
+            >
+              <FaChevronLeft className="text-sm" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={goToNext}
+              disabled={!canGoNext}
+              className={`p-2.5 rounded-xl transition-all ${
+                canGoNext
+                  ? 'bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] cursor-pointer'
+                  : 'bg-[var(--bg-tertiary)]/50 text-[var(--text-tertiary)] cursor-not-allowed opacity-50'
+              }`}
+            >
+              <FaChevronRight className="text-sm" />
+            </motion.button>
           </div>
         </div>
 
         {weeklyFocus.total > 0 ? (
           <div className="relative">
-            {/* Horizontal scrolling container */}
-            <div
-              ref={roadmapRef}
-              className="overflow-x-auto overflow-y-visible pb-4 -mx-2 px-2 roadmap-scroll"
-              style={{
-                scrollBehavior: 'smooth',
-                WebkitOverflowScrolling: 'touch',
-                scrollbarWidth: 'thin',
-              }}
-            >
-              <div className="flex gap-8 min-w-max" style={{ width: 'max-content' }}>
-                {tasksByDay.map((dayData, dayIndex) => {
-                  const isTodayDay = isToday(dayData.date);
-                  const dayName = format(dayData.date, 'EEE');
-                  const dayNumber = format(dayData.date, 'd');
-                  const monthName = format(dayData.date, 'MMM');
+            {/* 3-Day Cards Container */}
+            <div className="flex gap-6 md:gap-8 justify-center items-start relative">
+              {visibleDays.map((dayData, visibleIndex) => {
+                const isTodayDay = isToday(dayData.date);
+                const dayName = format(dayData.date, 'EEE');
+                const dayNumber = format(dayData.date, 'd');
+                const monthName = format(dayData.date, 'MMM');
+                const actualIndex = tasksByDay.findIndex((d) => isSameDay(d.date, dayData.date));
 
-                  return (
+                return (
+                  <motion.div
+                    key={actualIndex}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{
+                      opacity: 1,
+                      y: [0, -6, 0],
+                      scale: 1,
+                    }}
+                    transition={{
+                      opacity: { duration: 0.4 },
+                      y: {
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: visibleIndex * 0.2,
+                      },
+                    }}
+                    className={`relative flex-shrink-0 ${isTodayDay ? 'z-10' : 'z-0'}`}
+                    style={{ width: '280px' }}
+                  >
+                    {/* Premium Dark Day Card */}
                     <div
-                      key={dayIndex}
-                      data-day-index={dayIndex}
-                      className={`flex-shrink-0 relative ${isTodayDay ? 'z-10' : ''}`}
-                      style={{ width: '200px' }}
+                      className={`relative rounded-3xl p-6 backdrop-blur-xl border transition-all duration-300 ${
+                        isTodayDay
+                          ? 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-blue-500/40 shadow-2xl shadow-blue-500/20'
+                          : 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 shadow-xl'
+                      }`}
+                      style={{
+                        boxShadow: isTodayDay
+                          ? '0 20px 60px -12px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.2)'
+                          : '0 10px 40px -10px rgba(0, 0, 0, 0.4)',
+                      }}
                     >
                       {/* Day Header */}
-                      <div
-                        className={`mb-4 pb-3 border-b transition-all duration-300 ${
-                          isTodayDay
-                            ? 'border-[var(--accent-primary)]/50'
-                            : 'border-[var(--border-color)]/30'
-                        }`}
-                      >
+                      <div className="mb-6 pb-4 border-b border-slate-700/50">
                         <div
-                          className={`text-xs font-medium mb-1 transition-colors ${
-                            isTodayDay
-                              ? 'text-[var(--accent-primary)]'
-                              : 'text-[var(--text-tertiary)]'
+                          className={`text-xs font-semibold mb-2 uppercase tracking-wider ${
+                            isTodayDay ? 'text-blue-400' : 'text-slate-400'
                           }`}
                         >
                           {dayName}
                         </div>
-                        <div className="flex items-baseline gap-1.5">
+                        <div className="flex items-baseline gap-2">
                           <span
-                            className={`text-2xl font-bold transition-colors ${
-                              isTodayDay
-                                ? 'text-[var(--accent-primary)]'
-                                : 'text-[var(--text-primary)]'
+                            className={`text-4xl font-bold ${
+                              isTodayDay ? 'text-white' : 'text-slate-200'
                             }`}
                           >
                             {dayNumber}
                           </span>
-                          <span className="text-xs text-[var(--text-tertiary)]">{monthName}</span>
+                          <span className="text-sm text-slate-400">{monthName}</span>
                         </div>
                         {isTodayDay && (
-                          <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse" />
+                          <motion.div
+                            animate={{
+                              scale: [1, 1.2, 1],
+                              opacity: [0.6, 1, 0.6],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                            className="absolute -top-2 -right-2 w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"
+                          />
                         )}
                       </div>
 
-                      {/* Tasks Column */}
-                      <div className="relative" style={{ minHeight: '300px' }}>
+                      {/* Tasks List */}
+                      <div className="space-y-3 min-h-[320px]">
                         {dayData.tasks.length > 0 ? (
-                          <div className="space-y-3">
-                            {dayData.tasks.map((task, taskIndex) => {
-                              const priorityColors = {
-                                high: 'bg-red-500/15 text-red-500 border-red-500/20',
-                                medium: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/20',
-                                low: 'bg-blue-500/15 text-blue-500 border-blue-500/20',
-                              };
-                              const colorClass =
-                                priorityColors[task.priority] || priorityColors.low;
+                          dayData.tasks.map((task, taskIndex) => {
+                            const priorityColors = {
+                              high: 'from-red-500/20 to-red-600/20 border-red-500/30',
+                              medium: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
+                              low: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
+                            };
+                            const colorClass =
+                              priorityColors[task.priority] || priorityColors.low;
 
-                              return (
-                                <motion.div
-                                  key={task._id}
-                                  initial={{ opacity: 0, scale: 0.9 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{ delay: taskIndex * 0.05 }}
-                                  className={`group relative rounded-xl border px-3 py-2.5 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${colorClass}`}
-                                  onClick={() =>
-                                    navigate('/dashboard/tasks', {
-                                      state: { highlightTaskId: task._id },
-                                    })
-                                  }
-                                >
-                                  <div className="flex items-start gap-2">
-                                    <div
-                                      className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                                        task.priority === 'high'
-                                          ? 'bg-red-500'
-                                          : task.priority === 'medium'
-                                          ? 'bg-yellow-500'
-                                          : 'bg-blue-500'
-                                      }`}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium text-[var(--text-primary)] line-clamp-2 leading-snug">
-                                        {task.title}
-                                      </p>
-                                      {task.status === 'completed' && (
-                                        <div className="flex items-center gap-1 mt-1">
-                                          <FaCheckCircle className="text-[10px] text-green-500" />
-                                          <span className="text-[10px] text-green-500">Done</span>
-                                        </div>
-                                      )}
-                                    </div>
+                            return (
+                              <motion.div
+                                key={task._id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: taskIndex * 0.08 }}
+                                whileHover={{ scale: 1.02, x: 4 }}
+                                className={`group relative rounded-2xl border bg-gradient-to-br ${colorClass} p-4 cursor-pointer backdrop-blur-sm transition-all duration-200 hover:shadow-lg`}
+                                onClick={() =>
+                                  navigate('/dashboard/tasks', {
+                                    state: { highlightTaskId: task._id },
+                                  })
+                                }
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div
+                                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                                      task.priority === 'high'
+                                        ? 'bg-red-400 shadow-lg shadow-red-500/50'
+                                        : task.priority === 'medium'
+                                        ? 'bg-yellow-400 shadow-lg shadow-yellow-500/50'
+                                        : 'bg-blue-400 shadow-lg shadow-blue-500/50'
+                                    }`}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-white line-clamp-2 leading-snug">
+                                      {task.title}
+                                    </p>
+                                    {task.status === 'completed' && (
+                                      <div className="flex items-center gap-1.5 mt-2">
+                                        <FaCheckCircle className="text-xs text-green-400" />
+                                        <span className="text-xs text-green-400 font-medium">Completed</span>
+                                      </div>
+                                    )}
                                   </div>
-                                </motion.div>
-                              );
-                            })}
-                          </div>
+                                </div>
+                              </motion.div>
+                            );
+                          })
                         ) : (
-                          <div className="flex items-center justify-center h-full min-h-[200px]">
+                          <div className="flex items-center justify-center h-full min-h-[280px]">
                             <div className="text-center">
-                              <div className="w-8 h-8 rounded-full border-2 border-dashed border-[var(--border-color)]/50 mx-auto mb-2 flex items-center justify-center">
-                                <span className="text-[10px] text-[var(--text-tertiary)]">+</span>
-                              </div>
-                              <p className="text-[10px] text-[var(--text-tertiary)]">No tasks</p>
+                              <motion.div
+                                animate={{
+                                  scale: [1, 1.1, 1],
+                                  opacity: [0.3, 0.5, 0.3],
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                }}
+                                className="w-12 h-12 rounded-2xl border-2 border-dashed border-slate-600/50 mx-auto mb-3 flex items-center justify-center"
+                              >
+                                <span className="text-xs text-slate-500">+</span>
+                              </motion.div>
+                              <p className="text-xs text-slate-500">No tasks</p>
                             </div>
                           </div>
                         )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </motion.div>
+                );
+              })}
             </div>
 
-            {/* Connection Lines SVG - Premium solid white curves */}
+            {/* Blue Glowing Connection Lines SVG */}
             <svg
               className="absolute top-0 left-0 w-full pointer-events-none overflow-visible"
-              style={{ height: '400px', zIndex: 0 }}
+              style={{ height: '500px', zIndex: 1 }}
             >
               <defs>
-                <filter id="premiumWhiteGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                <linearGradient id="blueGlowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
+                  <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.6" />
+                </linearGradient>
+                <filter id="blueGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="4" result="outerGlow" />
+                  <feGaussianBlur stdDeviation="2" result="innerGlow" />
                   <feMerge>
-                    <feMergeNode in="coloredBlur" opacity="0.3" />
+                    <feMergeNode in="outerGlow" opacity="0.4" />
+                    <feMergeNode in="innerGlow" opacity="0.6" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
               </defs>
-              {tasksByDay.map((dayData, dayIndex) => {
-                if (dayIndex === tasksByDay.length - 1) return null;
-                const nextDay = tasksByDay[dayIndex + 1];
+              {visibleDays.map((dayData, visibleIndex) => {
+                if (visibleIndex === visibleDays.length - 1) return null;
+                const nextDay = visibleDays[visibleIndex + 1];
                 if (dayData.tasks.length === 0 || nextDay.tasks.length === 0) return null;
 
-                // Calculate positions: each day is 200px wide + 32px gap (8 * 4)
-                const dayWidth = 200;
-                const gap = 32;
-                const headerHeight = 80; // Header height (mb-4 pb-3)
-                const topMargin = 20; // Margin after header
-                const taskSpacing = 12; // space-y-3 = 12px between tasks
-                const taskCardHeight = 58; // Task card height: py-2.5 (10px) + content (~48px)
-                const taskCardPaddingX = 12; // px-3 = 12px horizontal padding
+                // Calculate positions for 3-day view
+                const cardWidth = 280;
+                const gap = 48; // gap-6 md:gap-8 = 48px
+                const cardPadding = 24; // p-6 = 24px
+                const headerHeight = 100; // Header section height
+                const taskSpacing = 12; // space-y-3
+                const taskCardHeight = 70; // Approximate task card height
                 
-                // Calculate position of last task in current day
+                // Last task in current day
                 const lastTaskIndex = dayData.tasks.length - 1;
-                const lastTaskTop = headerHeight + topMargin + (lastTaskIndex * (taskCardHeight + taskSpacing));
+                const lastTaskTop = headerHeight + (lastTaskIndex * (taskCardHeight + taskSpacing));
                 const lastTaskBottom = lastTaskTop + taskCardHeight;
                 
-                // Calculate position of first task in next day
-                const firstTaskTop = headerHeight + topMargin;
+                // First task in next day
+                const firstTaskTop = headerHeight;
                 
-                // Start point: bottom-right edge of last task in current day
-                const startX = dayIndex * (dayWidth + gap) + dayWidth - taskCardPaddingX; // Right edge minus padding
-                const startY = lastTaskBottom; // Bottom edge of last task
+                // Start: right edge of current day card
+                const startX = visibleIndex * (cardWidth + gap) + cardWidth - cardPadding;
+                const startY = lastTaskBottom;
                 
-                // End point: top-left edge of first task in next day
-                const endX = (dayIndex + 1) * (dayWidth + gap) + taskCardPaddingX; // Left edge plus padding
-                const endY = firstTaskTop; // Top edge of first task
+                // End: left edge of next day card
+                const endX = (visibleIndex + 1) * (cardWidth + gap) + cardPadding;
+                const endY = firstTaskTop;
 
-                // Create perfectly smooth, flowing Bézier curve
+                // Smooth, flowing Bézier curve
                 const horizontalDistance = endX - startX;
                 const verticalDistance = endY - startY;
+                const curveIntensity = Math.max(Math.abs(verticalDistance) * 0.6, 30);
                 
-                // Dynamic curve intensity based on distance - more organic flow
-                const baseCurve = Math.max(Math.abs(verticalDistance) * 0.7, 35);
-                const horizontalCurve = Math.abs(horizontalDistance) * 0.15;
-                const curveIntensity = Math.max(baseCurve, horizontalCurve);
-                
-                // Smooth, flowing control points for natural momentum path
-                // First control point: extends from start, creating upward/outward flow
-                const controlX1 = startX + horizontalDistance * 0.3;
-                const controlY1 = startY - curveIntensity * 0.8;
-                
-                // Second control point: guides toward end, creating smooth approach
-                const controlX2 = startX + horizontalDistance * 0.7;
-                const controlY2 = endY + curveIntensity * 0.8;
+                const controlX1 = startX + horizontalDistance * 0.35;
+                const controlY1 = startY - curveIntensity;
+                const controlX2 = startX + horizontalDistance * 0.65;
+                const controlY2 = endY + curveIntensity;
 
                 return (
                   <path
-                    key={`connection-${dayIndex}`}
+                    key={`connection-${visibleIndex}`}
                     d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
-                    stroke="white"
-                    strokeWidth="2.5"
+                    stroke="url(#blueGlowGradient)"
+                    strokeWidth="3"
                     fill="none"
-                    opacity="0.7"
-                    filter="url(#premiumWhiteGlow)"
+                    opacity="0.8"
+                    filter="url(#blueGlow)"
                     className="transition-opacity duration-300"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1074,34 +1167,49 @@ export const DashboardHome = ({
             </svg>
 
             {/* Progress Footer */}
-            <div className="mt-6 pt-4 border-t border-[var(--border-color)]/30">
-              <div className="flex items-center justify-between text-[11px] text-[var(--text-tertiary)] mb-2">
-                <span>Weekly progress</span>
-                <span>{weeklyFocusCompletion}% complete</span>
+            <div className="mt-8 pt-6 border-t border-slate-700/30">
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-3">
+                <span className="font-medium">Weekly Momentum</span>
+                <span className="font-semibold text-blue-400">{weeklyFocusCompletion}%</span>
               </div>
-              <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[var(--accent-primary)]/60 via-[var(--accent-primary)] to-[var(--accent-primary)]/60 rounded-full transition-all duration-500"
-                  style={{ width: `${weeklyFocusCompletion}%` }}
+              <div className="w-full bg-slate-800/50 rounded-full h-2.5 overflow-hidden backdrop-blur-sm">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${weeklyFocusCompletion}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500 rounded-full shadow-lg shadow-blue-500/50"
                 />
               </div>
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-[var(--border-color)] p-8 text-center">
-            <div className="w-16 h-16 rounded-full border-2 border-dashed border-[var(--border-color)] mx-auto mb-4 flex items-center justify-center">
-              <FaCompass className="text-2xl text-[var(--text-tertiary)]" />
-            </div>
-            <p className="text-sm text-[var(--text-secondary)] mb-2">No week-specific tasks yet.</p>
-            <p className="text-xs text-[var(--text-tertiary)] mb-4">
-              Add tasks with due dates to see your weekly roadmap.
+          <div className="rounded-2xl border border-dashed border-slate-700/50 p-12 text-center bg-slate-900/30 backdrop-blur-sm">
+            <motion.div
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.5, 0.8, 0.5],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="w-20 h-20 rounded-3xl border-2 border-dashed border-slate-600/50 mx-auto mb-6 flex items-center justify-center"
+            >
+              <FaCompass className="text-3xl text-slate-500" />
+            </motion.div>
+            <p className="text-base text-slate-300 mb-2 font-medium">No week-specific tasks yet.</p>
+            <p className="text-sm text-slate-500 mb-6">
+              Add tasks with due dates to see your momentum map.
             </p>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/dashboard/tasks')}
-              className="px-4 py-2 rounded-lg bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 text-sm font-medium text-[var(--accent-primary)] transition-colors"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-sm font-semibold text-white transition-all shadow-lg shadow-blue-500/30"
             >
               Plan your week
-            </button>
+            </motion.button>
           </div>
         )}
       </motion.div>
