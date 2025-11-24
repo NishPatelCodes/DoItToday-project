@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, lazy } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaPlus,
