@@ -943,8 +943,8 @@ export const DashboardHome = ({
         </ErrorBoundary>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 md:gap-4 lg:gap-6 mt-4 md:mt-6">
           <div className="rounded-xl md:rounded-2xl border border-[var(--border-color)] p-4 md:p-6 bg-[var(--bg-secondary)]">
-        <div className="flex items-center justify-between mb-4">
-        <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
                 <p className="text-2xl font-bold text-[var(--text-primary)]">{latestProductivity}%</p>
                 <p className="text-[11px] text-[var(--text-tertiary)]">Today</p>
@@ -1007,7 +1007,7 @@ export const DashboardHome = ({
           </div>
           <div className="rounded-xl border border-[var(--border-color)] p-5">
             <div className="flex items-center justify-between mb-4">
-        <div>
+              <div>
                 <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Income runway</p>
                 <p className="text-2xl font-bold text-[var(--text-primary)]">
                   {formatCurrency(latestIncome, incomeMeta.currency, { maximumFractionDigits: 0 })}
