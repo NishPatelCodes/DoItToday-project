@@ -314,8 +314,10 @@ export const DashboardHome = ({
       return {
         date: day,
         tasks: dayTasks.sort((a, b) => {
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+          // Sort: completed (green) first, then pending (yellow)
+          if (a.status === 'completed' && b.status !== 'completed') return -1;
+          if (a.status !== 'completed' && b.status === 'completed') return 1;
+          return 0;
         }),
       };
     });
@@ -931,9 +933,91 @@ export const DashboardHome = ({
         </div>
 
         {weeklyFocus.total > 0 ? (
-          <div className="relative">
+          <div className="relative" style={{ minHeight: '450px' }}>
+            {/* Blue Glowing Connection Lines SVG - Behind cards */}
+            <svg
+              className="absolute top-0 left-0 w-full pointer-events-none overflow-visible"
+              style={{ height: '450px', zIndex: 0 }}
+            >
+              <defs>
+                <linearGradient id="blueGlowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+                  <stop offset="50%" stopColor="#60a5fa" stopOpacity="1" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
+                </linearGradient>
+                <filter id="blueGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="5" result="outerGlow" />
+                  <feGaussianBlur stdDeviation="2.5" result="innerGlow" />
+                  <feMerge>
+                    <feMergeNode in="outerGlow" opacity="0.5" />
+                    <feMergeNode in="innerGlow" opacity="0.7" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              {visibleDays.map((dayData, visibleIndex) => {
+                if (visibleIndex === visibleDays.length - 1) return null;
+                const nextDay = visibleDays[visibleIndex + 1];
+                if (dayData.tasks.length === 0 || nextDay.tasks.length === 0) return null;
+
+                // Calculate positions for 3-day view with new dimensions
+                const cardWidth = 220; // Smaller card width
+                const gap = 80; // Larger gap between cards
+                const cardPadding = 20; // p-5 = 20px
+                const headerHeight = 90; // Header section height
+                const taskSpacing = 10; // space-y-2.5
+                const taskCardHeight = 60; // Smaller task card height
+                
+                // Calculate center of card for connection
+                const cardCenterX = visibleIndex * (cardWidth + gap) + cardWidth / 2;
+                const nextCardCenterX = (visibleIndex + 1) * (cardWidth + gap) + cardWidth / 2;
+                
+                // Last task in current day
+                const lastTaskIndex = dayData.tasks.length - 1;
+                const lastTaskTop = headerHeight + (lastTaskIndex * (taskCardHeight + taskSpacing));
+                const lastTaskCenterY = lastTaskTop + taskCardHeight / 2;
+                
+                // First task in next day
+                const firstTaskTop = headerHeight;
+                const firstTaskCenterY = firstTaskTop + taskCardHeight / 2;
+                
+                // Start: right center of current day card
+                const startX = cardCenterX + cardWidth / 2 - cardPadding;
+                const startY = lastTaskCenterY;
+                
+                // End: left center of next day card
+                const endX = nextCardCenterX - cardWidth / 2 + cardPadding;
+                const endY = firstTaskCenterY;
+
+                // Smooth, flowing Bézier curve
+                const horizontalDistance = endX - startX;
+                const verticalDistance = endY - startY;
+                const curveIntensity = Math.max(Math.abs(verticalDistance) * 0.5, 25);
+                
+                const controlX1 = startX + horizontalDistance * 0.4;
+                const controlY1 = startY - curveIntensity;
+                const controlX2 = startX + horizontalDistance * 0.6;
+                const controlY2 = endY + curveIntensity;
+
+                return (
+                  <path
+                    key={`connection-${visibleIndex}`}
+                    d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
+                    stroke="url(#blueGlowGradient)"
+                    strokeWidth="3.5"
+                    fill="none"
+                    opacity="1"
+                    filter="url(#blueGlow)"
+                    className="transition-opacity duration-300"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                );
+              })}
+            </svg>
+
             {/* 3-Day Cards Container */}
-            <div className="flex gap-6 md:gap-8 justify-center items-start relative">
+            <div className="flex gap-12 md:gap-16 justify-center items-start relative" style={{ zIndex: 10 }}>
               {visibleDays.map((dayData, visibleIndex) => {
                 const isTodayDay = isToday(dayData.date);
                 const dayName = format(dayData.date, 'EEE');
@@ -959,40 +1043,40 @@ export const DashboardHome = ({
                         delay: visibleIndex * 0.2,
                       },
                     }}
-                    className={`relative flex-shrink-0 ${isTodayDay ? 'z-10' : 'z-0'}`}
-                    style={{ width: '280px' }}
+                    className="relative flex-shrink-0"
+                    style={{ width: '220px' }}
                   >
-                    {/* Premium Dark Day Card */}
+                    {/* Premium Light Black Day Card */}
                     <div
-                      className={`relative rounded-3xl p-6 backdrop-blur-xl border transition-all duration-300 ${
+                      className={`relative rounded-2xl p-5 backdrop-blur-xl border transition-all duration-300 ${
                         isTodayDay
-                          ? 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-blue-500/40 shadow-2xl shadow-blue-500/20'
-                          : 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 shadow-xl'
+                          ? 'bg-gradient-to-br from-slate-700/95 to-slate-600/95 border-blue-500/50 shadow-2xl shadow-blue-500/30'
+                          : 'bg-gradient-to-br from-slate-600/90 to-slate-700/90 border-slate-500/40 shadow-xl'
                       }`}
                       style={{
                         boxShadow: isTodayDay
-                          ? '0 20px 60px -12px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.2)'
-                          : '0 10px 40px -10px rgba(0, 0, 0, 0.4)',
+                          ? '0 20px 60px -12px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.3)'
+                          : '0 10px 40px -10px rgba(0, 0, 0, 0.5)',
                       }}
                     >
                       {/* Day Header */}
-                      <div className="mb-6 pb-4 border-b border-slate-700/50">
+                      <div className="mb-4 pb-3 border-b border-slate-500/40">
                         <div
-                          className={`text-xs font-semibold mb-2 uppercase tracking-wider ${
-                            isTodayDay ? 'text-blue-400' : 'text-slate-400'
+                          className={`text-xs font-semibold mb-1.5 uppercase tracking-wider ${
+                            isTodayDay ? 'text-blue-400' : 'text-slate-300'
                           }`}
                         >
                           {dayName}
                         </div>
                         <div className="flex items-baseline gap-2">
                           <span
-                            className={`text-4xl font-bold ${
-                              isTodayDay ? 'text-white' : 'text-slate-200'
+                            className={`text-3xl font-bold ${
+                              isTodayDay ? 'text-white' : 'text-slate-100'
                             }`}
                           >
                             {dayNumber}
                           </span>
-                          <span className="text-sm text-slate-400">{monthName}</span>
+                          <span className="text-xs text-slate-400">{monthName}</span>
                         </div>
                         {isTodayDay && (
                           <motion.div
@@ -1005,64 +1089,54 @@ export const DashboardHome = ({
                               repeat: Infinity,
                               ease: "easeInOut",
                             }}
-                            className="absolute -top-2 -right-2 w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"
+                            className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"
                           />
                         )}
                       </div>
 
                       {/* Tasks List */}
-                      <div className="space-y-3 min-h-[320px]">
+                      <div className="space-y-2.5 min-h-[280px]">
                         {dayData.tasks.length > 0 ? (
                           dayData.tasks.map((task, taskIndex) => {
-                            const priorityColors = {
-                              high: 'from-red-500/20 to-red-600/20 border-red-500/30',
-                              medium: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
-                              low: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
-                            };
-                            const colorClass =
-                              priorityColors[task.priority] || priorityColors.low;
+                            // Green for completed, yellow for pending
+                            const isCompleted = task.status === 'completed';
+                            const taskColorClass = isCompleted
+                              ? 'bg-green-500/20 border-green-500/40'
+                              : 'bg-yellow-500/20 border-yellow-500/40';
 
                             return (
                               <motion.div
                                 key={task._id}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: taskIndex * 0.08 }}
+                                transition={{ delay: taskIndex * 0.06 }}
                                 whileHover={{ scale: 1.02, x: 4 }}
-                                className={`group relative rounded-2xl border bg-gradient-to-br ${colorClass} p-4 cursor-pointer backdrop-blur-sm transition-all duration-200 hover:shadow-lg`}
+                                className={`group relative rounded-xl border ${taskColorClass} p-3 cursor-pointer backdrop-blur-sm transition-all duration-200 hover:shadow-lg`}
                                 onClick={() =>
                                   navigate('/dashboard/tasks', {
                                     state: { highlightTaskId: task._id },
                                   })
                                 }
                               >
-                                <div className="flex items-start gap-3">
+                                <div className="flex items-start gap-2.5">
                                   <div
-                                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                                      task.priority === 'high'
-                                        ? 'bg-red-400 shadow-lg shadow-red-500/50'
-                                        : task.priority === 'medium'
-                                        ? 'bg-yellow-400 shadow-lg shadow-yellow-500/50'
-                                        : 'bg-blue-400 shadow-lg shadow-blue-500/50'
+                                    className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${
+                                      isCompleted
+                                        ? 'bg-green-400 shadow-md shadow-green-500/50'
+                                        : 'bg-yellow-400 shadow-md shadow-yellow-500/50'
                                     }`}
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-white line-clamp-2 leading-snug">
+                                    <p className="text-xs font-medium text-white line-clamp-2 leading-snug">
                                       {task.title}
                                     </p>
-                                    {task.status === 'completed' && (
-                                      <div className="flex items-center gap-1.5 mt-2">
-                                        <FaCheckCircle className="text-xs text-green-400" />
-                                        <span className="text-xs text-green-400 font-medium">Completed</span>
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                               </motion.div>
                             );
                           })
                         ) : (
-                          <div className="flex items-center justify-center h-full min-h-[280px]">
+                          <div className="flex items-center justify-center h-full min-h-[240px]">
                             <div className="text-center">
                               <motion.div
                                 animate={{
@@ -1074,11 +1148,11 @@ export const DashboardHome = ({
                                   repeat: Infinity,
                                   ease: "easeInOut",
                                 }}
-                                className="w-12 h-12 rounded-2xl border-2 border-dashed border-slate-600/50 mx-auto mb-3 flex items-center justify-center"
+                                className="w-10 h-10 rounded-xl border-2 border-dashed border-slate-500/50 mx-auto mb-2 flex items-center justify-center"
                               >
-                                <span className="text-xs text-slate-500">+</span>
+                                <span className="text-xs text-slate-400">+</span>
                               </motion.div>
-                              <p className="text-xs text-slate-500">No tasks</p>
+                              <p className="text-xs text-slate-400">No tasks</p>
                             </div>
                           </div>
                         )}
@@ -1088,83 +1162,6 @@ export const DashboardHome = ({
                 );
               })}
             </div>
-
-            {/* Blue Glowing Connection Lines SVG */}
-            <svg
-              className="absolute top-0 left-0 w-full pointer-events-none overflow-visible"
-              style={{ height: '500px', zIndex: 1 }}
-            >
-              <defs>
-                <linearGradient id="blueGlowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
-                  <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.9" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.6" />
-                </linearGradient>
-                <filter id="blueGlow" x="-100%" y="-100%" width="300%" height="300%">
-                  <feGaussianBlur stdDeviation="4" result="outerGlow" />
-                  <feGaussianBlur stdDeviation="2" result="innerGlow" />
-                  <feMerge>
-                    <feMergeNode in="outerGlow" opacity="0.4" />
-                    <feMergeNode in="innerGlow" opacity="0.6" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              {visibleDays.map((dayData, visibleIndex) => {
-                if (visibleIndex === visibleDays.length - 1) return null;
-                const nextDay = visibleDays[visibleIndex + 1];
-                if (dayData.tasks.length === 0 || nextDay.tasks.length === 0) return null;
-
-                // Calculate positions for 3-day view
-                const cardWidth = 280;
-                const gap = 48; // gap-6 md:gap-8 = 48px
-                const cardPadding = 24; // p-6 = 24px
-                const headerHeight = 100; // Header section height
-                const taskSpacing = 12; // space-y-3
-                const taskCardHeight = 70; // Approximate task card height
-                
-                // Last task in current day
-                const lastTaskIndex = dayData.tasks.length - 1;
-                const lastTaskTop = headerHeight + (lastTaskIndex * (taskCardHeight + taskSpacing));
-                const lastTaskBottom = lastTaskTop + taskCardHeight;
-                
-                // First task in next day
-                const firstTaskTop = headerHeight;
-                
-                // Start: right edge of current day card
-                const startX = visibleIndex * (cardWidth + gap) + cardWidth - cardPadding;
-                const startY = lastTaskBottom;
-                
-                // End: left edge of next day card
-                const endX = (visibleIndex + 1) * (cardWidth + gap) + cardPadding;
-                const endY = firstTaskTop;
-
-                // Smooth, flowing Bézier curve
-                const horizontalDistance = endX - startX;
-                const verticalDistance = endY - startY;
-                const curveIntensity = Math.max(Math.abs(verticalDistance) * 0.6, 30);
-                
-                const controlX1 = startX + horizontalDistance * 0.35;
-                const controlY1 = startY - curveIntensity;
-                const controlX2 = startX + horizontalDistance * 0.65;
-                const controlY2 = endY + curveIntensity;
-
-                return (
-                  <path
-                    key={`connection-${visibleIndex}`}
-                    d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
-                    stroke="url(#blueGlowGradient)"
-                    strokeWidth="3"
-                    fill="none"
-                    opacity="0.8"
-                    filter="url(#blueGlow)"
-                    className="transition-opacity duration-300"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                );
-              })}
-            </svg>
 
             {/* Progress Footer */}
             <div className="mt-8 pt-6 border-t border-slate-700/30">
