@@ -216,3 +216,89 @@ export const EmptyChallengesIllustration = ({ className = "w-48 h-48 mx-auto mb-
   </motion.div>
 );
 
+// Animal Illustrations - Cute productivity mascots
+export const CatWorkingIllustration = ({ className = "w-24 h-24" }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.5 }}
+    className={className}
+  >
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      {/* Cat head */}
+      <circle cx="50" cy="45" r="20" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Cat ears */}
+      <path d="M 35 30 L 40 20 L 45 30 Z" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      <path d="M 55 30 L 60 20 L 65 30 Z" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Cat eyes */}
+      <circle cx="45" cy="42" r="2" fill="var(--text-secondary)" />
+      <circle cx="55" cy="42" r="2" fill="var(--text-secondary)" />
+      {/* Cat nose */}
+      <path d="M 50 48 L 48 52 L 52 52 Z" fill="var(--text-secondary)" fillOpacity="0.6" />
+      {/* Laptop */}
+      <rect x="30" y="65" width="40" height="25" rx="2" fill="var(--bg-tertiary)" stroke="var(--border-color)" strokeWidth="1.5" />
+      <rect x="32" y="67" width="36" height="18" rx="1" fill="var(--accent-primary)" fillOpacity="0.1" />
+      <line x1="35" y1="72" x2="65" y2="72" stroke="var(--accent-primary)" strokeWidth="1" strokeOpacity="0.3" />
+      <line x1="35" y1="78" x2="55" y2="78" stroke="var(--accent-primary)" strokeWidth="1" strokeOpacity="0.3" />
+    </svg>
+  </motion.div>
+);
+
+export const SquirrelChecklistIllustration = ({ className = "w-24 h-24" }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.5 }}
+    className={className}
+  >
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      {/* Squirrel body */}
+      <ellipse cx="50" cy="60" rx="18" ry="25" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Squirrel head */}
+      <circle cx="50" cy="35" r="15" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Squirrel ears */}
+      <circle cx="42" cy="28" r="5" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      <circle cx="58" cy="28" r="5" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Squirrel tail */}
+      <ellipse cx="70" cy="65" rx="12" ry="20" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Eyes */}
+      <circle cx="46" cy="33" r="2" fill="var(--text-secondary)" />
+      <circle cx="54" cy="33" r="2" fill="var(--text-secondary)" />
+      {/* Checklist */}
+      <rect x="20" y="50" width="25" height="30" rx="2" fill="var(--bg-tertiary)" stroke="var(--border-color)" strokeWidth="1.5" />
+      <line x1="25" y1="58" x2="40" y2="58" stroke="var(--accent-primary)" strokeWidth="1.5" strokeOpacity="0.5" />
+      <circle cx="27" cy="66" r="2" fill="var(--accent-primary)" fillOpacity="0.3" />
+      <line x1="25" y1="70" x2="40" y2="70" stroke="var(--accent-primary)" strokeWidth="1.5" strokeOpacity="0.5" />
+      <circle cx="27" cy="78" r="2" fill="var(--accent-primary)" fillOpacity="0.3" />
+    </svg>
+  </motion.div>
+);
+
+export const FoxReadingIllustration = ({ className = "w-24 h-24" }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.5 }}
+    className={className}
+  >
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      {/* Fox head */}
+      <path d="M 50 30 Q 40 25 35 35 Q 30 40 35 50 Q 40 60 50 55 Q 60 60 65 50 Q 70 40 65 35 Q 60 25 50 30" 
+            fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Fox ears */}
+      <path d="M 40 25 L 38 15 L 42 20 Z" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      <path d="M 60 25 L 62 15 L 58 20 Z" fill="var(--text-tertiary)" fillOpacity="0.15" />
+      {/* Eyes */}
+      <circle cx="46" cy="40" r="2" fill="var(--text-secondary)" />
+      <circle cx="54" cy="40" r="2" fill="var(--text-secondary)" />
+      {/* Nose */}
+      <circle cx="50" cy="48" r="1.5" fill="var(--text-secondary)" fillOpacity="0.6" />
+      {/* Book */}
+      <rect x="25" y="60" width="30" height="25" rx="1" fill="var(--bg-tertiary)" stroke="var(--border-color)" strokeWidth="1.5" />
+      <line x1="28" y1="68" x2="50" y2="68" stroke="var(--accent-primary)" strokeWidth="1" strokeOpacity="0.3" />
+      <line x1="28" y1="73" x2="48" y2="73" stroke="var(--accent-primary)" strokeWidth="1" strokeOpacity="0.3" />
+      <line x1="28" y1="78" x2="45" y2="78" stroke="var(--accent-primary)" strokeWidth="1" strokeOpacity="0.3" />
+    </svg>
+  </motion.div>
+);
+

@@ -26,7 +26,7 @@ import {
   FaList,
   FaCompass,
 } from 'react-icons/fa';
-import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration } from '../components/Illustrations';
+import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration, CatWorkingIllustration, SquirrelChecklistIllustration, FoxReadingIllustration } from '../components/Illustrations';
 // Recharts will be code-split via Vite config (already configured)
 import {
   ResponsiveContainer,
@@ -315,46 +315,95 @@ export const DashboardHome = ({
   // Get today's spend (placeholder - would come from finance API)
   const todaysSpend = 0;
 
-  return (
-    <div className="p-4 md:p-6 lg:p-8 bg-[var(--bg-primary)] min-h-screen max-w-[1920px] mx-auto overflow-x-hidden space-y-4 md:space-y-6 lg:space-y-8">
-      {/* Search Bar */}
-      <div className="mb-6 relative">
-        <div className="relative">
-          <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
-          <input
-            type="text"
-            placeholder="Search tasks, goals..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setShowSearchResults(e.target.value.trim().length > 0);
-            }}
-            onFocus={() => setShowSearchResults(searchQuery.trim().length > 0)}
-            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setShowSearchResults(false);
-              }}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
-            >
-              <FaTimes />
-            </button>
-          )}
-        </div>
+  // Motivation tips array
+  const motivationTips = [
+    "Small steps lead to big achievements. Keep going! 💪",
+    "Progress, not perfection. Every task completed is a win! 🎯",
+    "Your consistency is building something amazing. Stay focused! ✨",
+    "Today's effort is tomorrow's success. You've got this! 🚀",
+    "Remember: Done is better than perfect. Keep moving forward! ⚡"
+  ];
+  const dailyTip = motivationTips[new Date().getDate() % motivationTips.length];
 
-        {/* Search Results Dropdown */}
-        <AnimatePresence>
-          {showSearchResults && searchQuery.trim().length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute top-full left-0 right-0 mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto"
+  return (
+    <div className="bg-[var(--bg-primary)] min-h-screen max-w-[1920px] mx-auto overflow-x-hidden">
+      {/* Sticky Top Bar */}
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 bg-[var(--bg-primary)]/95 backdrop-blur-lg border-b border-[var(--border-color)] px-4 md:px-6 py-3 shadow-sm"
+      >
+        <div className="flex items-center justify-between gap-4">
+          {/* Date */}
+          <div className="text-sm md:text-base font-medium text-[var(--text-primary)]">
+            {format(new Date(), 'EEEE, MMMM d')}
+          </div>
+          
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchResults(e.target.value.trim().length > 0);
+              }}
+              onFocus={() => setShowSearchResults(searchQuery.trim().length > 0)}
+              onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setShowSearchResults(false);
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+              >
+                <FaTimes className="text-xs" />
+              </button>
+            )}
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setEditingTask(null);
+                setIsTaskModalOpen(true);
+              }}
+              className="px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 transition-all flex items-center gap-1.5"
             >
+              <FaPlus className="text-xs" />
+              <span className="hidden sm:inline">Task</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setEditingGoal(null);
+                setIsGoalModalOpen(true);
+              }}
+              className="p-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-all"
+              aria-label="Add Goal"
+            >
+              <FaBullseye className="text-sm" />
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Search Results Dropdown */}
+      <AnimatePresence>
+        {showSearchResults && searchQuery.trim().length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-[73px] left-1/2 transform -translate-x-1/2 w-full max-w-md mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto"
+          >
               {searchResults.tasks.length > 0 || searchResults.goals.length > 0 ? (
                 <>
               {searchResults.tasks.length > 0 && (
@@ -417,248 +466,215 @@ export const DashboardHome = ({
                   <p className="text-sm text-[var(--text-tertiary)]">Try searching with different keywords</p>
                 </div>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Top Section: Today's Progress, Pending, Goals, Challenges - Match Analytics/Finance grid */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        {/* Today's Progress Bar Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ delay: 0, duration: 0.5 }}
-          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
-          style={{
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.12) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words">Today's Progress</h3>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between mb-2 gap-2">
-                <span className="text-sm text-[var(--text-secondary)] leading-normal flex-shrink-0">Tasks Completed</span>
-                <span className="text-sm font-semibold text-[var(--text-primary)] leading-normal flex-shrink-0">
-                  {todaysTasks.filter(t => t.status === 'completed').length} / {todaysTasks.length}
-                </span>
+      {/* Main Dashboard Content */}
+      <div className="p-4 md:p-6 space-y-4">
+        {/* Top Row: Today's Progress, Pending, Goals, Challenges */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {/* Today's Progress Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            transition={{ delay: 0, duration: 0.3 }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+            style={{
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)',
+            }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <FaTasks className="text-purple-500 text-sm" />
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Progress</h3>
+            </div>
+            <div className="mb-3">
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-3xl font-bold text-[var(--text-primary)]">{todaysPlanProgress}%</span>
+                <FaTasks className="text-purple-500/60 text-xs" />
               </div>
-              <div className="w-full h-2.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${todaysPlanProgress}%` }}
                   transition={{ duration: 0.5 }}
-                  className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-blue-500 rounded-full"
+                  className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"
                 />
               </div>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-normal">{todaysPlanProgress}% complete</p>
             </div>
-            {nextTask && (
+            {nextTask ? (
               <div className="pt-3 border-t border-[var(--border-color)]">
-                <p className="text-xs text-[var(--text-secondary)] mb-1.5 leading-normal">Next Task</p>
-                <p className="text-sm font-semibold text-[var(--text-primary)] truncate leading-snug break-words">{nextTask.title}</p>
-                  {nextTask.dueDate && (
-                  <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-normal">
-                      {format(new Date(nextTask.dueDate), 'h:mm a')}
-                    </p>
-                  )}
-              </div>
-              )}
-          </div>
-        </motion.div>
-
-        {/* Pending Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
-          style={{
-            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.12) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4 leading-tight break-words">Pending</h3>
-          <div className="mb-4">
-            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 leading-tight">{pendingTasks.length}</p>
-            <p className="text-xs text-[var(--text-tertiary)] leading-normal">{format(new Date(), 'h:mm a')}</p>
-          </div>
-          {pendingTasks.length > 0 && (
-            <div className="pt-4 border-t border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-2 leading-normal">Upcoming Tasks</p>
-              <div className="space-y-2">
-                {pendingTasks.slice(0, 2).map(task => (
-                  <div key={task._id} className="flex items-center gap-2 min-w-0">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] flex-shrink-0"></div>
-                    <p className="text-xs text-[var(--text-primary)] truncate flex-1 leading-normal break-words min-w-0">{task.title}</p>
-                    {task.dueDate && (
-                      <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 leading-normal whitespace-nowrap">
-                        {format(new Date(task.dueDate), 'MMM dd')}
-                      </span>
-                    )}
-                  </div>
-                ))}
-                {pendingTasks.length > 2 && (
-                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1 leading-normal">
-                    +{pendingTasks.length - 2} more tasks
-                  </p>
+                <p className="text-xs text-[var(--text-secondary)] mb-1">Next task</p>
+                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
+                {nextTask.dueDate && (
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1">{format(new Date(nextTask.dueDate), 'h:mm a')}</p>
                 )}
               </div>
-            </div>
-          )}
-        </motion.div>
+            ) : (
+              <div className="pt-2">
+                <CatWorkingIllustration className="w-16 h-16 mx-auto opacity-40" />
+              </div>
+            )}
+          </motion.div>
 
-        {/* Goals Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
-          style={{
-            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <div className="flex items-center justify-between mb-4 gap-2">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Goals</h3>
-            <span className="text-sm font-semibold text-green-600 dark:text-green-400 flex-shrink-0 leading-normal">{activeGoals.length}</span>
-          </div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
-              <FaBullseye className="text-green-600 dark:text-green-400 text-lg lg:text-xl flex-shrink-0" />
+          {/* Pending Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+            style={{
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)',
+            }}
+          >
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Pending</h3>
+            <div className="mb-3">
+              <p className="text-4xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
+              <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{activeGoals.length}</p>
-              <p className="text-xs text-[var(--text-tertiary)] leading-normal">Active</p>
+            {pendingTasks.length > 0 ? (
+              <div className="pt-3 border-t border-[var(--border-color)]">
+                <p className="text-xs text-[var(--text-secondary)] mb-2">Upcoming Tasks</p>
+                <div className="space-y-1.5">
+                  {pendingTasks.slice(0, 2).map(task => (
+                    <div key={task._id} className="flex items-center gap-2 min-w-0">
+                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></div>
+                      <p className="text-xs text-[var(--text-primary)] truncate flex-1">{task.title}</p>
+                      {task.dueDate && (
+                        <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 whitespace-nowrap">
+                          {format(new Date(task.dueDate), 'h:mm a')}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {pendingTasks.length > 2 && (
+                    <p className="text-[10px] text-[var(--text-tertiary)] mt-1">+{pendingTasks.length - 2} more</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <SquirrelChecklistIllustration className="w-16 h-16 mx-auto opacity-40" />
+            )}
+          </motion.div>
+
+          {/* Goals Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+            style={{
+              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Goals</h3>
+              <FaBullseye className="text-green-500 text-sm" />
             </div>
-          </div>
-          {activeGoals.length > 0 && (
-            <div className="pt-4 border-t border-[var(--border-color)]">
-              <p className="text-xs text-[var(--text-secondary)] mb-2 leading-normal">Top Goals</p>
-              <div className="space-y-2">
-                {activeGoals.slice(0, 2).map(goal => {
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                <FaBullseye className="text-green-500 text-base" />
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
+                <p className="text-xs text-[var(--text-tertiary)]">Active</p>
+              </div>
+            </div>
+            {activeGoals.length > 0 ? (
+              <div className="pt-3 border-t border-[var(--border-color)]">
+                <p className="text-xs text-[var(--text-secondary)] mb-2">Active</p>
+                {activeGoals.slice(0, 1).map(goal => {
                   const progress = goal.progress || 0;
                   return (
                     <div key={goal._id} className="space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-[var(--text-primary)] truncate flex-1 leading-normal break-words min-w-0">{goal.title}</p>
-                        <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 leading-normal whitespace-nowrap">{progress}%</span>
-                      </div>
-                      <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                      <p className="text-xs font-medium text-[var(--text-primary)] truncate">{goal.title}</p>
+                      <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500"
+                          className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-[var(--text-tertiary)]">{progress}%</span>
+                      </div>
                     </div>
                   );
                 })}
-                {activeGoals.length > 2 && (
-                  <p className="text-[10px] text-[var(--text-tertiary)] mt-1 leading-normal">
-                    +{activeGoals.length - 2} more goals
-                  </p>
+                {activeGoals.length > 1 && (
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-2">+{activeGoals.length - 1} more</p>
                 )}
               </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Challenges Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-          onClick={() => navigate('/dashboard/tasks?tab=challenges')}
-          style={{
-            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(219, 39, 119, 0.12) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <div className="flex items-center justify-between mb-4 gap-2">
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] leading-tight break-words flex-1 min-w-0">Challenges</h3>
-            <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400 flex-shrink-0 leading-normal">{activeChallenges.length}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 flex items-center justify-center flex-shrink-0">
-              <FaTrophy className="text-yellow-600 dark:text-yellow-400 text-lg lg:text-xl flex-shrink-0" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{activeChallenges.length}</p>
-              <p className="text-xs text-[var(--text-tertiary)] leading-normal">Active</p>
-            </div>
-          </div>
-          {activeChallenges.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-              <div className="space-y-2">
-                {activeChallenges.slice(0, 2).map((challenge) => {
-                  const progress = challenge.progress || 0;
-                  const isCheckedInToday = challenge.checkIns?.some((checkIn) => {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const checkInDate = new Date(checkIn.date);
-                    checkInDate.setHours(0, 0, 0, 0);
-                    return checkInDate.getTime() === today.getTime() && checkIn.completed;
-                  });
-                  
-                  return (
-                    <div key={challenge._id} className="flex items-center gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-[var(--text-primary)] truncate">{challenge.name}</p>
-                        <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden mt-1">
-                          <div
-                            className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full transition-all duration-500"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-                      {isCheckedInToday && (
-                        <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                      )}
-                    </div>
-                  );
-                })}
+            ) : (
+              <div className="pt-2">
+                <EmptyGoalsIllustration className="w-16 h-16 mx-auto opacity-40" />
               </div>
-              {activeChallenges.length > 2 && (
-                <p className="text-xs text-[var(--text-tertiary)] mt-2">
-                  +{activeChallenges.length - 2} more
-                </p>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </div>
+            )}
+          </motion.div>
 
-      {/* Middle Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
-        {/* Today's Plan List Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="lg:col-span-2 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Today's Plan</h3>
+          {/* Challenges Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg cursor-pointer"
+            onClick={() => navigate('/dashboard/tasks?tab=challenges')}
+            style={{
+              background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Challenges</h3>
+              <FaEllipsisV className="text-[var(--text-tertiary)] text-xs" />
             </div>
-            <div className="relative menu-container">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                <FaTrophy className="text-yellow-500 text-base" />
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-[var(--text-primary)]">{activeChallenges.length}</p>
+                <p className="text-xs text-[var(--text-tertiary)]">Active</p>
+              </div>
+            </div>
+            {activeChallenges.length === 0 && (
+              <div className="pt-2">
+                <EmptyChallengesIllustration className="w-16 h-16 mx-auto opacity-40" />
+              </div>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/dashboard/tasks?tab=challenges');
+              }}
+              className="w-full mt-3 py-2 px-3 text-xs font-medium rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] transition-colors flex items-center justify-center gap-1.5"
+            >
+              <FaPlus className="text-xs" />
+              <span>Smart Task</span>
+            </button>
+          </motion.div>
+        </div>
+
+        {/* Middle Section: Today's Plan, Streak, Motivation */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+          {/* Today's Plan Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+            className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Plan</h3>
+              <div className="relative menu-container">
                 <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
                 >
-                <FaEllipsisV />
+                  <FaEllipsisV className="text-xs" />
                 </button>
               <AnimatePresence>
                 {showMenu && (
@@ -716,123 +732,97 @@ export const DashboardHome = ({
               </AnimatePresence>
             </div>
           </div>
-          {todaysPlanExpanded && (
-            <div className="space-y-3">
-              {sortedTodaysTasks.filter(t => t.status !== 'completed').length > 0 ? (
-                sortedTodaysTasks
-                  .filter(t => t.status !== 'completed')
-                  .slice(0, 5)
-                  .map((task) => (
-                  <div
-                    key={task._id}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
-                  >
+            {todaysPlanExpanded && (
+              <div className="space-y-2">
+                {sortedTodaysTasks.filter(t => t.status !== 'completed').length > 0 ? (
+                  sortedTodaysTasks
+                    .filter(t => t.status !== 'completed')
+                    .slice(0, 3)
+                    .map((task) => (
+                    <motion.div
+                      key={task._id}
+                      whileHover={{ x: 4 }}
+                      className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer group"
+                      onClick={() => onEditTask && onEditTask(task)}
+                    >
                       <button
                         type="button"
-                        onClick={() => onToggleTask(task._id)}
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleTask(task._id);
+                        }}
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                           task.status === 'completed'
-                            ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white'
-                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-transparent hover:border-[var(--accent-primary)]/50 hover:bg-[var(--bg-tertiary)]'
+                            ? 'bg-purple-500 border-purple-500 text-white'
+                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-transparent hover:border-purple-500/50 hover:bg-[var(--bg-tertiary)]'
                         }`}
                         aria-label={task.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
                       >
                         {task.status === 'completed' && (
-                          <FaCheck className="w-3 h-3 text-white" />
+                          <FaCheck className="w-2.5 h-2.5 text-white" />
                         )}
                       </button>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[var(--text-primary)]">
-                        {task.title}
-                      </p>
-                      {task.dueDate && (
-                        <p className="text-xs text-[var(--text-tertiary)] mt-1">
-                          {format(new Date(task.dueDate), 'h:mm a')}
-                        </p>
-                      )}
-                    </div>
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        task.priority === 'high'
-                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                          : task.priority === 'medium'
-                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                      }`}
-                    >
-                      {task.priority || 'Low'}
-                    </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{task.title}</p>
+                        {task.dueDate && (
+                          <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{format(new Date(task.dueDate), 'h:mm a')}</p>
+                        )}
+                      </div>
+                      <FaTasks className="text-[var(--text-tertiary)] text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">
+                    <EmptyTasksIllustration className="w-24 h-24 mx-auto mb-2 opacity-50" />
+                    <p className="text-xs text-[var(--text-tertiary)]">No pending tasks for today</p>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-6">
-                  <EmptyTasksIllustration className="w-32 h-32 mx-auto mb-3" />
-                  <p className="text-sm text-[var(--text-tertiary)]">No pending tasks for today</p>
-                  <p className="text-xs text-[var(--text-tertiary)] mt-1">Great job! All caught up 🎉</p>
-                </div>
-              )}
-              <button
-                onClick={() => {
-                  setEditingTask(null);
-                  setIsTaskModalOpen(true);
-                }}
-                className="w-full mt-4 py-2 px-4 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-[var(--text-primary)] font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <FaPlus className="text-xs" />
-                <span>Smart Task</span>
-              </button>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Right Side: Streak and Consistency */}
-        <div className="flex lg:flex-col gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
-          {/* Streak Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02, y: -4 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 flex-shrink-0 w-[200px] lg:w-auto"
-            style={{
-              background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(219, 39, 119, 0.12) 100%)',
-              borderColor: 'rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-            }}
-          >
-            <div className="flex items-center gap-2 mb-3 lg:mb-4">
-              <FaFire className="text-orange-500 text-lg lg:text-xl" />
-              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Streak</h3>
-            </div>
-            <p className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
+                )}
+              </div>
+            )}
           </motion.div>
 
-          {/* Consistency Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02, y: -4 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 flex-shrink-0 w-[200px] lg:w-auto"
-            style={{
-              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%)',
-              borderColor: 'rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-            }}
-          >
-            <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-2 lg:mb-3">Stay consistent!</h3>
-            <p className="text-sm lg:text-base text-[var(--text-secondary)] mb-3 lg:mb-4">
-              You've done {consistencyPercentage}% of your week's plan
-            </p>
-            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 lg:h-2.5">
-              <div
-                className="bg-[var(--accent-primary)] h-2 lg:h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${consistencyPercentage}%` }}
-              />
-            </div>
-          </motion.div>
+          {/* Right Side: Streak and Motivation */}
+          <div className="flex flex-col gap-3 md:gap-4">
+            {/* Streak Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+              className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
+              }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <FaFire className="text-orange-500 text-sm" />
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Streak</h3>
+              </div>
+              <p className="text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
+            </motion.div>
+
+            {/* Motivation/Tip Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              transition={{ delay: 0.6, duration: 0.3 }}
+              className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)',
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <FaLightbulb className="text-blue-500 text-sm" />
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Tip of the Day</h3>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{dailyTip}</p>
+              <div className="absolute bottom-2 right-2 opacity-20">
+                <FoxReadingIllustration className="w-12 h-12" />
+              </div>
+            </motion.div>
+          </div>
         </div>
-      </div>
 
       {/* Lower Middle Section: Momentum */}
       <div className="grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
