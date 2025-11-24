@@ -922,6 +922,7 @@ export const DashboardHome = ({
         </motion.div>
 
       </div>
+      </div>
 
       {/* Analytics Section - Full Integration */}
       <motion.div
