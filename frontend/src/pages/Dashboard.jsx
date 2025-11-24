@@ -672,7 +672,22 @@ const Dashboard = () => {
     }
   };
 
-  const pendingTasks = Array.isArray(tasks) ? tasks.filter((t) => t.status === 'pending') : [];
+  const pendingTasks = Array.isArray(tasks) 
+    ? tasks.filter((t) => {
+        if (t.status !== 'pending') return false;
+        // Exclude tasks that are due (overdue)
+        if (t.dueDate) {
+          const dueDate = new Date(t.dueDate);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          dueDate.setHours(0, 0, 0, 0);
+          // Only count tasks that are not due yet (dueDate is today or in the future)
+          return dueDate >= today;
+        }
+        // Tasks without due date are counted as pending
+        return true;
+      })
+    : [];
   const completedTasks = Array.isArray(tasks) 
     ? tasks
         .filter((t) => t.status === 'completed')

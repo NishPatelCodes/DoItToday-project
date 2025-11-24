@@ -171,7 +171,20 @@ const Profile = ({
 
   const user = profileUser || authUser;
   const completedTasksCount = profileTasks.filter((t) => t.status === 'completed').length;
-  const pendingTasksCount = profileTasks.filter((t) => t.status === 'pending').length;
+  const pendingTasksCount = profileTasks.filter((t) => {
+    if (t.status !== 'pending') return false;
+    // Exclude tasks that are due (overdue)
+    if (t.dueDate) {
+      const dueDate = new Date(t.dueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      dueDate.setHours(0, 0, 0, 0);
+      // Only count tasks that are not due yet (dueDate is today or in the future)
+      return dueDate >= today;
+    }
+    // Tasks without due date are counted as pending
+    return true;
+  }).length;
   const activeGoalsCount = profileGoals.filter((g) => (g.progress || 0) < 100).length;
 
       return (
