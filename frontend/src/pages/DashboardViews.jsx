@@ -25,6 +25,8 @@ import {
   FaColumns,
   FaList,
   FaCompass,
+  FaClock,
+  FaArrowRight,
 } from 'react-icons/fa';
 import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration, CatWorkingIllustration, SquirrelChecklistIllustration, FoxReadingIllustration } from '../components/Illustrations';
 // Recharts will be code-split via Vite config (already configured)
@@ -339,6 +341,8 @@ export const DashboardHome = ({
             {format(new Date(), 'EEEE, MMMM d')}
           </div>
           
+          {/* Search Bar */}
+          <div className="flex-1 max-w-md relative">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
             <input
               type="text"
@@ -485,22 +489,11 @@ export const DashboardHome = ({
               background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)',
             }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <FaTasks className="text-purple-500 text-sm" />
-              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Progress</h3>
-            </div>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Today's Progress</h3>
             <div className="mb-3">
               <div className="flex items-baseline gap-2 mb-2">
+                <FaClock className="text-purple-500 text-base" />
                 <span className="text-3xl font-bold text-[var(--text-primary)]">{todaysPlanProgress}%</span>
-                <FaTasks className="text-purple-500/60 text-xs" />
-              </div>
-              <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${todaysPlanProgress}%` }}
-                  transition={{ duration: 0.5 }}
-                  className="h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"
-                />
               </div>
             </div>
             {nextTask ? (
@@ -591,14 +584,14 @@ export const DashboardHome = ({
                   return (
                     <div key={goal._id} className="space-y-1.5">
                       <p className="text-xs font-medium text-[var(--text-primary)] truncate">{goal.title}</p>
-                      <div className="w-full h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-[var(--text-tertiary)]">{progress}%</span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-[var(--text-primary)] font-medium">{progress}</span>
                       </div>
                     </div>
                   );
@@ -751,7 +744,7 @@ export const DashboardHome = ({
                           e.stopPropagation();
                           onToggleTask(task._id);
                         }}
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                           task.status === 'completed'
                             ? 'bg-purple-500 border-purple-500 text-white'
                             : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-transparent hover:border-purple-500/50 hover:bg-[var(--bg-tertiary)]'
@@ -759,7 +752,7 @@ export const DashboardHome = ({
                         aria-label={task.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
                       >
                         {task.status === 'completed' && (
-                          <FaCheck className="w-2.5 h-2.5 text-white" />
+                          <FaCheck className="w-3 h-3 text-white" />
                         )}
                       </button>
                       <div className="flex-1 min-w-0">
@@ -768,7 +761,7 @@ export const DashboardHome = ({
                           <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{format(new Date(task.dueDate), 'h:mm a')}</p>
                         )}
                       </div>
-                      <FaTasks className="text-[var(--text-tertiary)] text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <FaArrowRight className="text-[var(--text-tertiary)] text-xs" />
                     </motion.div>
                   ))
                 ) : (
@@ -779,9 +772,15 @@ export const DashboardHome = ({
                 )}
               </div>
             )}
+            
+            {/* Stay Consistent Section */}
+            <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
+              <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">Stay consistent!</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-2">You've done {consistencyPercentage}% of your week's plan</p>
+            </div>
           </motion.div>
 
-          {/* Right Side: Streak and Motivation */}
+          {/* Right Side: Streak */}
           <div className="flex flex-col gap-3 md:gap-4">
             {/* Streak Card */}
             <motion.div
@@ -799,27 +798,6 @@ export const DashboardHome = ({
                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">Streak</h3>
               </div>
               <p className="text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
-            </motion.div>
-
-            {/* Motivation/Tip Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02, y: -2 }}
-              transition={{ delay: 0.6, duration: 0.3 }}
-              className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg relative overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)',
-              }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <FaLightbulb className="text-blue-500 text-sm" />
-                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Tip of the Day</h3>
-              </div>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{dailyTip}</p>
-              <div className="absolute bottom-2 right-2 opacity-20">
-                <FoxReadingIllustration className="w-12 h-12" />
-              </div>
             </motion.div>
           </div>
         </div>
