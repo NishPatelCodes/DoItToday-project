@@ -4,6 +4,7 @@ import { FaTrophy, FaCheckCircle, FaTimes, FaFire, FaRedo, FaPlus, FaFlag } from
 import { challengesAPI } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { EmptyChallengesIllustration } from './Illustrations';
 
 const Challenges = () => {
   const [challenges, setChallenges] = useState([]);
@@ -355,7 +356,7 @@ const Challenges = () => {
       {/* No Challenges Message */}
       {activeChallenges.length === 0 && completedChallenges.length === 0 && (
         <div className="text-center py-12">
-          <FaFlag className="text-6xl text-[var(--text-tertiary)] mx-auto mb-4" />
+          <EmptyChallengesIllustration className="w-48 h-48 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
             No challenges yet
           </h3>

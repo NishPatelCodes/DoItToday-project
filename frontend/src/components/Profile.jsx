@@ -28,6 +28,7 @@ import GraphCard from './GraphCard';
 import TaskCard from './TaskCard';
 import FriendStatus from './FriendStatus';
 import { useMemo } from 'react';
+import { EmptyTasksIllustration, EmptyGoalsIllustration, EmptyFriendsIllustration } from './Illustrations';
 
 const Profile = ({ 
   currentUser, 
@@ -447,7 +448,9 @@ const Profile = ({
             </div>
           ) : (
             <div className="rounded-xl md:rounded-2xl p-8 md:p-12 text-center border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-md md:shadow-lg">
-              <p className="text-[var(--text-secondary)]">No tasks yet</p>
+              <EmptyTasksIllustration className="w-40 h-40 mx-auto mb-4" />
+              <p className="text-[var(--text-secondary)] mb-2 font-medium">No tasks yet</p>
+              <p className="text-sm text-[var(--text-tertiary)]">Start by creating your first task</p>
             </div>
           )}
         </div>
@@ -484,7 +487,9 @@ const Profile = ({
             </div>
           ) : (
             <div className="rounded-xl md:rounded-2xl p-8 md:p-12 text-center border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-md md:shadow-lg">
-              <p className="text-[var(--text-secondary)]">No goals yet</p>
+              <EmptyGoalsIllustration className="w-40 h-40 mx-auto mb-4" />
+              <p className="text-[var(--text-secondary)] mb-2 font-medium">No goals yet</p>
+              <p className="text-sm text-[var(--text-tertiary)]">Set your first goal to track progress</p>
             </div>
           )}
         </div>
@@ -562,13 +567,14 @@ const Profile = ({
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-[var(--text-tertiary)]">
-                    <FaUserFriends className="text-4xl mx-auto mb-3 opacity-50" />
-                    <p>No friends yet</p>
+                  <div className="text-center py-8">
+                    <EmptyFriendsIllustration className="w-40 h-40 mx-auto mb-4" />
+                    <p className="text-[var(--text-secondary)] mb-2 font-medium">No friends yet</p>
+                    <p className="text-sm text-[var(--text-tertiary)] mb-4">Connect with friends to compete and stay motivated</p>
                     {onAddFriend && (
                       <button
                         onClick={onAddFriend}
-                        className="btn-primary mt-4"
+                        className="btn-primary"
                       >
                         Add Your First Friend
                       </button>

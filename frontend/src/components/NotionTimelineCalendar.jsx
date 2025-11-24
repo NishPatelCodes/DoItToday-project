@@ -15,6 +15,7 @@ import {
   parseISO,
 } from 'date-fns';
 import { FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
+import { EmptyCalendarIllustration } from './Illustrations';
 
 /**
  * Monthly Grid Calendar Component

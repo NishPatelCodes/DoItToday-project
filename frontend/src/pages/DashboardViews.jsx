@@ -26,6 +26,7 @@ import {
   FaList,
   FaCompass,
 } from 'react-icons/fa';
+import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration } from '../components/Illustrations';
 // Recharts will be code-split via Vite config (already configured)
 import {
   ResponsiveContainer,
@@ -347,13 +348,15 @@ export const DashboardHome = ({
 
         {/* Search Results Dropdown */}
         <AnimatePresence>
-          {showSearchResults && (searchResults.tasks.length > 0 || searchResults.goals.length > 0) && (
+          {showSearchResults && searchQuery.trim().length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               className="absolute top-full left-0 right-0 mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto"
             >
+              {searchResults.tasks.length > 0 || searchResults.goals.length > 0 ? (
+                <>
               {searchResults.tasks.length > 0 && (
                 <div className="p-4 border-b border-[var(--border-color)]">
                   <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--text-secondary)]">
@@ -404,6 +407,14 @@ export const DashboardHome = ({
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+                </>
+              ) : (
+                <div className="p-8 text-center">
+                  <NoSearchResultsIllustration className="w-32 h-32 mx-auto mb-4" />
+                  <p className="text-[var(--text-secondary)] font-medium mb-2">No results found</p>
+                  <p className="text-sm text-[var(--text-tertiary)]">Try searching with different keywords</p>
                 </div>
               )}
             </motion.div>
@@ -754,7 +765,11 @@ export const DashboardHome = ({
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-[var(--text-tertiary)] text-center py-4">No pending tasks for today</p>
+                <div className="text-center py-6">
+                  <EmptyTasksIllustration className="w-32 h-32 mx-auto mb-3" />
+                  <p className="text-sm text-[var(--text-tertiary)]">No pending tasks for today</p>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1">Great job! All caught up 🎉</p>
+                </div>
               )}
               <button
                 onClick={() => {
@@ -1589,8 +1604,8 @@ export const DashboardTasks = ({
           />
             ) : (
               <div className="text-center py-12">
-                <FaTasks className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
-            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
+                <EmptyTasksIllustration />
+                <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
                 <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
                 <button
                   onClick={() => {
@@ -1729,7 +1744,7 @@ export const DashboardGoals = ({
             ))
           ) : (
             <div className="rounded-xl md:rounded-2xl p-8 md:p-12 text-center border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-md md:shadow-lg">
-              <FaBullseye className="text-5xl text-[var(--text-tertiary)] mx-auto mb-4 opacity-50" />
+              <EmptyGoalsIllustration />
               <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
               <p className="text-sm text-[var(--text-tertiary)] mb-6">Create your first goal to get started!</p>
               <button
