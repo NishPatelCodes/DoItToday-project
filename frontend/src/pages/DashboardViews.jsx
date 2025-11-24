@@ -1000,19 +1000,10 @@ export const DashboardHome = ({
               style={{ height: '400px', zIndex: 0 }}
             >
               <defs>
-                <filter id="whiteGlow" x="-100%" y="-100%" width="300%" height="300%">
-                  <feGaussianBlur stdDeviation="3" result="outerGlow" />
-                  <feGaussianBlur stdDeviation="1.5" result="innerGlow" />
+                <filter id="premiumWhiteGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
                   <feMerge>
-                    <feMergeNode in="outerGlow" opacity="0.4" />
-                    <feMergeNode in="innerGlow" opacity="0.6" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter id="whiteGlowSubtle" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" opacity="0.5" />
+                    <feMergeNode in="coloredBlur" opacity="0.3" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
@@ -1029,60 +1020,55 @@ export const DashboardHome = ({
                 const topMargin = 20; // Margin after header
                 const taskSpacing = 12; // space-y-3 = 12px between tasks
                 const taskCardHeight = 58; // Task card height: py-2.5 (10px) + content (~48px)
+                const taskCardPaddingX = 12; // px-3 = 12px horizontal padding
                 
-                // Calculate center Y of the last task in current day
-                // Tasks start at: headerHeight + topMargin
-                // Each task takes: taskCardHeight + taskSpacing
+                // Calculate position of last task in current day
                 const lastTaskIndex = dayData.tasks.length - 1;
                 const lastTaskTop = headerHeight + topMargin + (lastTaskIndex * (taskCardHeight + taskSpacing));
-                const lastTaskCenterY = lastTaskTop + (taskCardHeight / 2);
+                const lastTaskBottom = lastTaskTop + taskCardHeight;
                 
-                // Calculate center Y of the first task in next day
+                // Calculate position of first task in next day
                 const firstTaskTop = headerHeight + topMargin;
-                const firstTaskCenterY = firstTaskTop + (taskCardHeight / 2);
                 
-                // Perfectly centered start and end points on task nodes
-                const startX = dayIndex * (dayWidth + gap) + dayWidth; // Right edge of day column (center point)
-                const startY = lastTaskCenterY; // Center of last task
-                const endX = (dayIndex + 1) * (dayWidth + gap); // Left edge of next day column (center point)
-                const endY = firstTaskCenterY; // Center of first task
+                // Start point: bottom-right edge of last task in current day
+                const startX = dayIndex * (dayWidth + gap) + dayWidth - taskCardPaddingX; // Right edge minus padding
+                const startY = lastTaskBottom; // Bottom edge of last task
+                
+                // End point: top-left edge of first task in next day
+                const endX = (dayIndex + 1) * (dayWidth + gap) + taskCardPaddingX; // Left edge plus padding
+                const endY = firstTaskTop; // Top edge of first task
 
-                // Create smooth, organic S-curve with more curvature
+                // Create perfectly smooth, flowing Bézier curve
                 const horizontalDistance = endX - startX;
                 const verticalDistance = endY - startY;
-                const curveIntensity = Math.max(Math.abs(verticalDistance) * 0.8, 40); // More pronounced curves
                 
-                // Control points for smooth, flowing bezier curve
-                const controlX1 = startX + horizontalDistance * 0.35;
-                const controlY1 = startY - curveIntensity;
-                const controlX2 = startX + horizontalDistance * 0.65;
-                const controlY2 = endY + curveIntensity;
+                // Dynamic curve intensity based on distance - more organic flow
+                const baseCurve = Math.max(Math.abs(verticalDistance) * 0.7, 35);
+                const horizontalCurve = Math.abs(horizontalDistance) * 0.15;
+                const curveIntensity = Math.max(baseCurve, horizontalCurve);
+                
+                // Smooth, flowing control points for natural momentum path
+                // First control point: extends from start, creating upward/outward flow
+                const controlX1 = startX + horizontalDistance * 0.3;
+                const controlY1 = startY - curveIntensity * 0.8;
+                
+                // Second control point: guides toward end, creating smooth approach
+                const controlX2 = startX + horizontalDistance * 0.7;
+                const controlY2 = endY + curveIntensity * 0.8;
 
                 return (
-                  <g key={`connection-${dayIndex}`}>
-                    {/* Subtle glow layer for depth */}
-                    <path
-                      d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
-                      stroke="white"
-                      strokeWidth="3.5"
-                      fill="none"
-                      opacity="0.15"
-                      filter="url(#whiteGlowSubtle)"
-                      className="transition-opacity duration-300"
-                    />
-                    {/* Main solid white line */}
-                    <path
-                      d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
-                      stroke="white"
-                      strokeWidth="2"
-                      fill="none"
-                      opacity="0.6"
-                      filter="url(#whiteGlow)"
-                      className="transition-opacity duration-300"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </g>
+                  <path
+                    key={`connection-${dayIndex}`}
+                    d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
+                    stroke="white"
+                    strokeWidth="2.5"
+                    fill="none"
+                    opacity="0.7"
+                    filter="url(#premiumWhiteGlow)"
+                    className="transition-opacity duration-300"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 );
               })}
             </svg>
