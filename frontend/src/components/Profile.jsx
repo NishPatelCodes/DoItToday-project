@@ -730,7 +730,7 @@ const Profile = ({
       )}
 
       {activeTab === 'settings' && isOwnProfile && (
-        <div className="space-y-3 md:space-y-4 lg:space-y-6 max-w-2xl">
+        <div className="space-y-3 md:space-y-4 lg:space-y-6 max-w-2xl mx-auto">
           {/* Theme Settings */}
           <div className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]">
             <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)] mb-4 md:mb-6 flex items-center gap-2">
