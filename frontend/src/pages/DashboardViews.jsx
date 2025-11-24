@@ -994,36 +994,25 @@ export const DashboardHome = ({
               </div>
             </div>
 
-            {/* Connection Lines SVG - Smooth curves between days */}
+            {/* Connection Lines SVG - Premium solid white curves */}
             <svg
               className="absolute top-0 left-0 w-full pointer-events-none overflow-visible"
               style={{ height: '400px', zIndex: 0 }}
             >
               <defs>
-                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
-                  <stop offset="30%" stopColor="var(--accent-primary)" stopOpacity="0.7" />
-                  <stop offset="50%" stopColor="var(--accent-primary)" stopOpacity="0.9" />
-                  <stop offset="70%" stopColor="var(--accent-primary)" stopOpacity="0.7" />
-                  <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
-                </linearGradient>
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="4" result="coloredBlur1" />
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur2" />
+                <filter id="whiteGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="3" result="outerGlow" />
+                  <feGaussianBlur stdDeviation="1.5" result="innerGlow" />
                   <feMerge>
-                    <feMergeNode in="coloredBlur1" />
-                    <feMergeNode in="coloredBlur2" />
+                    <feMergeNode in="outerGlow" opacity="0.4" />
+                    <feMergeNode in="innerGlow" opacity="0.6" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
-                <filter id="premiumGlow" x="-100%" y="-100%" width="300%" height="300%">
-                  <feGaussianBlur stdDeviation="6" result="outerGlow" />
-                  <feGaussianBlur stdDeviation="3" result="innerGlow" />
-                  <feGaussianBlur stdDeviation="1.5" result="coreGlow" />
+                <filter id="whiteGlowSubtle" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
                   <feMerge>
-                    <feMergeNode in="outerGlow" opacity="0.3" />
-                    <feMergeNode in="innerGlow" opacity="0.5" />
-                    <feMergeNode in="coreGlow" opacity="0.7" />
+                    <feMergeNode in="coloredBlur" opacity="0.5" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
@@ -1036,48 +1025,62 @@ export const DashboardHome = ({
                 // Calculate positions: each day is 200px wide + 32px gap (8 * 4)
                 const dayWidth = 200;
                 const gap = 32;
-                const headerHeight = 80; // Approximate header height
+                const headerHeight = 80; // Header height (mb-4 pb-3)
+                const topMargin = 20; // Margin after header
+                const taskSpacing = 12; // space-y-3 = 12px between tasks
+                const taskCardHeight = 58; // Task card height: py-2.5 (10px) + content (~48px)
                 
-                // Start from the last task of current day
+                // Calculate center Y of the last task in current day
+                // Tasks start at: headerHeight + topMargin
+                // Each task takes: taskCardHeight + taskSpacing
                 const lastTaskIndex = dayData.tasks.length - 1;
-                const startX = dayIndex * (dayWidth + gap) + dayWidth - 10; // Right edge of day column
-                const startY = headerHeight + 20 + (lastTaskIndex * 72); // Task position (72px per task including spacing)
+                const lastTaskTop = headerHeight + topMargin + (lastTaskIndex * (taskCardHeight + taskSpacing));
+                const lastTaskCenterY = lastTaskTop + (taskCardHeight / 2);
                 
-                // End at the first task of next day
-                const endX = (dayIndex + 1) * (dayWidth + gap) + 10; // Left edge of next day column
-                const endY = headerHeight + 20; // First task position
+                // Calculate center Y of the first task in next day
+                const firstTaskTop = headerHeight + topMargin;
+                const firstTaskCenterY = firstTaskTop + (taskCardHeight / 2);
+                
+                // Perfectly centered start and end points on task nodes
+                const startX = dayIndex * (dayWidth + gap) + dayWidth; // Right edge of day column (center point)
+                const startY = lastTaskCenterY; // Center of last task
+                const endX = (dayIndex + 1) * (dayWidth + gap); // Left edge of next day column (center point)
+                const endY = firstTaskCenterY; // Center of first task
 
-                // Create elegant S-curve using cubic bezier
-                const midX = startX + (endX - startX) / 2;
-                const curveHeight = Math.abs(endY - startY) * 0.6;
-                const controlX1 = startX + (endX - startX) * 0.4;
-                const controlY1 = startY - curveHeight;
-                const controlX2 = startX + (endX - startX) * 0.6;
-                const controlY2 = endY + curveHeight;
+                // Create smooth, organic S-curve with more curvature
+                const horizontalDistance = endX - startX;
+                const verticalDistance = endY - startY;
+                const curveIntensity = Math.max(Math.abs(verticalDistance) * 0.8, 40); // More pronounced curves
+                
+                // Control points for smooth, flowing bezier curve
+                const controlX1 = startX + horizontalDistance * 0.35;
+                const controlY1 = startY - curveIntensity;
+                const controlX2 = startX + horizontalDistance * 0.65;
+                const controlY2 = endY + curveIntensity;
 
                 return (
                   <g key={`connection-${dayIndex}`}>
-                    {/* Outer glow layer */}
+                    {/* Subtle glow layer for depth */}
                     <path
                       d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
-                      stroke="url(#connectionGradient)"
-                      strokeWidth="3"
+                      stroke="white"
+                      strokeWidth="3.5"
                       fill="none"
-                      strokeDasharray="4 8"
-                      opacity="0.3"
-                      filter="url(#premiumGlow)"
+                      opacity="0.15"
+                      filter="url(#whiteGlowSubtle)"
                       className="transition-opacity duration-300"
                     />
-                    {/* Main line */}
+                    {/* Main solid white line */}
                     <path
                       d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
-                      stroke="url(#connectionGradient)"
+                      stroke="white"
                       strokeWidth="2"
                       fill="none"
-                      strokeDasharray="4 8"
-                      opacity="0.8"
-                      filter="url(#glow)"
+                      opacity="0.6"
+                      filter="url(#whiteGlow)"
                       className="transition-opacity duration-300"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </g>
                 );
