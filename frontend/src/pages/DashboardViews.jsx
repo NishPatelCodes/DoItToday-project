@@ -39,7 +39,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, addDays } from 'date-fns';
+import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, addDays, getDay } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import HabitCard from '../components/HabitCard';
@@ -297,6 +297,52 @@ export const DashboardHome = ({
   const weeklyFocusPreview = weeklyFocus.pending.slice(0, 3);
   const weeklyFocusCompletion =
     weeklyFocus.total === 0 ? 0 : Math.round((weeklyFocus.completed / weeklyFocus.total) * 100);
+
+  // Group tasks by day for the weekly roadmap
+  const tasksByDay = useMemo(() => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+    const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    
+    const grouped = days.map((day) => {
+      const dayTasks = (tasks || []).filter((task) => {
+        if (!task?.dueDate) return false;
+        return isSameDay(new Date(task.dueDate), day);
+      });
+      return {
+        date: day,
+        tasks: dayTasks.sort((a, b) => {
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+        }),
+      };
+    });
+    
+    return grouped;
+  }, [tasks]);
+
+  const roadmapRef = useRef(null);
+  const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
+
+  // Auto-scroll to today on mount
+  useEffect(() => {
+    if (roadmapRef.current && !hasScrolledToToday) {
+      const todayIndex = tasksByDay.findIndex((day) => isToday(day.date));
+      if (todayIndex !== -1) {
+        const dayElement = roadmapRef.current.querySelector(`[data-day-index="${todayIndex}"]`);
+        if (dayElement) {
+          setTimeout(() => {
+            dayElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest',
+              inline: 'center',
+            });
+            setHasScrolledToToday(true);
+          }, 300);
+        }
+      }
+    }
+  }, [tasksByDay, hasScrolledToToday]);
 
   const latestProductivity =
     productivityTrend.length > 0 ? productivityTrend[productivityTrend.length - 1].productivity || 0 : 0;
@@ -802,91 +848,246 @@ export const DashboardHome = ({
         </div>
       </div>
 
-      {/* Lower Middle Section: Momentum */}
-      <div className="grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        {/* Weekly Momentum Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-          className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0 w-full"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
-              <FaCompass className="text-base lg:text-lg" />
-            </div>
-            <div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Momentum map</h3>
-              <p className="text-xs text-[var(--text-tertiary)]">Place the moves that matter</p>
-            </div>
+      {/* Lower Middle Section: Weekly Roadmap */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+        className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
+            <FaCompass className="text-base lg:text-lg" />
           </div>
-          {weeklyFocus.total > 0 ? (
-            <div className="space-y-3">
-              {weeklyFocusPreview.map((task) => (
+          <div>
+            <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Weekly Roadmap</h3>
+            <p className="text-xs text-[var(--text-tertiary)]">Your week at a glance</p>
+          </div>
+        </div>
+
+        {weeklyFocus.total > 0 ? (
+          <div className="relative">
+            {/* Horizontal scrolling container */}
+            <div
+              ref={roadmapRef}
+              className="overflow-x-auto overflow-y-visible pb-4 -mx-2 px-2 roadmap-scroll"
+              style={{
+                scrollBehavior: 'smooth',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'thin',
+              }}
+            >
+              <div className="flex gap-8 min-w-max" style={{ width: 'max-content' }}>
+                {tasksByDay.map((dayData, dayIndex) => {
+                  const isTodayDay = isToday(dayData.date);
+                  const dayName = format(dayData.date, 'EEE');
+                  const dayNumber = format(dayData.date, 'd');
+                  const monthName = format(dayData.date, 'MMM');
+
+                  return (
+                    <div
+                      key={dayIndex}
+                      data-day-index={dayIndex}
+                      className={`flex-shrink-0 relative ${isTodayDay ? 'z-10' : ''}`}
+                      style={{ width: '200px' }}
+                    >
+                      {/* Day Header */}
+                      <div
+                        className={`mb-4 pb-3 border-b transition-all duration-300 ${
+                          isTodayDay
+                            ? 'border-[var(--accent-primary)]/50'
+                            : 'border-[var(--border-color)]/30'
+                        }`}
+                      >
+                        <div
+                          className={`text-xs font-medium mb-1 transition-colors ${
+                            isTodayDay
+                              ? 'text-[var(--accent-primary)]'
+                              : 'text-[var(--text-tertiary)]'
+                          }`}
+                        >
+                          {dayName}
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                          <span
+                            className={`text-2xl font-bold transition-colors ${
+                              isTodayDay
+                                ? 'text-[var(--accent-primary)]'
+                                : 'text-[var(--text-primary)]'
+                            }`}
+                          >
+                            {dayNumber}
+                          </span>
+                          <span className="text-xs text-[var(--text-tertiary)]">{monthName}</span>
+                        </div>
+                        {isTodayDay && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse" />
+                        )}
+                      </div>
+
+                      {/* Tasks Column */}
+                      <div className="relative" style={{ minHeight: '300px' }}>
+                        {dayData.tasks.length > 0 ? (
+                          <div className="space-y-3">
+                            {dayData.tasks.map((task, taskIndex) => {
+                              const priorityColors = {
+                                high: 'bg-red-500/15 text-red-500 border-red-500/20',
+                                medium: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/20',
+                                low: 'bg-blue-500/15 text-blue-500 border-blue-500/20',
+                              };
+                              const colorClass =
+                                priorityColors[task.priority] || priorityColors.low;
+
+                              return (
+                                <motion.div
+                                  key={task._id}
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: taskIndex * 0.05 }}
+                                  className={`group relative rounded-xl border px-3 py-2.5 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${colorClass}`}
+                                  onClick={() =>
+                                    navigate('/dashboard/tasks', {
+                                      state: { highlightTaskId: task._id },
+                                    })
+                                  }
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <div
+                                      className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
+                                        task.priority === 'high'
+                                          ? 'bg-red-500'
+                                          : task.priority === 'medium'
+                                          ? 'bg-yellow-500'
+                                          : 'bg-blue-500'
+                                      }`}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-[var(--text-primary)] line-clamp-2 leading-snug">
+                                        {task.title}
+                                      </p>
+                                      {task.status === 'completed' && (
+                                        <div className="flex items-center gap-1 mt-1">
+                                          <FaCheckCircle className="text-[10px] text-green-500" />
+                                          <span className="text-[10px] text-green-500">Done</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center h-full min-h-[200px]">
+                            <div className="text-center">
+                              <div className="w-8 h-8 rounded-full border-2 border-dashed border-[var(--border-color)]/50 mx-auto mb-2 flex items-center justify-center">
+                                <span className="text-[10px] text-[var(--text-tertiary)]">+</span>
+                              </div>
+                              <p className="text-[10px] text-[var(--text-tertiary)]">No tasks</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Connection Lines SVG - Smooth curves between days */}
+            <svg
+              className="absolute top-0 left-0 w-full pointer-events-none overflow-visible"
+              style={{ height: '400px', zIndex: 0 }}
+            >
+              <defs>
+                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.2" />
+                  <stop offset="50%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity="0.2" />
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              {tasksByDay.map((dayData, dayIndex) => {
+                if (dayIndex === tasksByDay.length - 1) return null;
+                const nextDay = tasksByDay[dayIndex + 1];
+                if (dayData.tasks.length === 0 || nextDay.tasks.length === 0) return null;
+
+                // Calculate positions: each day is 200px wide + 32px gap (8 * 4)
+                const dayWidth = 200;
+                const gap = 32;
+                const headerHeight = 80; // Approximate header height
+                
+                // Start from the last task of current day
+                const lastTaskIndex = dayData.tasks.length - 1;
+                const startX = dayIndex * (dayWidth + gap) + dayWidth - 10; // Right edge of day column
+                const startY = headerHeight + 20 + (lastTaskIndex * 72); // Task position (72px per task including spacing)
+                
+                // End at the first task of next day
+                const endX = (dayIndex + 1) * (dayWidth + gap) + 10; // Left edge of next day column
+                const endY = headerHeight + 20; // First task position
+
+                // Create elegant S-curve using cubic bezier
+                const midX = startX + (endX - startX) / 2;
+                const curveHeight = Math.abs(endY - startY) * 0.6;
+                const controlX1 = startX + (endX - startX) * 0.4;
+                const controlY1 = startY - curveHeight;
+                const controlX2 = startX + (endX - startX) * 0.6;
+                const controlY2 = endY + curveHeight;
+
+                return (
+                  <path
+                    key={`connection-${dayIndex}`}
+                    d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
+                    stroke="url(#connectionGradient)"
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeDasharray="3 6"
+                    opacity="0.5"
+                    className="transition-opacity duration-300"
+                    filter="url(#glow)"
+                  />
+                );
+              })}
+            </svg>
+
+            {/* Progress Footer */}
+            <div className="mt-6 pt-4 border-t border-[var(--border-color)]/30">
+              <div className="flex items-center justify-between text-[11px] text-[var(--text-tertiary)] mb-2">
+                <span>Weekly progress</span>
+                <span>{weeklyFocusCompletion}% complete</span>
+              </div>
+              <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2 overflow-hidden">
                 <div
-                  key={task._id}
-                  className="flex items-center gap-3 rounded-xl border border-[var(--border-color)]/70 px-3 py-2"
-                >
-                  <span
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ${
-                      task.priority === 'high'
-                        ? 'bg-red-500/15 text-red-500'
-                        : task.priority === 'medium'
-                        ? 'bg-yellow-500/15 text-yellow-500'
-                        : 'bg-blue-500/15 text-blue-500'
-                    }`}
-                  >
-                    {task.priority?.charAt(0)?.toUpperCase() || 'L'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
-                    <p className="text-[11px] text-[var(--text-tertiary)]">
-                      {task.dueDate ? format(new Date(task.dueDate), 'EEE, MMM d') : 'No due date'}
-                    </p>
-                  </div>
-          <button
-                    className="text-[10px] font-semibold text-[var(--accent-primary)] hover:underline"
-                    onClick={() =>
-                      navigate('/dashboard/tasks', { state: { highlightTaskId: task._id } })
-                    }
-                  >
-                    Jump
-          </button>
-          </div>
-              ))}
-              {weeklyFocus.pending.length > weeklyFocusPreview.length && (
-                <p className="text-xs text-[var(--text-tertiary)]">
-                  +{weeklyFocus.pending.length - weeklyFocusPreview.length} more action
-                  {weeklyFocus.pending.length - weeklyFocusPreview.length === 1 ? '' : 's'} to place
-                </p>
-              )}
+                  className="h-full bg-gradient-to-r from-[var(--accent-primary)]/60 via-[var(--accent-primary)] to-[var(--accent-primary)]/60 rounded-full transition-all duration-500"
+                  style={{ width: `${weeklyFocusCompletion}%` }}
+                />
+              </div>
             </div>
-          ) : (
-            <div className="rounded-xl border border-dashed border-[var(--border-color)] p-4 text-center">
-              <p className="text-sm text-[var(--text-secondary)] mb-2">No week-specific tasks yet.</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Drop two anchor tasks to set the tone.</p>
-            </div>
-          )}
-          <div className="mt-5">
-            <div className="flex items-center justify-between text-[11px] text-[var(--text-tertiary)] mb-1.5">
-              <span>Weekly flow</span>
-              <span>{weeklyFocusCompletion}% locked in</span>
-            </div>
-            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-full transition-all duration-500"
-                style={{ width: `${weeklyFocusCompletion}%` }}
-            />
           </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-[var(--border-color)] p-8 text-center">
+            <div className="w-16 h-16 rounded-full border-2 border-dashed border-[var(--border-color)] mx-auto mb-4 flex items-center justify-center">
+              <FaCompass className="text-2xl text-[var(--text-tertiary)]" />
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] mb-2">No week-specific tasks yet.</p>
+            <p className="text-xs text-[var(--text-tertiary)] mb-4">
+              Add tasks with due dates to see your weekly roadmap.
+            </p>
+            <button
+              onClick={() => navigate('/dashboard/tasks')}
+              className="px-4 py-2 rounded-lg bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 text-sm font-medium text-[var(--accent-primary)] transition-colors"
+            >
+              Plan your week
+            </button>
           </div>
-          <button
-            onClick={() => navigate('/dashboard/tasks')}
-            className="w-full mt-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-sm font-medium text-[var(--text-primary)] transition-colors"
-          >
-            Plan the rest of the week
-          </button>
-        </motion.div>
-      </div>
+        )}
+      </motion.div>
 
       {/* Bottom Section: Today's Spend */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
