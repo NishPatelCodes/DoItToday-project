@@ -341,33 +341,33 @@ export const DashboardHome = ({
             {format(new Date(), 'EEEE, MMMM d')}
           </div>
           
-          {/* Search Bar */}
+      {/* Search Bar */}
           <div className="flex-1 max-w-md relative">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
-            <input
-              type="text"
+          <input
+            type="text"
               placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSearchResults(e.target.value.trim().length > 0);
-              }}
-              onFocus={() => setShowSearchResults(searchQuery.trim().length > 0)}
-              onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSearchResults(e.target.value.trim().length > 0);
+            }}
+            onFocus={() => setShowSearchResults(searchQuery.trim().length > 0)}
+            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
               className="w-full pl-9 pr-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setShowSearchResults(false);
-                }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setShowSearchResults(false);
+              }}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
-              >
+            >
                 <FaTimes className="text-xs" />
-              </button>
-            )}
-          </div>
+            </button>
+          )}
+        </div>
           
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
@@ -399,15 +399,15 @@ export const DashboardHome = ({
         </div>
       </motion.div>
 
-      {/* Search Results Dropdown */}
-      <AnimatePresence>
+        {/* Search Results Dropdown */}
+        <AnimatePresence>
         {showSearchResults && searchQuery.trim().length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             className="fixed top-[73px] left-1/2 transform -translate-x-1/2 w-full max-w-md mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto"
-          >
+            >
               {searchResults.tasks.length > 0 || searchResults.goals.length > 0 ? (
                 <>
               {searchResults.tasks.length > 0 && (
@@ -470,22 +470,22 @@ export const DashboardHome = ({
                   <p className="text-sm text-[var(--text-tertiary)]">Try searching with different keywords</p>
                 </div>
               )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       {/* Main Dashboard Content */}
       <div className="p-4 md:p-6 space-y-4">
         {/* Top Row: Today's Progress, Pending, Goals, Challenges */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {/* Today's Progress Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-            style={{
+          style={{
               background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)',
             }}
           >
@@ -494,31 +494,31 @@ export const DashboardHome = ({
               <div className="flex items-baseline gap-2 mb-2">
                 <FaClock className="text-purple-500 text-base" />
                 <span className="text-3xl font-bold text-[var(--text-primary)]">{todaysPlanProgress}%</span>
+          </div>
               </div>
-            </div>
             {nextTask ? (
               <div className="pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-1">Next task</p>
                 <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
-                {nextTask.dueDate && (
+                  {nextTask.dueDate && (
                   <p className="text-xs text-[var(--text-tertiary)] mt-1">{format(new Date(nextTask.dueDate), 'h:mm a')}</p>
-                )}
+                  )}
               </div>
             ) : (
               <div className="pt-2">
                 <CatWorkingIllustration className="w-16 h-16 mx-auto opacity-40" />
-              </div>
+          </div>
             )}
-          </motion.div>
+        </motion.div>
 
-          {/* Pending Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        {/* Pending Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0.1, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-            style={{
+          style={{
               background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)',
             }}
           >
@@ -526,56 +526,56 @@ export const DashboardHome = ({
             <div className="mb-3">
               <p className="text-4xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
               <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
-            </div>
+          </div>
             {pendingTasks.length > 0 ? (
               <div className="pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-2">Upcoming Tasks</p>
                 <div className="space-y-1.5">
-                  {pendingTasks.slice(0, 2).map(task => (
-                    <div key={task._id} className="flex items-center gap-2 min-w-0">
+                {pendingTasks.slice(0, 2).map(task => (
+                  <div key={task._id} className="flex items-center gap-2 min-w-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></div>
                       <p className="text-xs text-[var(--text-primary)] truncate flex-1">{task.title}</p>
-                      {task.dueDate && (
+                    {task.dueDate && (
                         <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 whitespace-nowrap">
                           {format(new Date(task.dueDate), 'h:mm a')}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                  {pendingTasks.length > 2 && (
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {pendingTasks.length > 2 && (
                     <p className="text-[10px] text-[var(--text-tertiary)] mt-1">+{pendingTasks.length - 2} more</p>
-                  )}
-                </div>
+                )}
               </div>
+            </div>
             ) : (
               <SquirrelChecklistIllustration className="w-16 h-16 mx-auto opacity-40" />
-            )}
-          </motion.div>
+          )}
+        </motion.div>
 
-          {/* Goals Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        {/* Goals Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0.2, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-            style={{
+          style={{
               background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)',
             }}
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Goals</h3>
               <FaBullseye className="text-green-500 text-sm" />
-            </div>
+          </div>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
                 <FaBullseye className="text-green-500 text-base" />
-              </div>
+            </div>
               <div>
                 <p className="text-3xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
                 <p className="text-xs text-[var(--text-tertiary)]">Active</p>
-              </div>
             </div>
+          </div>
             {activeGoals.length > 0 ? (
               <div className="pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-2">Active</p>
@@ -588,8 +588,8 @@ export const DashboardHome = ({
                         <div className="flex-1 h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500"
-                            style={{ width: `${progress}%` }}
-                          />
+                          style={{ width: `${progress}%` }}
+                        />
                         </div>
                         <span className="text-xs text-[var(--text-primary)] font-medium">{progress}</span>
                       </div>
@@ -603,39 +603,39 @@ export const DashboardHome = ({
             ) : (
               <div className="pt-2">
                 <EmptyGoalsIllustration className="w-16 h-16 mx-auto opacity-40" />
-              </div>
-            )}
-          </motion.div>
+            </div>
+          )}
+        </motion.div>
 
-          {/* Challenges Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        {/* Challenges Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0.3, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg cursor-pointer"
-            onClick={() => navigate('/dashboard/tasks?tab=challenges')}
-            style={{
+          onClick={() => navigate('/dashboard/tasks?tab=challenges')}
+          style={{
               background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
             }}
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Challenges</h3>
               <FaEllipsisV className="text-[var(--text-tertiary)] text-xs" />
-            </div>
+          </div>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
                 <FaTrophy className="text-yellow-500 text-base" />
-              </div>
+            </div>
               <div>
                 <p className="text-3xl font-bold text-[var(--text-primary)]">{activeChallenges.length}</p>
                 <p className="text-xs text-[var(--text-tertiary)]">Active</p>
-              </div>
             </div>
+          </div>
             {activeChallenges.length === 0 && (
               <div className="pt-2">
                 <EmptyChallengesIllustration className="w-16 h-16 mx-auto opacity-40" />
-              </div>
+                        </div>
             )}
             <button
               onClick={(e) => {
@@ -647,24 +647,24 @@ export const DashboardHome = ({
               <FaPlus className="text-xs" />
               <span>Smart Task</span>
             </button>
-          </motion.div>
-        </div>
+        </motion.div>
+      </div>
 
         {/* Middle Section: Today's Plan, Streak, Motivation */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
           {/* Today's Plan Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.01 }}
             transition={{ delay: 0.4, duration: 0.3 }}
             className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-              <div className="relative menu-container">
+            <div className="relative menu-container">
                 <button
-                  onClick={() => setShowMenu(!showMenu)}
+                onClick={() => setShowMenu(!showMenu)}
                   className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
                 >
                   <FaEllipsisV className="text-xs" />
@@ -725,19 +725,19 @@ export const DashboardHome = ({
               </AnimatePresence>
             </div>
           </div>
-            {todaysPlanExpanded && (
+          {todaysPlanExpanded && (
               <div className="space-y-2">
-                {sortedTodaysTasks.filter(t => t.status !== 'completed').length > 0 ? (
-                  sortedTodaysTasks
-                    .filter(t => t.status !== 'completed')
+              {sortedTodaysTasks.filter(t => t.status !== 'completed').length > 0 ? (
+                sortedTodaysTasks
+                  .filter(t => t.status !== 'completed')
                     .slice(0, 3)
-                    .map((task) => (
+                  .map((task) => (
                     <motion.div
-                      key={task._id}
+                    key={task._id}
                       whileHover={{ x: 4 }}
                       className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer group"
                       onClick={() => onEditTask && onEditTask(task)}
-                    >
+                  >
                       <button
                         type="button"
                         onClick={(e) => {
@@ -755,23 +755,23 @@ export const DashboardHome = ({
                           <FaCheck className="w-3 h-3 text-white" />
                         )}
                       </button>
-                      <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[var(--text-primary)]">{task.title}</p>
-                        {task.dueDate && (
+                      {task.dueDate && (
                           <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{format(new Date(task.dueDate), 'h:mm a')}</p>
-                        )}
-                      </div>
+                      )}
+                    </div>
                       <FaArrowRight className="text-[var(--text-tertiary)] text-xs" />
                     </motion.div>
-                  ))
-                ) : (
+                ))
+              ) : (
                   <div className="text-center py-4">
                     <EmptyTasksIllustration className="w-24 h-24 mx-auto mb-2 opacity-50" />
                     <p className="text-xs text-[var(--text-tertiary)]">No pending tasks for today</p>
                   </div>
                 )}
-              </div>
-            )}
+            </div>
+          )}
             
             {/* Stay Consistent Section */}
             <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
@@ -783,24 +783,24 @@ export const DashboardHome = ({
           {/* Right Side: Streak */}
           <div className="flex flex-col gap-3 md:gap-4">
             {/* Streak Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02, y: -2 }}
               transition={{ delay: 0.5, duration: 0.3 }}
               className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-              style={{
+            style={{
                 background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
               }}
             >
               <div className="flex items-center gap-2 mb-3">
                 <FaFire className="text-orange-500 text-sm" />
                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">Streak</h3>
-              </div>
+            </div>
               <p className="text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
-            </motion.div>
-          </div>
+          </motion.div>
         </div>
+      </div>
 
       {/* Lower Middle Section: Momentum */}
       <div className="grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
@@ -1573,7 +1573,7 @@ export const DashboardTasks = ({
             ) : (
               <div className="text-center py-12">
                 <EmptyTasksIllustration />
-                <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
+            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
                 <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
                 <button
                   onClick={() => {
