@@ -1001,14 +1001,29 @@ export const DashboardHome = ({
             >
               <defs>
                 <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.2" />
-                  <stop offset="50%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity="0.2" />
+                  <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
+                  <stop offset="30%" stopColor="var(--accent-primary)" stopOpacity="0.7" />
+                  <stop offset="50%" stopColor="var(--accent-primary)" stopOpacity="0.9" />
+                  <stop offset="70%" stopColor="var(--accent-primary)" stopOpacity="0.7" />
+                  <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
                 </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="4" result="coloredBlur1" />
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur2" />
                   <feMerge>
-                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="coloredBlur1" />
+                    <feMergeNode in="coloredBlur2" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="premiumGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="6" result="outerGlow" />
+                  <feGaussianBlur stdDeviation="3" result="innerGlow" />
+                  <feGaussianBlur stdDeviation="1.5" result="coreGlow" />
+                  <feMerge>
+                    <feMergeNode in="outerGlow" opacity="0.3" />
+                    <feMergeNode in="innerGlow" opacity="0.5" />
+                    <feMergeNode in="coreGlow" opacity="0.7" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
@@ -1041,17 +1056,30 @@ export const DashboardHome = ({
                 const controlY2 = endY + curveHeight;
 
                 return (
-                  <path
-                    key={`connection-${dayIndex}`}
-                    d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
-                    stroke="url(#connectionGradient)"
-                    strokeWidth="1.5"
-                    fill="none"
-                    strokeDasharray="3 6"
-                    opacity="0.5"
-                    className="transition-opacity duration-300"
-                    filter="url(#glow)"
-                  />
+                  <g key={`connection-${dayIndex}`}>
+                    {/* Outer glow layer */}
+                    <path
+                      d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
+                      stroke="url(#connectionGradient)"
+                      strokeWidth="3"
+                      fill="none"
+                      strokeDasharray="4 8"
+                      opacity="0.3"
+                      filter="url(#premiumGlow)"
+                      className="transition-opacity duration-300"
+                    />
+                    {/* Main line */}
+                    <path
+                      d={`M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`}
+                      stroke="url(#connectionGradient)"
+                      strokeWidth="2"
+                      fill="none"
+                      strokeDasharray="4 8"
+                      opacity="0.8"
+                      filter="url(#glow)"
+                      className="transition-opacity duration-300"
+                    />
+                  </g>
                 );
               })}
             </svg>
