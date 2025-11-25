@@ -79,6 +79,7 @@ export const MainContentWrapper = ({ children, className, ...props }) => {
         ease: [0.4, 0, 0.2, 1],
       }}
       className={cn('flex-1 w-full pt-16 md:pt-0', className)}
+      style={{ willChange: 'margin-left' }}
       {...props}
     >
       {children}
@@ -209,6 +210,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
       )}
       style={{
         backgroundColor: 'var(--bg-secondary)',
+        willChange: 'width',
       }}
       {...props}
     >
@@ -316,10 +318,15 @@ export const SidebarLink = ({ link, className, ...props }) => {
           width: shouldExpand ? 'auto' : 0,
         }}
         transition={{
-          duration: 0.2,
+          duration: 0.3,
           ease: [0.4, 0, 0.2, 1],
         }}
         className="font-medium text-sm whitespace-nowrap overflow-hidden"
+        style={{ 
+          display: 'inline-block',
+          lineHeight: '1.25rem',
+          height: '1.25rem',
+        }}
       >
         {link.label}
       </motion.span>
@@ -377,11 +384,15 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             opacity: shouldExpand ? 1 : 0,
             width: shouldExpand ? 'auto' : 0,
           }}
-          transition={{ duration: 0.2 }}
-          className="overflow-hidden"
+          transition={{
+            duration: 0.3,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+          className="overflow-hidden flex flex-col justify-center"
+          style={{ minHeight: '2rem' }}
         >
-          <h1 className="text-base font-bold gradient-text whitespace-nowrap">DoItToday</h1>
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5">Task Manager</p>
+          <h1 className="text-base font-bold gradient-text whitespace-nowrap leading-tight">DoItToday</h1>
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-tight">Task Manager</p>
         </motion.div>
         {shouldExpand && (
           <motion.button
@@ -433,29 +444,6 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
 
   return (
     <div className="border-t border-[var(--border-color)]">
-      {/* Socials Section */}
-      <div className="p-3 space-y-1">
-        <button
-          onClick={() => navigate && navigate('/dashboard/profile')}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-        >
-          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-            <FaUserFriends className="w-full h-full" />
-          </div>
-          <motion.span
-            initial={false}
-            animate={{
-              opacity: shouldExpand ? 1 : 0,
-              width: shouldExpand ? 'auto' : 0,
-            }}
-            transition={{ duration: 0.2 }}
-            className="font-medium text-sm whitespace-nowrap overflow-hidden"
-          >
-            Socials
-          </motion.span>
-        </button>
-      </div>
-
       {/* User Profile Section */}
       <div className="p-3 border-t border-[var(--border-color)]">
         <button
@@ -471,13 +459,17 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
             }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden text-left"
+            transition={{
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+            className="overflow-hidden text-left flex flex-col justify-center"
+            style={{ minHeight: '2rem' }}
           >
-            <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+            <p className="text-sm font-medium text-[var(--text-primary)] truncate leading-tight">
               {user?.name || 'User'}
             </p>
-            <p className="text-xs text-[var(--text-secondary)] truncate">
+            <p className="text-xs text-[var(--text-secondary)] truncate leading-tight mt-0.5">
               {user?.email || ''}
             </p>
           </motion.div>
@@ -499,8 +491,16 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
             }}
-            transition={{ duration: 0.2 }}
+            transition={{
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
             className="font-medium text-sm whitespace-nowrap overflow-hidden"
+            style={{ 
+              display: 'inline-block',
+              lineHeight: '1.25rem',
+              height: '1.25rem',
+            }}
           >
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </motion.span>
@@ -518,8 +518,16 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
             }}
-            transition={{ duration: 0.2 }}
+            transition={{
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
             className="font-medium text-sm whitespace-nowrap overflow-hidden"
+            style={{ 
+              display: 'inline-block',
+              lineHeight: '1.25rem',
+              height: '1.25rem',
+            }}
           >
             Logout
           </motion.span>
@@ -556,6 +564,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
     { icon: FaStickyNote, label: 'Notes', href: '/dashboard/notes' },
     { icon: FaHeart, label: 'Gratitude', href: '/dashboard/gratitude' },
     { icon: FaChartLine, label: 'Analytics', href: '/dashboard/analytics' },
+    { icon: FaUserFriends, label: 'Socials', href: '/dashboard/profile' },
   ];
 
   return (
@@ -607,19 +616,6 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
           {/* Bottom Section */}
           <div className="border-t border-[var(--border-color)]">
-            {/* Socials Section */}
-            <div className="p-3 space-y-1">
-              <button
-                onClick={() => navigate('/dashboard/profile')}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-              >
-                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                  <FaUserFriends className="w-full h-full" />
-                </div>
-                <span className="font-medium text-sm">Socials</span>
-              </button>
-            </div>
-
             {/* User Profile Section */}
             <div className="p-3 border-t border-[var(--border-color)]">
               <button
@@ -678,18 +674,6 @@ const MainSidebar = ({ isOpen, onClose }) => {
         </motion.button>
       )}
 
-      {/* Expand Button (when collapsed on desktop) */}
-      {!open && !isMobile && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          onClick={() => setOpen(true)}
-          className="fixed left-2 top-4 z-40 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors hidden md:block"
-          aria-label="Expand sidebar"
-        >
-          <FaBars className="w-4 h-4" />
-        </motion.button>
-      )}
     </>
   );
 };
