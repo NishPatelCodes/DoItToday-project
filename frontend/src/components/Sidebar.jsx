@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   FaHome,
   FaTasks,
@@ -78,7 +78,7 @@ export const MainContentWrapper = ({ children, className, ...props }) => {
         duration: 0.3,
         ease: [0.4, 0, 0.2, 1],
       }}
-      className={cn('flex-1 w-full transition-all duration-300 pt-16 md:pt-0', className)}
+      className={cn('flex-1 w-full pt-16 md:pt-0', className)}
       {...props}
     >
       {children}
@@ -90,20 +90,25 @@ export const MainContentWrapper = ({ children, className, ...props }) => {
 export const SidebarProvider = ({ children, open: openProp, setOpen: setOpenProp }) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(60);
+  const [isMobile, setIsMobile] = useState(false);
   const isControlled = openProp !== undefined && setOpenProp !== undefined;
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? setOpenProp : setInternalOpen;
 
-  // Update sidebar width based on open/hover state
+  // Check mobile on mount and resize
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      setSidebarWidth(open ? 256 : 0);
-    } else {
-      setSidebarWidth(open || isHovered ? 240 : 60);
-    }
-  }, [open, isHovered]);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Calculate sidebar width synchronously based on current state (reactive)
+  const sidebarWidth = isMobile 
+    ? (open ? 256 : 0)
+    : (open || isHovered ? 240 : 60);
 
   return (
     <SidebarContext.Provider value={{ open, setOpen, isHovered, setIsHovered, sidebarWidth }}>
@@ -153,7 +158,7 @@ export const SidebarBody = ({ children, ...props }) => {
   return (
     <motion.div
       {...props}
-      className={cn('flex flex-col h-full', props.className)}
+      className={cn('flex flex-col h-full overflow-hidden', props.className)}
     >
       {children}
     </motion.div>
@@ -162,7 +167,7 @@ export const SidebarBody = ({ children, ...props }) => {
 
 // DesktopSidebar Component
 export const DesktopSidebar = ({ children, className, ...props }) => {
-  const { open, setOpen, isHovered, setIsHovered } = useSidebar();
+  const { open, setOpen, isHovered, setIsHovered, sidebarWidth } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef(null);
 
@@ -174,9 +179,6 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // Expand on hover when collapsed, or when manually opened
-  const shouldExpand = isMobile ? open : (open || isHovered);
 
   return (
     <motion.aside
@@ -194,7 +196,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
       }}
       initial={false}
       animate={{
-        width: shouldExpand ? 240 : 60,
+        width: sidebarWidth,
       }}
       transition={{
         duration: 0.3,
@@ -290,13 +292,14 @@ export const SidebarLink = ({ link, className, ...props }) => {
         }
       }}
       className={cn(
-        'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group',
+        'flex items-center gap-3 py-2.5 rounded-lg transition-all duration-200 relative group',
         'justify-start',
         isActive
           ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
         className
       )}
+      style={{ paddingLeft: '12px', paddingRight: '12px' }}
       {...props}
     >
       <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center min-w-[20px]">
@@ -363,7 +366,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
         className="flex items-center gap-3"
       >
         {/* Logo icon - always visible */}
-        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center" style={{ paddingLeft: '12px', paddingRight: '12px' }}>
           <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
             D
           </div>
@@ -399,7 +402,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
 };
 
 // DesktopSidebarFooter Component
-const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout }) => {
+const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate }) => {
   const { open: contextOpen, isHovered } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const actualOpen = open !== undefined ? open : contextOpen;
@@ -415,56 +418,143 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout }) => {
 
   const shouldExpand = isMobile ? actualOpen : (actualOpen || isHovered);
 
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (user?.name) {
+      return user.name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return user?.email?.[0]?.toUpperCase() || 'U';
+  };
+
   return (
-    <div className="p-3 border-t border-[var(--border-color)] space-y-1">
-      <button
-        onClick={toggleTheme}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-      >
-        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-          {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
-        </div>
-        <motion.span
-          initial={false}
-          animate={{
-            opacity: shouldExpand ? 1 : 0,
-            width: shouldExpand ? 'auto' : 0,
-          }}
-          transition={{ duration: 0.2 }}
-          className="font-medium text-sm whitespace-nowrap overflow-hidden"
+    <div className="border-t border-[var(--border-color)]">
+      {/* Team and Profile Section */}
+      <div className="p-3 space-y-1">
+        <button
+          onClick={() => navigate && navigate('/dashboard/team')}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
         >
-          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-        </motion.span>
-      </button>
-      <button
-        onClick={logout}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
-      >
-        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-          <FaSignOutAlt className="w-full h-full" />
-        </div>
-        <motion.span
-          initial={false}
-          animate={{
-            opacity: shouldExpand ? 1 : 0,
-            width: shouldExpand ? 'auto' : 0,
-          }}
-          transition={{ duration: 0.2 }}
-          className="font-medium text-sm whitespace-nowrap overflow-hidden"
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <FaUserFriends className="w-full h-full" />
+          </div>
+          <motion.span
+            initial={false}
+            animate={{
+              opacity: shouldExpand ? 1 : 0,
+              width: shouldExpand ? 'auto' : 0,
+            }}
+            transition={{ duration: 0.2 }}
+            className="font-medium text-sm whitespace-nowrap overflow-hidden"
+          >
+            Team
+          </motion.span>
+        </button>
+        <button
+          onClick={() => navigate && navigate('/dashboard/profile')}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
         >
-          Logout
-        </motion.span>
-      </button>
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <FaUser className="w-full h-full" />
+          </div>
+          <motion.span
+            initial={false}
+            animate={{
+              opacity: shouldExpand ? 1 : 0,
+              width: shouldExpand ? 'auto' : 0,
+            }}
+            transition={{ duration: 0.2 }}
+            className="font-medium text-sm whitespace-nowrap overflow-hidden"
+          >
+            Profile
+          </motion.span>
+        </button>
+      </div>
+
+      {/* User Profile Section */}
+      <div className="p-3 border-t border-[var(--border-color)]">
+        <button
+          onClick={() => navigate && navigate('/dashboard/profile')}
+          className="flex items-center gap-3 w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 p-2"
+        >
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+            {getUserInitials()}
+          </div>
+          <motion.div
+            initial={false}
+            animate={{
+              opacity: shouldExpand ? 1 : 0,
+              width: shouldExpand ? 'auto' : 0,
+            }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden text-left"
+          >
+            <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+              {user?.name || 'User'}
+            </p>
+            <p className="text-xs text-[var(--text-secondary)] truncate">
+              {user?.email || ''}
+            </p>
+          </motion.div>
+        </button>
+      </div>
+
+      {/* Settings and Logout */}
+      <div className="p-3 border-t border-[var(--border-color)] space-y-1">
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+        >
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
+          </div>
+          <motion.span
+            initial={false}
+            animate={{
+              opacity: shouldExpand ? 1 : 0,
+              width: shouldExpand ? 'auto' : 0,
+            }}
+            transition={{ duration: 0.2 }}
+            className="font-medium text-sm whitespace-nowrap overflow-hidden"
+          >
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </motion.span>
+        </button>
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+        >
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <FaSignOutAlt className="w-full h-full" />
+          </div>
+          <motion.span
+            initial={false}
+            animate={{
+              opacity: shouldExpand ? 1 : 0,
+              width: shouldExpand ? 'auto' : 0,
+            }}
+            transition={{ duration: 0.2 }}
+            className="font-medium text-sm whitespace-nowrap overflow-hidden"
+          >
+            Logout
+          </motion.span>
+        </button>
+      </div>
     </div>
   );
 };
 
 // Main Sidebar Component (Default Export)
 const MainSidebar = ({ isOpen, onClose }) => {
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const { open, setOpen } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -482,12 +572,9 @@ const MainSidebar = ({ isOpen, onClose }) => {
     { icon: FaTrophy, label: 'Challenges', href: '/dashboard/challenges' },
     { icon: FaHeadphones, label: 'Focus Mode', href: '/dashboard/focus' },
     { icon: FaDollarSign, label: 'Finance', href: '/dashboard/finance' },
-    { icon: FaCalendarAlt, label: 'Calendar', href: '/dashboard/calendar' },
     { icon: FaStickyNote, label: 'Notes', href: '/dashboard/notes' },
     { icon: FaHeart, label: 'Gratitude', href: '/dashboard/gratitude' },
     { icon: FaChartLine, label: 'Analytics', href: '/dashboard/analytics' },
-    { icon: FaUserFriends, label: 'Team', href: '/dashboard/team' },
-    { icon: FaUser, label: 'Profile', href: '/dashboard/profile' },
   ];
 
   return (
@@ -499,14 +586,14 @@ const MainSidebar = ({ isOpen, onClose }) => {
           <DesktopSidebarLogo open={open} setOpen={setOpen} />
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+          <nav className="flex-1 overflow-hidden p-3 space-y-1">
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
           </nav>
 
           {/* Bottom Section */}
-          <DesktopSidebarFooter open={open} theme={theme} toggleTheme={toggleTheme} logout={logout} />
+          <DesktopSidebarFooter open={open} theme={theme} toggleTheme={toggleTheme} logout={logout} user={user} navigate={navigate} />
         </SidebarBody>
       </DesktopSidebar>
 
@@ -531,32 +618,77 @@ const MainSidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+          <nav className="flex-1 overflow-hidden p-3 space-y-1">
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
           </nav>
 
           {/* Bottom Section */}
-          <div className="p-3 border-t border-[var(--border-color)] space-y-1">
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-            >
-              <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
-              </div>
-              <span className="font-medium text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-            </button>
-            <button
-              onClick={logout}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
-            >
-              <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                <FaSignOutAlt className="w-full h-full" />
-              </div>
-              <span className="font-medium text-sm">Logout</span>
-            </button>
+          <div className="border-t border-[var(--border-color)]">
+            {/* Team and Profile Section */}
+            <div className="p-3 space-y-1">
+              <button
+                onClick={() => navigate('/dashboard/team')}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+              >
+                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                  <FaUserFriends className="w-full h-full" />
+                </div>
+                <span className="font-medium text-sm">Team</span>
+              </button>
+              <button
+                onClick={() => navigate('/dashboard/profile')}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+              >
+                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                  <FaUser className="w-full h-full" />
+                </div>
+                <span className="font-medium text-sm">Profile</span>
+              </button>
+            </div>
+
+            {/* User Profile Section */}
+            <div className="p-3 border-t border-[var(--border-color)]">
+              <button
+                onClick={() => navigate('/dashboard/profile')}
+                className="flex items-center gap-3 w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 p-2"
+              >
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+                  {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : (user?.email?.[0]?.toUpperCase() || 'U')}
+                </div>
+                <div className="text-left min-w-0 flex-1">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                    {user?.name || 'User'}
+                  </p>
+                  <p className="text-xs text-[var(--text-secondary)] truncate">
+                    {user?.email || ''}
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            {/* Settings and Logout */}
+            <div className="p-3 border-t border-[var(--border-color)] space-y-1">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+              >
+                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                  {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
+                </div>
+                <span className="font-medium text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
+              <button
+                onClick={logout}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+              >
+                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                  <FaSignOutAlt className="w-full h-full" />
+                </div>
+                <span className="font-medium text-sm">Logout</span>
+              </button>
+            </div>
           </div>
         </SidebarBody>
       </MobileSidebar>

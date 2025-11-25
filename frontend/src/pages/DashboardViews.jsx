@@ -830,71 +830,74 @@ export const DashboardHome = ({
 
       </div>
 
-      {/* Categories/Tags Overview */}
-      {categoriesOverview.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.3 }}
-          className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm"
-        >
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Tasks by Category</h3>
-          <div className="flex flex-wrap items-center gap-3 md:gap-4">
-            {categoriesOverview.map((category, index) => (
-              <div
-                key={category.name}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
-              >
-                <span className="text-sm font-medium text-[var(--text-primary)]">{category.name}</span>
-                <span className="text-sm font-bold text-[var(--accent-primary)]">{category.count}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Tomorrow's Tasks */}
-      {tomorrowsTasks.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0, duration: 0.3 }}
-          className="rounded-2xl p-4 md:p-6 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-indigo-500/10 border border-[var(--border-color)] backdrop-blur-sm"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Tomorrow's Tasks</h3>
-              <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">
-                {tomorrowsTasks.length} task{tomorrowsTasks.length !== 1 ? 's' : ''} scheduled
-              </p>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-              <FaClock className="text-purple-500 text-lg" />
-            </div>
-          </div>
-          <div className="space-y-3">
-            {tomorrowsTasks.map((task, index) => (
-              <motion.div
-                key={task._id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.1 + index * 0.1, duration: 0.3 }}
-                onClick={() => onEditTask && onEditTask(task)}
-                className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] border border-[var(--border-color)]/50 cursor-pointer transition-all duration-200 group"
-              >
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-500"></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
-                  {task.description && (
-                    <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{task.description}</p>
-                  )}
+      {/* Categories/Tags Overview and Tomorrow's Tasks - Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+        {/* Categories/Tags Overview */}
+        {categoriesOverview.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.3 }}
+            className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm"
+          >
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Tasks by Category</h3>
+            <div className="flex flex-wrap items-center gap-3 md:gap-4">
+              {categoriesOverview.map((category, index) => (
+                <div
+                  key={category.name}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                >
+                  <span className="text-sm font-medium text-[var(--text-primary)]">{category.name}</span>
+                  <span className="text-sm font-bold text-[var(--accent-primary)]">{category.count}</span>
                 </div>
-                <FaArrowRight className="text-[var(--text-tertiary)] text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      )}
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Tomorrow's Tasks */}
+        {tomorrowsTasks.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0, duration: 0.3 }}
+            className="rounded-2xl p-4 md:p-6 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-indigo-500/10 border border-[var(--border-color)] backdrop-blur-sm"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Tomorrow's Tasks</h3>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">
+                  {tomorrowsTasks.length} task{tomorrowsTasks.length !== 1 ? 's' : ''} scheduled
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <FaClock className="text-purple-500 text-lg" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              {tomorrowsTasks.map((task, index) => (
+                <motion.div
+                  key={task._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.1 + index * 0.1, duration: 0.3 }}
+                  onClick={() => onEditTask && onEditTask(task)}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] border border-[var(--border-color)]/50 cursor-pointer transition-all duration-200 group"
+                >
+                  <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-500"></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
+                    {task.description && (
+                      <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{task.description}</p>
+                    )}
+                  </div>
+                  <FaArrowRight className="text-[var(--text-tertiary)] text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </div>
 
       {/* Productivity and Expense Chart */}
       <motion.div
