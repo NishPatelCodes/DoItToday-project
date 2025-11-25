@@ -1237,6 +1237,19 @@ export const DashboardTasks = ({
   return (
     <div className="p-4 md:p-6 lg:p-8 overflow-x-hidden relative min-h-screen pb-24 space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-4 md:mb-6"
+      >
+        <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
+          {activeTab === 'tasks' ? 'Tasks' : 'Calendar'}
+        </h1>
+        <p className="text-sm md:text-base text-[var(--text-secondary)]">
+          {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : 'View your schedule and timeline'}
+        </p>
+      </motion.div>
+
       {/* Tabs and View Mode Toggle */}
       <div className="mb-6 border-b border-[var(--border-color)]">
         <div className="flex items-center justify-between gap-4">
