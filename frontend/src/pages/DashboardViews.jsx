@@ -681,11 +681,11 @@ export const DashboardHome = ({
               damping: 20,
               mass: 0.5
             }}
-            className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-200 ease-out hover:shadow-lg"
+            className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-200 ease-out hover:shadow-lg overflow-visible"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-            <div className="relative menu-container">
+            <div className="relative menu-container z-10">
                 <button
                 onClick={() => setShowMenu(!showMenu)}
                   className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
@@ -695,10 +695,17 @@ export const DashboardHome = ({
               <AnimatePresence>
                 {showMenu && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute right-0 top-full mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg z-10 min-w-[180px]"
+                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 400, 
+                      damping: 25,
+                      mass: 0.5
+                    }}
+                    className="absolute right-0 top-full mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg z-50 min-w-[180px]"
+                    style={{ transformOrigin: 'top right' }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
