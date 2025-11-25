@@ -373,7 +373,7 @@ export const DashboardHome = ({
               }}
               className="px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 transition-all flex items-center gap-1.5"
             >
-              <FaPlus className="text-xs" />
+              <FaPlus className="text-sm w-3.5 h-3.5" />
               <span className="hidden sm:inline">Task</span>
             </motion.button>
             <motion.button
@@ -383,10 +383,10 @@ export const DashboardHome = ({
                 setEditingGoal(null);
                 setIsGoalModalOpen(true);
               }}
-              className="p-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-all"
+              className="p-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-all w-8 h-8 flex items-center justify-center"
               aria-label="Add Goal"
             >
-              <FaBullseye className="text-sm" />
+              <FaBullseye className="text-sm w-3.5 h-3.5" />
             </motion.button>
           </div>
         </div>
@@ -688,9 +688,9 @@ export const DashboardHome = ({
             <div className="relative menu-container z-10">
                 <button
                 onClick={() => setShowMenu(!showMenu)}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1 w-6 h-6 flex items-center justify-center"
                 >
-                  <FaEllipsisV className="text-xs" />
+                  <FaEllipsisV className="text-sm" />
                 </button>
               <AnimatePresence>
                 {showMenu && (
@@ -734,7 +734,7 @@ export const DashboardHome = ({
                       disabled={yesterdaysTasks.length === 0}
                       title={yesterdaysTasks.length > 0 ? `Copy ${yesterdaysTasks.length} task(s) from yesterday` : 'No completed tasks from yesterday'}
                     >
-                      <FaCopy />
+                      <FaCopy className="text-sm w-3.5 h-3.5" />
                       Same as Yesterday
                       {yesterdaysTasks.length > 0 && (
                         <span className="ml-auto text-xs text-[var(--text-tertiary)]">({yesterdaysTasks.length})</span>
@@ -747,7 +747,7 @@ export const DashboardHome = ({
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2"
                     >
-                      <FaTasks />
+                      <FaTasks className="text-sm w-3.5 h-3.5" />
                       View All Tasks
                 </button>
                   </motion.div>
