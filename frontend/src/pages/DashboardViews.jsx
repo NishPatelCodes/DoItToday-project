@@ -28,7 +28,21 @@ import {
   FaArrowRight,
 } from 'react-icons/fa';
 import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration, CatWorkingIllustration, SquirrelChecklistIllustration, FoxReadingIllustration } from '../components/Illustrations';
-import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, getDay } from 'date-fns';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
+import { financeAPI } from '../services/api';
+import { formatCurrency } from '../utils/currencyFormatter';
+import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, getDay, addDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import HabitCard from '../components/HabitCard';
@@ -183,6 +197,118 @@ export const DashboardHome = ({
 
   // Get today's spend (placeholder - would come from finance API)
   const todaysSpend = 0;
+
+  // Get tomorrow's tasks
+  const tomorrowsTasks = useMemo(() => {
+    const tomorrow = addDays(new Date(), 1);
+    return tasks.filter(task => {
+      if (!task.dueDate || task.status === 'completed') return false;
+      const taskDate = new Date(task.dueDate);
+      return isSameDay(taskDate, tomorrow);
+    }).slice(0, 3);
+  }, [tasks]);
+
+  // Get categories/tags overview
+  const categoriesOverview = useMemo(() => {
+    const categoryCounts = {};
+    const defaultCategories = ['Work', 'Health', 'Personal', 'Study'];
+    
+    // Count tasks by category
+    tasks.forEach(task => {
+      // Try to get category from task, or infer from title/description
+      let category = task.category;
+      
+      if (!category) {
+        // Simple keyword-based category detection
+        const titleLower = (task.title || '').toLowerCase();
+        const descLower = (task.description || '').toLowerCase();
+        const combined = `${titleLower} ${descLower}`;
+        
+        if (combined.includes('work') || combined.includes('meeting') || combined.includes('project') || combined.includes('office')) {
+          category = 'Work';
+        } else if (combined.includes('gym') || combined.includes('workout') || combined.includes('exercise') || combined.includes('health') || combined.includes('fitness')) {
+          category = 'Health';
+        } else if (combined.includes('study') || combined.includes('assignment') || combined.includes('homework') || combined.includes('exam') || combined.includes('learn')) {
+          category = 'Study';
+        } else {
+          category = 'Personal';
+        }
+      }
+      
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+
+    // Show categories with tasks, prioritizing default categories
+    const result = [];
+    defaultCategories.forEach(cat => {
+      if (categoryCounts[cat] > 0) {
+        result.push({ name: cat, count: categoryCounts[cat] });
+      }
+    });
+    
+    // Add any other categories that have tasks
+    Object.entries(categoryCounts).forEach(([name, count]) => {
+      if (!defaultCategories.includes(name) && count > 0) {
+        result.push({ name, count });
+      }
+    });
+
+    return result.sort((a, b) => b.count - a.count);
+  }, [tasks]);
+
+  // Productivity and expense data
+  const [productivityData, setProductivityData] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
+  const [expenseLoading, setExpenseLoading] = useState(false);
+
+  useEffect(() => {
+    // Build productivity trend from analytics
+    if (analytics?.dailyProductivity && analytics.dailyProductivity.length > 0) {
+      const trend = analytics.dailyProductivity.slice(-7).map((entry) => ({
+        date: format(new Date(entry.date), 'MMM d'),
+        productivity: entry.productivity ?? 0,
+        completed: entry.completed ?? 0,
+      }));
+      setProductivityData(trend);
+    }
+
+    // Load expense data
+    const loadExpenseData = async () => {
+      try {
+        setExpenseLoading(true);
+        const response = await financeAPI.getAll();
+        const transactions = response.data?.transactions || [];
+        const currency = response.data?.accountInfo?.currency || 'USD';
+        
+        // Get last 7 days of expenses
+        const now = new Date();
+        const expenseTrend = Array.from({ length: 7 }).map((_, index) => {
+          const date = subDays(now, 6 - index);
+          const dayExpenses = transactions
+            .filter(txn => 
+              txn.type === 'expense' &&
+              txn.date &&
+              isSameDay(new Date(txn.date), date)
+            )
+            .reduce((sum, txn) => sum + (txn.amount || 0), 0);
+          
+          return {
+            date: format(date, 'MMM d'),
+            amount: Number(dayExpenses.toFixed(2)),
+          };
+        });
+        
+        setExpenseData(expenseTrend);
+      } catch (error) {
+        console.error('Error loading expense data:', error);
+        setExpenseData([]);
+      } finally {
+        setExpenseLoading(false);
+      }
+    };
+
+    loadExpenseData();
+  }, [analytics]);
 
   // Motivation tips array
   const motivationTips = [
@@ -703,6 +829,169 @@ export const DashboardHome = ({
         </motion.div>
 
       </div>
+
+      {/* Categories/Tags Overview */}
+      {categoriesOverview.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9, duration: 0.3 }}
+          className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm"
+        >
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Tasks by Category</h3>
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
+            {categoriesOverview.map((category, index) => (
+              <div
+                key={category.name}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+              >
+                <span className="text-sm font-medium text-[var(--text-primary)]">{category.name}</span>
+                <span className="text-sm font-bold text-[var(--accent-primary)]">{category.count}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Tomorrow's Tasks */}
+      {tomorrowsTasks.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0, duration: 0.3 }}
+          className="rounded-2xl p-4 md:p-6 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-indigo-500/10 border border-[var(--border-color)] backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Tomorrow's Tasks</h3>
+              <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">
+                {tomorrowsTasks.length} task{tomorrowsTasks.length !== 1 ? 's' : ''} scheduled
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <FaClock className="text-purple-500 text-lg" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            {tomorrowsTasks.map((task, index) => (
+              <motion.div
+                key={task._id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.1 + index * 0.1, duration: 0.3 }}
+                onClick={() => onEditTask && onEditTask(task)}
+                className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] border border-[var(--border-color)]/50 cursor-pointer transition-all duration-200 group"
+              >
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-500"></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
+                  {task.description && (
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{task.description}</p>
+                  )}
+                </div>
+                <FaArrowRight className="text-[var(--text-tertiary)] text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Productivity and Expense Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.3 }}
+        className="rounded-2xl p-4 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm"
+      >
+        <h3 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-4">Productivity & Expenses</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {/* Productivity Chart */}
+          <div>
+            <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Productivity Trend (7 days)</h4>
+            {productivityData.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={productivityData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                    <XAxis
+                      dataKey="date"
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <YAxis
+                      stroke="var(--text-tertiary)"
+                      domain={[0, 100]}
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        color: 'var(--text-primary)',
+                      }}
+                      formatter={(value) => [`${value}%`, 'Productivity']}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="productivity"
+                      stroke="#8b5cf6"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, stroke: '#8b5cf6', fill: '#8b5cf6' }}
+                      activeDot={{ r: 6, stroke: '#8b5cf6', fill: '#8b5cf6' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-[var(--text-tertiary)] text-sm">
+                <p>No productivity data available</p>
+              </div>
+            )}
+          </div>
+
+          {/* Expense Chart */}
+          <div>
+            <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Daily Expenses (7 days)</h4>
+            {expenseLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent"></div>
+              </div>
+            ) : expenseData.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={expenseData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                    <XAxis
+                      dataKey="date"
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <YAxis
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        color: 'var(--text-primary)',
+                      }}
+                      formatter={(value) => [formatCurrency(value || 0, 'USD', { maximumFractionDigits: 2 }), 'Expense']}
+                    />
+                    <Bar dataKey="amount" fill="#f59e0b" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-[var(--text-tertiary)] text-sm">
+                <p>No expense data available</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
       </div>
     </div>
   );

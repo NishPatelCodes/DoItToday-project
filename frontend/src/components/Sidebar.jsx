@@ -32,26 +32,81 @@ const SidebarContext = createContext({
   setOpen: (open) => {},
   isHovered: false,
   setIsHovered: (hovered) => {},
+  sidebarWidth: 60,
 });
 
 const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
+    // Return default values if not in provider (for components outside sidebar)
+    return {
+      open: false,
+      setOpen: () => {},
+      isHovered: false,
+      setIsHovered: () => {},
+      sidebarWidth: 60,
+    };
   }
   return context;
+};
+
+// Export useSidebar for use in other components
+export { useSidebar };
+
+// MainContentWrapper - Component to wrap main content and adjust margin based on sidebar width
+export const MainContentWrapper = ({ children, className, ...props }) => {
+  const { sidebarWidth } = useSidebar();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return (
+    <motion.main
+      id="main-content"
+      initial={false}
+      animate={{
+        marginLeft: isMobile ? 0 : `${sidebarWidth}px`,
+      }}
+      transition={{
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1],
+      }}
+      className={cn('flex-1 w-full transition-all duration-300 pt-16 md:pt-0', className)}
+      {...props}
+    >
+      {children}
+    </motion.main>
+  );
 };
 
 // SidebarProvider Component
 export const SidebarProvider = ({ children, open: openProp, setOpen: setOpenProp }) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(60);
   const isControlled = openProp !== undefined && setOpenProp !== undefined;
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? setOpenProp : setInternalOpen;
 
+  // Update sidebar width based on open/hover state
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      setSidebarWidth(open ? 256 : 0);
+    } else {
+      setSidebarWidth(open || isHovered ? 240 : 60);
+    }
+  }, [open, isHovered]);
+
   return (
-    <SidebarContext.Provider value={{ open, setOpen, isHovered, setIsHovered }}>
+    <SidebarContext.Provider value={{ open, setOpen, isHovered, setIsHovered, sidebarWidth }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -126,7 +181,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
   return (
     <motion.aside
       ref={sidebarRef}
-      onMouseEnter={() => {
+            onMouseEnter={() => {
         if (!isMobile) {
           setIsHovered(true);
         }
@@ -146,9 +201,13 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         ease: [0.4, 0, 0.2, 1],
       }}
       className={cn(
-        'hidden md:flex fixed left-0 top-0 h-screen bg-[var(--bg-secondary)] border-r border-[var(--border-color)] z-50 flex-col overflow-hidden',
+        'hidden md:flex fixed left-0 top-0 h-screen border-r border-[var(--border-color)] z-50 flex-col overflow-hidden',
+        'bg-[var(--bg-secondary)]',
         className
       )}
+      style={{
+        backgroundColor: 'var(--bg-secondary)',
+      }}
       {...props}
     >
       {children}
@@ -188,10 +247,14 @@ export const MobileSidebar = ({ children, className, ...props }) => {
           damping: 25,
           stiffness: 200,
         }}
-        className={cn(
-          'fixed left-0 top-0 h-screen w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] z-50 flex flex-col md:hidden',
-          className
-        )}
+      className={cn(
+        'fixed left-0 top-0 h-screen w-64 border-r border-[var(--border-color)] z-50 flex flex-col md:hidden',
+        'bg-[var(--bg-secondary)]',
+        className
+      )}
+      style={{
+        backgroundColor: 'var(--bg-secondary)',
+      }}
         {...props}
       >
         {children}
@@ -228,6 +291,7 @@ export const SidebarLink = ({ link, className, ...props }) => {
       }}
       className={cn(
         'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group',
+        'justify-start',
         isActive
           ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
@@ -235,11 +299,11 @@ export const SidebarLink = ({ link, className, ...props }) => {
       )}
       {...props}
     >
-      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center min-w-[20px]">
         {typeof link.icon === 'function' ? (
-          <link.icon className="w-full h-full" />
+          <link.icon className="w-full h-full flex-shrink-0" />
         ) : (
-          link.icon
+          <div className="w-full h-full flex items-center justify-center">{link.icon}</div>
         )}
       </div>
       <motion.span
@@ -298,6 +362,12 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
         transition={{ duration: 0.3 }}
         className="flex items-center gap-3"
       >
+        {/* Logo icon - always visible */}
+        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
+            D
+          </div>
+        </div>
         <motion.div
           initial={false}
           animate={{
@@ -317,7 +387,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             exit={{ opacity: 0, scale: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setOpen && setOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
             aria-label="Collapse sidebar"
           >
             <FaTimes className="w-4 h-4" />
@@ -393,7 +463,7 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout }) => {
 const MainSidebar = ({ isOpen, onClose }) => {
   const { logout } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
-  const [open, setOpen] = useState(false);
+  const { open, setOpen } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -404,12 +474,6 @@ const MainSidebar = ({ isOpen, onClose }) => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (isOpen !== undefined) {
-      setOpen(isOpen);
-    }
-  }, [isOpen]);
 
   const navItems = [
     { icon: FaHome, label: 'Dashboard', href: '/dashboard' },
@@ -427,7 +491,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
   ];
 
   return (
-    <SidebarProvider open={open} setOpen={setOpen}>
+    <>
       {/* Desktop Sidebar */}
       <DesktopSidebar>
         <SidebarBody>
@@ -522,7 +586,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           <FaBars className="w-4 h-4" />
         </motion.button>
       )}
-    </SidebarProvider>
+    </>
   );
 };
 

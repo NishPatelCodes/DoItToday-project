@@ -22,7 +22,7 @@ import {
 import TaskModal from '../components/TaskModal';
 import GoalModal from '../components/GoalModal';
 import AddFriendModal from '../components/AddFriendModal';
-import Sidebar from '../components/Sidebar';
+import Sidebar, { MainContentWrapper, SidebarProvider } from '../components/Sidebar';
 import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import {
   DashboardHome,
@@ -707,23 +707,26 @@ const Dashboard = () => {
 
   if (loading && tasks.length === 0) {
     return (
-      <div className="flex min-h-screen bg-[var(--bg-primary)]">
-        <Sidebar />
-        <main id="main-content" className="flex-1 w-full md:ml-[60px] flex items-center justify-center min-h-screen transition-all duration-300 pt-16 md:pt-0" tabIndex="-1">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div>
-            <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
-          </div>
-        </main>
-      </div>
+      <SidebarProvider>
+        <div className="flex min-h-screen bg-[var(--bg-primary)]">
+          <Sidebar />
+          <MainContentWrapper className="flex items-center justify-center min-h-screen" tabIndex="-1">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div>
+              <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
+            </div>
+          </MainContentWrapper>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg-primary)]">
-      <Sidebar />
-      {/* Main Content */}
-      <main id="main-content" className="flex-1 w-full md:ml-[60px] transition-all duration-300 pt-16 md:pt-0" tabIndex="-1">
+    <SidebarProvider>
+      <div className="flex min-h-screen bg-[var(--bg-primary)]">
+        <Sidebar />
+        {/* Main Content */}
+        <MainContentWrapper tabIndex="-1">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
@@ -954,8 +957,9 @@ const Dashboard = () => {
           onClose={() => setIsFriendModalOpen(false)}
           onAdd={handleAddFriend}
         />
-      </main>
-    </div>
+      </MainContentWrapper>
+      </div>
+    </SidebarProvider>
   );
 };
 
