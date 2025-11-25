@@ -1237,25 +1237,34 @@ export const DashboardTasks = ({
   return (
     <div className="p-4 md:p-6 lg:p-8 overflow-x-hidden relative min-h-screen pb-24 space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-4 md:mb-6 lg:mb-8"
-      >
-        <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
-          {activeTab === 'tasks' ? 'Tasks' : 'Calendar'}
-        </h1>
-        <p className="text-sm md:text-base text-[var(--text-secondary)]">
-          {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : 'View your schedule and timeline'}
-        </p>
-      </motion.div>
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
-        <div className="flex-1 min-w-0">
-        </div>
-        <div className="flex items-center gap-3">
+      {/* Tabs and View Mode Toggle */}
+      <div className="mb-6 border-b border-[var(--border-color)]">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex gap-2 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'tasks'
+                  ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              Tasks
+            </button>
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'calendar'
+                  ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                  : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              Calendar
+            </button>
+          </div>
           {activeTab === 'tasks' && (
             /* View Mode Toggle */
-            <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-1">
+            <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-1 flex-shrink-0">
               <button
                 onClick={() => setViewMode('kanban')}
                 className={`p-2 rounded transition-all ${
@@ -1282,32 +1291,6 @@ export const DashboardTasks = ({
               </button>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="mb-6 border-b border-[var(--border-color)]">
-        <div className="flex gap-2 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('tasks')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'tasks'
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Tasks
-          </button>
-          <button
-            onClick={() => setActiveTab('calendar')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'calendar'
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Calendar
-          </button>
         </div>
       </div>
 
