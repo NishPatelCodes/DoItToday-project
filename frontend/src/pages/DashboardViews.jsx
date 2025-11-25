@@ -792,69 +792,42 @@ export const DashboardHome = ({
             </div>
               <p className="text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
             </motion.div>
+
+            {/* Today's Spend Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              transition={{ delay: 0.6, duration: 0.3 }}
+              className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
+                borderColor: 'rgba(255, 255, 255, 0.08)',
+                boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <span className="text-blue-600 dark:text-blue-400 font-semibold text-base">$</span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Spend</h3>
+                </div>
+                <button
+                  onClick={() => navigate('/dashboard/finance')}
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  <FaPlus className="text-xs" />
+                </button>
+              </div>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-2">Track your expenses</p>
+            </motion.div>
           </div>
         </div>
 
-      {/* Bottom Section: Today's Spend */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        {/* Today's Spend Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 flex-shrink-0 w-full"
-          style={{
-            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <div className="flex items-center justify-between mb-4 lg:mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <span className="text-blue-600 dark:text-blue-400 font-semibold text-lg lg:text-xl">$</span>
-              </div>
-              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Spend</h3>
-            </div>
-            <button
-              onClick={() => navigate('/dashboard/finance')}
-              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              <FaPlus />
-            </button>
-          </div>
-          <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
-          <p className="text-xs lg:text-sm text-[var(--text-tertiary)] mt-2">Track your expenses</p>
-        </motion.div>
-
-      </div>
-
-      {/* Categories/Tags Overview and Tomorrow's Tasks - Side by Side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-        {/* Categories/Tags Overview */}
-        {categoriesOverview.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.3 }}
-            className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm"
-          >
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Tasks by Category</h3>
-            <div className="flex flex-wrap items-center gap-3 md:gap-4">
-              {categoriesOverview.map((category, index) => (
-                <div
-                  key={category.name}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
-                >
-                  <span className="text-sm font-medium text-[var(--text-primary)]">{category.name}</span>
-                  <span className="text-sm font-bold text-[var(--accent-primary)]">{category.count}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
+      {/* Tomorrow's Tasks */}
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-3 md:gap-4">
         {/* Tomorrow's Tasks */}
         {tomorrowsTasks.length > 0 && (
           <motion.div
