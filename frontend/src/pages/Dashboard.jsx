@@ -22,7 +22,7 @@ import {
 import TaskModal from '../components/TaskModal';
 import GoalModal from '../components/GoalModal';
 import AddFriendModal from '../components/AddFriendModal';
-import BottomDock from '../components/BottomDock';
+import SideMenu from '../components/SideMenu';
 import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import {
   DashboardHome,
@@ -35,7 +35,12 @@ import { LazyWrapper } from '../components/lazy/LazyWrapper';
 // Lazy load heavy components for code splitting
 const Profile = lazy(() => import('../components/Profile'));
 const FinanceTracker = lazy(() => import('../components/FinanceTracker'));
-const HeroPage = lazy(() => import('../pages/HeroPage'));
+const GoalsPage = lazy(() => import('./GoalsPage'));
+const ChallengesPage = lazy(() => import('./ChallengesPage'));
+const AnalyticsPage = lazy(() => import('./AnalyticsPage'));
+const GratitudePage = lazy(() => import('./GratitudePage'));
+const TeamPage = lazy(() => import('./TeamPage'));
+const FocusModePage = lazy(() => import('./FocusModePage'));
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -703,21 +708,22 @@ const Dashboard = () => {
   if (loading && tasks.length === 0) {
     return (
       <div className="flex min-h-screen bg-[var(--bg-primary)]">
-        <main id="main-content" className="flex-1 w-full flex items-center justify-center min-h-screen pb-24" tabIndex="-1">
+        <SideMenu />
+        <main id="main-content" className="flex-1 w-full md:ml-64 flex items-center justify-center min-h-screen" tabIndex="-1">
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--accent-primary)] border-t-transparent"></div>
             <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
           </div>
         </main>
-        <BottomDock />
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-primary)]">
+      <SideMenu />
       {/* Main Content */}
-      <main id="main-content" className="flex-1 w-full pb-24" tabIndex="-1">
+      <main id="main-content" className="flex-1 w-full md:ml-64" tabIndex="-1">
         {error && (
           <div className="p-4 mx-4 mt-4 rounded-lg border-l-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
@@ -798,10 +804,62 @@ const Dashboard = () => {
             }
           />
           <Route
-            path="hero"
+            path="goals"
             element={
               <LazyWrapper>
-                <HeroPage />
+                <GoalsPage
+                  onUpdateGoalProgress={handleUpdateGoalProgress}
+                  onDeleteGoal={handleDeleteGoal}
+                  onEditGoal={handleEditGoal}
+                  setIsGoalModalOpen={setIsGoalModalOpen}
+                  setEditingGoal={setEditingGoal}
+                />
+              </LazyWrapper>
+            }
+          />
+          <Route
+            path="challenges"
+            element={
+              <LazyWrapper>
+                <ChallengesPage />
+              </LazyWrapper>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <LazyWrapper>
+                <AnalyticsPage />
+              </LazyWrapper>
+            }
+          />
+          <Route
+            path="gratitude"
+            element={
+              <LazyWrapper>
+                <GratitudePage />
+              </LazyWrapper>
+            }
+          />
+          <Route
+            path="focus"
+            element={
+              <LazyWrapper>
+                <FocusModePage />
+              </LazyWrapper>
+            }
+          />
+          <Route
+            path="team"
+            element={
+              <LazyWrapper>
+                <TeamPage
+                  onAddFriend={() => setIsFriendModalOpen(true)}
+                  onRemoveFriend={handleRemoveFriend}
+                  onAcceptFriendRequest={handleAcceptFriendRequest}
+                  onDeclineFriendRequest={handleDeclineFriendRequest}
+                  onCancelFriendRequest={handleCancelFriendRequest}
+                />
               </LazyWrapper>
             }
           />
@@ -866,14 +924,8 @@ const Dashboard = () => {
             }
           />
           {/* Redirects for old routes */}
-          <Route path="goals" element={<Navigate to="/dashboard/tasks" replace />} />
-          <Route path="challenges" element={<Navigate to="/dashboard/tasks" replace />} />
           <Route path="calendar" element={<Navigate to="/dashboard/tasks" replace />} />
-          <Route path="analytics" element={<Navigate to="/dashboard" replace />} />
-          <Route path="team" element={<Navigate to="/dashboard/profile" replace />} />
-          <Route path="focus" element={<Navigate to="/dashboard" replace />} />
           <Route path="notes" element={<Navigate to="/dashboard" replace />} />
-          <Route path="gratitude" element={<Navigate to="/dashboard" replace />} />
         </Routes>
 
         {/* Modals */}
@@ -903,7 +955,6 @@ const Dashboard = () => {
           onAdd={handleAddFriend}
         />
       </main>
-      <BottomDock />
     </div>
   );
 };
