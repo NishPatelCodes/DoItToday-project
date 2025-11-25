@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect, createContext, useContext, useRef } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   FaHome,
   FaTasks,
@@ -18,157 +18,512 @@ import {
   FaTrophy,
   FaHeadphones,
   FaDollarSign,
+  FaSignOutAlt,
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValueEvent, useScroll } from 'framer-motion';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { cn } from '../utils/cn';
 
-const Sidebar = ({ isOpen, onClose }) => {
-  const { logout } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
+// Sidebar Context
+const SidebarContext = createContext({
+  open: false,
+  setOpen: (open) => {},
+  isHovered: false,
+  setIsHovered: (hovered) => {},
+});
+
+const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error('useSidebar must be used within a SidebarProvider');
+  }
+  return context;
+};
+
+// SidebarProvider Component
+export const SidebarProvider = ({ children, open: openProp, setOpen: setOpenProp }) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const isControlled = openProp !== undefined && setOpenProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = isControlled ? setOpenProp : setInternalOpen;
+
+  return (
+    <SidebarContext.Provider value={{ open, setOpen, isHovered, setIsHovered }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
+
+// Sidebar Component
+export const Sidebar = ({ children, open: openProp, setOpen: setOpenProp, animate = true }) => {
+  const { open: contextOpen, setOpen: setContextOpen } = useSidebar();
+  const isControlled = openProp !== undefined && setOpenProp !== undefined;
+  const open = isControlled ? openProp : contextOpen;
+  const setOpen = isControlled ? setOpenProp : setContextOpen;
   const [isMobile, setIsMobile] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const sidebarRef = useRef(null);
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // Check if mobile on mount and resize
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Lock scroll on mobile when sidebar is open
-  useScrollLock(isOpen && isMobile);
+  // Expand on hover for desktop
+  const shouldExpand = isMobile ? open : (open || isHovered);
 
-  // Close sidebar when clicking outside on mobile
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (isOpen && window.innerWidth < 768) {
-        const sidebar = document.querySelector('.sidebar-mobile');
-        if (sidebar && !sidebar.contains(e.target)) {
-          onClose();
-        }
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onClose]);
-
-  const navItems = [
-    { icon: FaHome, label: 'Dashboard', path: '/dashboard' },
-    { icon: FaTasks, label: 'Tasks', path: '/dashboard/tasks' },
-    { icon: FaBullseye, label: 'Goals', path: '/dashboard/goals' },
-    { icon: FaTrophy, label: 'Challenges', path: '/dashboard/challenges' },
-    { icon: FaHeadphones, label: 'Focus Mode', path: '/dashboard/focus' },
-    { icon: FaDollarSign, label: 'Finance', path: '/dashboard/finance' },
-    { icon: FaCalendarAlt, label: 'Calendar', path: '/dashboard/calendar' },
-    { icon: FaStickyNote, label: 'Notes', path: '/dashboard/notes' },
-    { icon: FaHeart, label: 'Gratitude', path: '/dashboard/gratitude' },
-    { icon: FaChartLine, label: 'Analytics', path: '/dashboard/analytics' },
-    { icon: FaUserFriends, label: 'Team', path: '/dashboard/team' },
-    { icon: FaUser, label: 'Profile', path: '/dashboard/profile' },
-  ];
-
-  const sidebarContent = (
-    <>
-      {/* Logo */}
-      <div className="p-2.5 md:p-3 border-b border-[var(--border-color)]">
-        <div className="flex items-center justify-between">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-sm md:text-base font-bold gradient-text leading-tight">DoItToday</h1>
-            <p className="text-[10px] md:text-xs text-[var(--text-secondary)] mt-0.5 leading-normal">Task Manager</p>
-          </div>
-          {/* Close button for mobile */}
-          <button
-            onClick={onClose}
-            className="md:hidden p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors touch-manipulation min-w-[48px] min-h-[48px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 rounded-lg"
-            aria-label="Close navigation menu"
-          >
-            <FaTimes className="text-lg" />
-          </button>
-        </div>
+  return (
+    <SidebarProvider open={open} setOpen={setOpen}>
+      <div
+        ref={sidebarRef}
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
+        className="relative"
+      >
+        {children}
       </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-1.5 md:p-2 space-y-0.5">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onMouseEnter={() => {
-              // Prefetch route on hover for instant navigation
-              const link = document.createElement('link');
-              link.rel = 'prefetch';
-              link.href = item.path;
-              link.as = 'document';
-              document.head.appendChild(link);
-            }}
-            onClick={() => {
-              // Close sidebar on mobile when navigating
-              if (window.innerWidth < 768) {
-                onClose();
-              }
-            }}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-2 py-1.5 md:py-1 rounded-lg transition-all duration-200 touch-manipulation min-h-[36px] ${
-                isActive
-                  ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
-              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2`
-            }
-          >
-            <item.icon className="text-xs flex-shrink-0 w-3.5 h-3.5" />
-            <span className="text-xs font-medium leading-tight truncate">{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Bottom Section - Removed, settings moved to Profile */}
-    </>
+    </SidebarProvider>
   );
+};
+
+// SidebarBody Component
+export const SidebarBody = ({ children, ...props }) => {
+  return (
+    <motion.div
+      {...props}
+      className={cn('flex flex-col h-full', props.className)}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// DesktopSidebar Component
+export const DesktopSidebar = ({ children, className, ...props }) => {
+  const { open, setOpen, isHovered, setIsHovered } = useSidebar();
+  const [isMobile, setIsMobile] = useState(false);
+  const sidebarRef = useRef(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Expand on hover when collapsed, or when manually opened
+  const shouldExpand = isMobile ? open : (open || isHovered);
+
+  return (
+    <motion.aside
+      ref={sidebarRef}
+      onMouseEnter={() => {
+        if (!isMobile) {
+          setIsHovered(true);
+        }
+      }}
+      onMouseLeave={() => {
+        if (!isMobile && !open) {
+          // Only collapse on mouse leave if not manually opened
+          setIsHovered(false);
+        }
+      }}
+      initial={false}
+      animate={{
+        width: shouldExpand ? 240 : 60,
+      }}
+      transition={{
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1],
+      }}
+      className={cn(
+        'hidden md:flex fixed left-0 top-0 h-screen bg-[var(--bg-secondary)] border-r border-[var(--border-color)] z-50 flex-col overflow-hidden',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </motion.aside>
+  );
+};
+
+// MobileSidebar Component
+export const MobileSidebar = ({ children, className, ...props }) => {
+  const { open, setOpen } = useSidebar();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  useScrollLock(open && isMobile);
 
   return (
     <>
       {/* Mobile Overlay */}
       <AnimatePresence>
-        {isOpen && (
+        {open && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-            onClick={onClose}
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
-      <aside className={`
-        sidebar-mobile
-        w-52 md:w-52 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] h-screen fixed left-0 top-0 flex flex-col z-50
-        transform transition-transform duration-300 ease-in-out
-        md:translate-x-0
-        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}>
-        {sidebarContent}
-      </aside>
+      {/* Mobile Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{
+          x: open ? 0 : -300,
+        }}
+        transition={{
+          type: 'spring',
+          damping: 25,
+          stiffness: 200,
+        }}
+        className={cn(
+          'fixed left-0 top-0 h-screen w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] z-50 flex flex-col md:hidden',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </motion.aside>
     </>
   );
 };
 
-export default Sidebar;
+// SidebarLink Component
+export const SidebarLink = ({ link, className, ...props }) => {
+  const { open, setOpen, isHovered } = useSidebar();
+  const [isMobile, setIsMobile] = useState(false);
+  const location = useLocation();
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const shouldExpand = isMobile ? open : (open || isHovered);
+  const isActive = location.pathname === link.href || location.pathname.startsWith(link.href + '/');
+
+  return (
+    <NavLink
+      to={link.href}
+      onClick={() => {
+        if (isMobile) {
+          setOpen(false);
+        }
+      }}
+      className={cn(
+        'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group',
+        isActive
+          ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
+          : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
+        className
+      )}
+      {...props}
+    >
+      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+        {typeof link.icon === 'function' ? (
+          <link.icon className="w-full h-full" />
+        ) : (
+          link.icon
+        )}
+      </div>
+      <motion.span
+        initial={false}
+        animate={{
+          opacity: shouldExpand ? 1 : 0,
+          width: shouldExpand ? 'auto' : 0,
+        }}
+        transition={{
+          duration: 0.2,
+          ease: [0.4, 0, 0.2, 1],
+        }}
+        className="font-medium text-sm whitespace-nowrap overflow-hidden"
+      >
+        {link.label}
+      </motion.span>
+      {isActive && (
+        <motion.div
+          layoutId="activeIndicator"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[var(--accent-primary)] rounded-r-full"
+          transition={{
+            type: 'spring',
+            stiffness: 380,
+            damping: 30,
+          }}
+        />
+      )}
+    </NavLink>
+  );
+};
+
+// DesktopSidebarLogo Component
+const DesktopSidebarLogo = ({ open, setOpen }) => {
+  const { open: contextOpen, isHovered } = useSidebar();
+  const [isMobile, setIsMobile] = useState(false);
+  const actualOpen = open !== undefined ? open : contextOpen;
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const shouldExpand = isMobile ? actualOpen : (actualOpen || isHovered);
+
+  return (
+    <div className="p-4 border-b border-[var(--border-color)]">
+      <motion.div
+        initial={false}
+        animate={{
+          justifyContent: shouldExpand ? 'space-between' : 'center',
+        }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center gap-3"
+      >
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: shouldExpand ? 1 : 0,
+            width: shouldExpand ? 'auto' : 0,
+          }}
+          transition={{ duration: 0.2 }}
+          className="overflow-hidden"
+        >
+          <h1 className="text-base font-bold gradient-text whitespace-nowrap">DoItToday</h1>
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5">Task Manager</p>
+        </motion.div>
+        {shouldExpand && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setOpen && setOpen(false)}
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Collapse sidebar"
+          >
+            <FaTimes className="w-4 h-4" />
+          </motion.button>
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
+// DesktopSidebarFooter Component
+const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout }) => {
+  const { open: contextOpen, isHovered } = useSidebar();
+  const [isMobile, setIsMobile] = useState(false);
+  const actualOpen = open !== undefined ? open : contextOpen;
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const shouldExpand = isMobile ? actualOpen : (actualOpen || isHovered);
+
+  return (
+    <div className="p-3 border-t border-[var(--border-color)] space-y-1">
+      <button
+        onClick={toggleTheme}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+      >
+        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+          {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
+        </div>
+        <motion.span
+          initial={false}
+          animate={{
+            opacity: shouldExpand ? 1 : 0,
+            width: shouldExpand ? 'auto' : 0,
+          }}
+          transition={{ duration: 0.2 }}
+          className="font-medium text-sm whitespace-nowrap overflow-hidden"
+        >
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </motion.span>
+      </button>
+      <button
+        onClick={logout}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+      >
+        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+          <FaSignOutAlt className="w-full h-full" />
+        </div>
+        <motion.span
+          initial={false}
+          animate={{
+            opacity: shouldExpand ? 1 : 0,
+            width: shouldExpand ? 'auto' : 0,
+          }}
+          transition={{ duration: 0.2 }}
+          className="font-medium text-sm whitespace-nowrap overflow-hidden"
+        >
+          Logout
+        </motion.span>
+      </button>
+    </div>
+  );
+};
+
+// Main Sidebar Component (Default Export)
+const MainSidebar = ({ isOpen, onClose }) => {
+  const { logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
+  const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen !== undefined) {
+      setOpen(isOpen);
+    }
+  }, [isOpen]);
+
+  const navItems = [
+    { icon: FaHome, label: 'Dashboard', href: '/dashboard' },
+    { icon: FaTasks, label: 'Tasks', href: '/dashboard/tasks' },
+    { icon: FaBullseye, label: 'Goals', href: '/dashboard/goals' },
+    { icon: FaTrophy, label: 'Challenges', href: '/dashboard/challenges' },
+    { icon: FaHeadphones, label: 'Focus Mode', href: '/dashboard/focus' },
+    { icon: FaDollarSign, label: 'Finance', href: '/dashboard/finance' },
+    { icon: FaCalendarAlt, label: 'Calendar', href: '/dashboard/calendar' },
+    { icon: FaStickyNote, label: 'Notes', href: '/dashboard/notes' },
+    { icon: FaHeart, label: 'Gratitude', href: '/dashboard/gratitude' },
+    { icon: FaChartLine, label: 'Analytics', href: '/dashboard/analytics' },
+    { icon: FaUserFriends, label: 'Team', href: '/dashboard/team' },
+    { icon: FaUser, label: 'Profile', href: '/dashboard/profile' },
+  ];
+
+  return (
+    <SidebarProvider open={open} setOpen={setOpen}>
+      {/* Desktop Sidebar */}
+      <DesktopSidebar>
+        <SidebarBody>
+          {/* Logo Section */}
+          <DesktopSidebarLogo open={open} setOpen={setOpen} />
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+            {navItems.map((item) => (
+              <SidebarLink key={item.href} link={item} />
+            ))}
+          </nav>
+
+          {/* Bottom Section */}
+          <DesktopSidebarFooter open={open} theme={theme} toggleTheme={toggleTheme} logout={logout} />
+        </SidebarBody>
+      </DesktopSidebar>
+
+      {/* Mobile Sidebar */}
+      <MobileSidebar>
+        <SidebarBody>
+          {/* Logo Section */}
+          <div className="p-4 border-b border-[var(--border-color)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-base font-bold gradient-text">DoItToday</h1>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Task Manager</p>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                aria-label="Close sidebar"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+            {navItems.map((item) => (
+              <SidebarLink key={item.href} link={item} />
+            ))}
+          </nav>
+
+          {/* Bottom Section */}
+          <div className="p-3 border-t border-[var(--border-color)] space-y-1">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+            >
+              <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
+              </div>
+              <span className="font-medium text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+            <button
+              onClick={logout}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+            >
+              <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                <FaSignOutAlt className="w-full h-full" />
+              </div>
+              <span className="font-medium text-sm">Logout</span>
+            </button>
+          </div>
+        </SidebarBody>
+      </MobileSidebar>
+
+      {/* Mobile Menu Button */}
+      {isMobile && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => setOpen(true)}
+          className="fixed left-4 top-4 z-40 p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:hidden"
+          aria-label="Open menu"
+        >
+          <FaBars className="w-5 h-5" />
+        </motion.button>
+      )}
+
+      {/* Expand Button (when collapsed on desktop) */}
+      {!open && !isMobile && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => setOpen(true)}
+          className="fixed left-2 top-4 z-40 p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors hidden md:block"
+          aria-label="Expand sidebar"
+        >
+          <FaBars className="w-4 h-4" />
+        </motion.button>
+      )}
+    </SidebarProvider>
+  );
+};
+
+export default MainSidebar;

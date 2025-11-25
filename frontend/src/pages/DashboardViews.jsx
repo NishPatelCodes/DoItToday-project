@@ -28,16 +28,6 @@ import {
   FaArrowRight,
 } from 'react-icons/fa';
 import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration, CatWorkingIllustration, SquirrelChecklistIllustration, FoxReadingIllustration } from '../components/Illustrations';
-// Recharts will be code-split via Vite config (already configured)
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from 'recharts';
 import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, getDay } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
@@ -54,7 +44,6 @@ import CompletedTasksSection from '../components/CompletedTasksSection';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { financeAPI } from '../services/api';
 import { LazyWrapper } from '../components/lazy/LazyWrapper';
 import { Suspense } from 'react';
 
@@ -63,10 +52,7 @@ const GoalAnalytics = lazy(() => import('../components/GoalAnalytics'));
 const SmartPlanner = lazy(() => import('../components/SmartPlanner'));
 const TaskKanbanBoard = lazy(() => import('../components/TaskKanbanBoard'));
 const AnalyticsDashboard = lazy(() => import('../components/AnalyticsDashboard'));
-const Challenges = lazy(() => import('../components/Challenges'));
 import ErrorBoundary from '../components/ErrorBoundary';
-import ChartErrorBoundary from '../components/ChartErrorBoundary';
-import { formatCurrency } from '../utils/currencyFormatter';
 import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
 import NotionTimelineCalendar from '../components/NotionTimelineCalendar';
 
@@ -99,9 +85,6 @@ export const DashboardHome = ({
   const [todaysPlanExpanded, setTodaysPlanExpanded] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [incomeTrend, setIncomeTrend] = useState([]);
-  const [incomeMeta, setIncomeMeta] = useState({ currency: 'USD', total: 0 });
-  const [incomeLoading, setIncomeLoading] = useState(false);
 
   // Close menu and search on outside click
   useEffect(() => {
@@ -114,62 +97,6 @@ export const DashboardHome = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
 
-  const buildIncomeTrend = useCallback((transactions = []) => {
-    const now = new Date();
-    return Array.from({ length: 6 }).map((_, index) => {
-      const weeksAgo = 5 - index;
-      const start = startOfWeek(subDays(now, weeksAgo * 7), { weekStartsOn: 0 });
-      const end = endOfWeek(start, { weekStartsOn: 0 });
-      const weeklyIncome = transactions
-        .filter(
-          (transaction) =>
-            transaction?.type === 'income' &&
-            transaction.date &&
-            new Date(transaction.date) >= start &&
-            new Date(transaction.date) <= end
-        )
-        .reduce((sum, txn) => sum + (txn.amount || 0), 0);
-      return {
-        date: start.toISOString(),
-        label: format(start, 'MMM d'),
-        amount: Number(weeklyIncome.toFixed(2)),
-      };
-    });
-  }, []);
-
-
-  // Load lightweight finance trend for dashboard insights
-  useEffect(() => {
-    let isMounted = true;
-    const loadFinanceTrend = async () => {
-      try {
-        setIncomeLoading(true);
-        const response = await financeAPI.getAll();
-        if (!isMounted) return;
-        const transactions = response.data?.transactions || [];
-        const currency = response.data?.accountInfo?.currency || 'USD';
-        const weeklyTrend = buildIncomeTrend(transactions);
-        const totalIncome = transactions
-          .filter((txn) => txn.type === 'income')
-          .reduce((sum, txn) => sum + (txn.amount || 0), 0);
-        setIncomeTrend(weeklyTrend);
-        setIncomeMeta({ currency, total: totalIncome });
-      } catch (error) {
-        if (isMounted) {
-          setIncomeTrend([]);
-          setIncomeMeta({ currency: 'USD', total: 0 });
-        }
-      } finally {
-        if (isMounted) {
-          setIncomeLoading(false);
-        }
-      }
-    };
-    loadFinanceTrend();
-    return () => {
-      isMounted = false;
-    };
-  }, [buildIncomeTrend]);
 
   // Filter search results
   const searchResults = useMemo(() => {
@@ -204,18 +131,6 @@ export const DashboardHome = ({
       return isToday(new Date(task.dueDate));
     });
   }, [tasks]);
-
-  const productivityTrend = useMemo(() => {
-    if (!analytics?.dailyProductivity || analytics.dailyProductivity.length === 0) {
-      return [];
-    }
-    return analytics.dailyProductivity.slice(-7).map((entry) => ({
-      date: entry.date,
-      label: format(new Date(entry.date), 'EEE'),
-      productivity: entry.productivity ?? 0,
-      completed: entry.completed ?? 0,
-    }));
-  }, [analytics]);
 
   // Calculate today's plan progress
   const todaysPlanProgress = useMemo(() => {
@@ -265,22 +180,6 @@ export const DashboardHome = ({
     const percentage = Math.round((completedThisWeek.length / scheduledThisWeek.length) * 100);
     return Math.min(100, Math.max(0, percentage));
   }, [tasks]);
-
-  const latestProductivity =
-    productivityTrend.length > 0 ? productivityTrend[productivityTrend.length - 1].productivity || 0 : 0;
-  const averageProductivity =
-    productivityTrend.length === 0
-      ? 0
-      : Math.round(
-          productivityTrend.reduce((sum, entry) => sum + (entry.productivity || 0), 0) /
-            productivityTrend.length
-        );
-
-  const latestIncome = incomeTrend.length > 0 ? incomeTrend[incomeTrend.length - 1].amount || 0 : 0;
-  const averageIncome =
-    incomeTrend.length === 0
-      ? 0
-      : incomeTrend.reduce((sum, entry) => sum + (entry.amount || 0), 0) / incomeTrend.length;
 
   // Get today's spend (placeholder - would come from finance API)
   const todaysSpend = 0;
@@ -805,173 +704,6 @@ export const DashboardHome = ({
 
       </div>
       </div>
-
-      {/* Analytics Section - Full Integration */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0, duration: 0.5 }}
-        className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]"
-      >
-        <ErrorBoundary>
-          <LazyWrapper minHeight="400px">
-            <AnalyticsDashboard
-              analytics={analytics}
-              tasks={tasks || []}
-              goals={goals || []}
-              habits={habits || []}
-              user={user}
-            />
-          </LazyWrapper>
-        </ErrorBoundary>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 md:gap-4 lg:gap-6 mt-4 md:mt-6">
-          <div className="rounded-xl md:rounded-2xl border border-[var(--border-color)] p-4 md:p-6 bg-[var(--bg-secondary)]">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">{latestProductivity}%</p>
-                <p className="text-[11px] text-[var(--text-tertiary)]">Today</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-[var(--text-tertiary)]">Avg (7d)</p>
-                <p className="text-lg font-semibold text-[var(--text-primary)]">{averageProductivity}%</p>
-              </div>
-            </div>
-            {productivityTrend.length > 0 ? (
-              <div className="h-64">
-                <ChartErrorBoundary
-                  fallback={
-                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                      <p>Chart unavailable</p>
-                      <p className="text-[11px] mt-1">Error loading productivity data.</p>
-                    </div>
-                  }
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={productivityTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
-                      <XAxis
-                        dataKey="label"
-                        stroke="var(--text-tertiary)"
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <YAxis
-                        stroke="var(--text-tertiary)"
-                        domain={[0, 100]}
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '12px',
-                          color: 'var(--text-primary)',
-                        }}
-                        formatter={(value) => [`${value}%`, 'Productivity']}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="productivity"
-                        stroke="#8b5cf6"
-                        strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2, stroke: '#8b5cf6', fill: '#8b5cf6' }}
-                        activeDot={{ r: 6, stroke: '#8b5cf6', fill: '#8b5cf6' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartErrorBoundary>
-              </div>
-            ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                <p>No productivity data yet.</p>
-                <p className="text-[11px] mt-1">Complete tasks to unlock the trend.</p>
-              </div>
-            )}
-          </div>
-          <div className="rounded-xl border border-[var(--border-color)] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Income runway</p>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">
-                  {formatCurrency(latestIncome, incomeMeta.currency, { maximumFractionDigits: 0 })}
-                </p>
-                <p className="text-[11px] text-[var(--text-tertiary)]">Last week</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-[var(--text-tertiary)]">Avg (6w)</p>
-                <p className="text-lg font-semibold text-[var(--text-primary)]">
-                  {formatCurrency(averageIncome || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
-                </p>
-                <p className="text-[11px] text-[var(--text-tertiary)] mt-1">
-                  Total: {formatCurrency(incomeMeta.total || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
-                </p>
-              </div>
-            </div>
-            {incomeLoading ? (
-              <div className="h-64 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent"></div>
-              </div>
-            ) : incomeTrend.length > 0 ? (
-              <div className="h-64">
-                <ChartErrorBoundary
-                  fallback={
-                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                      <p>Chart unavailable</p>
-                      <p className="text-[11px] mt-1">Error loading income data.</p>
-                    </div>
-                  }
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={incomeTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
-                      <XAxis
-                        dataKey="label"
-                        stroke="var(--text-tertiary)"
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <YAxis
-                        stroke="var(--text-tertiary)"
-                        tickFormatter={(value) =>
-                          formatCurrency(value || 0, incomeMeta.currency, {
-                            maximumFractionDigits: 0,
-                            showSymbol: false,
-                          })
-                        }
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '12px',
-                          color: 'var(--text-primary)',
-                        }}
-                        formatter={(value) => [
-                          formatCurrency(value || 0, incomeMeta.currency, { maximumFractionDigits: 2 }),
-                          'Income',
-                        ]}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="amount"
-                        stroke="#fbbf24"
-                        strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2, stroke: '#fbbf24', fill: '#fbbf24' }}
-                        activeDot={{ r: 6, stroke: '#fbbf24', fill: '#fbbf24' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartErrorBoundary>
-              </div>
-            ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                <p>No income data captured.</p>
-                <p className="text-[11px] mt-1">Log transactions in Finance to see this fill in.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
     </div>
   );
 };
@@ -1192,10 +924,10 @@ export const DashboardTasks = ({
         className="mb-4 md:mb-6 lg:mb-8"
       >
         <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
-          {activeTab === 'tasks' ? 'Tasks' : activeTab === 'goals' ? 'Goals' : activeTab === 'challenges' ? 'Challenges' : 'Calendar'}
+          {activeTab === 'tasks' ? 'Tasks' : 'Calendar'}
         </h1>
         <p className="text-sm md:text-base text-[var(--text-secondary)]">
-          {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : activeTab === 'goals' ? 'Track your progress and achievements' : activeTab === 'challenges' ? 'Complete challenges and earn rewards' : 'View your schedule and timeline'}
+          {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : 'View your schedule and timeline'}
         </p>
       </motion.div>
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
@@ -1248,26 +980,6 @@ export const DashboardTasks = ({
             Tasks
           </button>
           <button
-            onClick={() => setActiveTab('goals')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'goals'
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Goals
-          </button>
-          <button
-            onClick={() => setActiveTab('challenges')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'challenges'
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Challenges
-          </button>
-          <button
             onClick={() => setActiveTab('calendar')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'calendar'
@@ -1281,25 +993,6 @@ export const DashboardTasks = ({
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'goals' && (
-        <DashboardGoals
-          goals={goals}
-          tasks={tasks}
-          onUpdateGoalProgress={onUpdateGoalProgress}
-          onDeleteGoal={onDeleteGoal}
-          onEditGoal={onEditGoal}
-          setIsGoalModalOpen={setIsGoalModalOpen}
-          setEditingGoal={setEditingGoal}
-          hideHeader={true}
-        />
-      )}
-
-      {activeTab === 'challenges' && (
-        <Suspense fallback={<Skeleton />}>
-          <Challenges />
-        </Suspense>
-      )}
-
       {activeTab === 'calendar' && (
         <DashboardCalendar
           tasks={tasks}
