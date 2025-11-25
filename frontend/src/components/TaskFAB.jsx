@@ -23,6 +23,19 @@ const TaskFAB = memo(({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Backdrop Blur */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Menu Items */}
       <AnimatePresence>
         {isHovered && (
@@ -38,7 +51,7 @@ const TaskFAB = memo(({
               aria-label="Add multiple tasks"
             >
               <FaMagic className="text-lg" />
-              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
                 Multiple Tasks
               </span>
             </motion.button>
@@ -54,7 +67,7 @@ const TaskFAB = memo(({
               aria-label="Add new task"
             >
               <FaPlus className="text-lg" />
-              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
                 Tasks
               </span>
             </motion.button>
@@ -64,11 +77,14 @@ const TaskFAB = memo(({
 
       {/* Main FAB Button */}
       <motion.button
-        onClick={handleAddTask}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="w-16 h-16 rounded-full bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
-        aria-label="Add new task"
+        className="w-16 h-16 rounded-full bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center cursor-pointer"
+        aria-label="Task menu"
       >
         <FaPlus className="text-xl" />
       </motion.button>
