@@ -85,8 +85,6 @@ const NotionTimelineCalendar = ({
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const goToToday = () => setCurrentDate(new Date());
 
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
   // Get today's tasks count
   const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
   const todayItems = itemsByDate[todayKey] || { tasks: [], goals: [] };
@@ -141,25 +139,6 @@ const NotionTimelineCalendar = ({
       {/* Calendar Timeline */}
       <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
-          {/* Week Day Headers */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-7 gap-px bg-[var(--border-color)] rounded-t-lg overflow-hidden mb-2"
-          >
-            {weekDays.map((day, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ y: -10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: idx * 0.05 }}
-                className="bg-[var(--bg-secondary)] py-3 px-2 text-center text-xs md:text-sm font-semibold text-[var(--text-primary)]"
-              >
-                {day}
-              </motion.div>
-            ))}
-          </motion.div>
-
           {/* Calendar Days - Vertical Timeline */}
           <div className="space-y-2">
             {/* Calendar Days - Start directly from date 1 */}
