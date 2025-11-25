@@ -683,14 +683,15 @@ export const DashboardHome = ({
             }}
             className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-200 ease-out hover:shadow-lg overflow-visible"
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-            <div className="relative menu-container z-10">
+            <div className="flex items-center justify-between mb-3 min-h-[24px]">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] flex-shrink-0">Today's Plan</h3>
+            <div className="relative menu-container z-10 flex-shrink-0" style={{ minHeight: '24px', minWidth: '24px' }}>
                 <button
                 onClick={() => setShowMenu(!showMenu)}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1 w-6 h-6 flex items-center justify-center"
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1 w-6 h-6 flex items-center justify-center flex-shrink-0"
+                  style={{ minWidth: '24px', minHeight: '24px' }}
                 >
-                  <FaEllipsisV className="text-sm" />
+                  <FaEllipsisV className="text-sm" style={{ width: '14px', height: '14px' }} />
                 </button>
               <AnimatePresence>
                 {showMenu && (
@@ -705,7 +706,11 @@ export const DashboardHome = ({
                       mass: 0.5
                     }}
                     className="absolute right-0 top-full mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-lg z-50 min-w-[180px]"
-                    style={{ transformOrigin: 'top right' }}
+                    style={{ 
+                      transformOrigin: 'top right',
+                      willChange: 'transform, opacity',
+                      pointerEvents: 'auto'
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -726,7 +731,7 @@ export const DashboardHome = ({
                         }
                         setShowMenu(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 min-h-[36px] ${
                         yesterdaysTasks.length > 0
                           ? 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                           : 'text-[var(--text-tertiary)] cursor-not-allowed opacity-50'
@@ -734,10 +739,10 @@ export const DashboardHome = ({
                       disabled={yesterdaysTasks.length === 0}
                       title={yesterdaysTasks.length > 0 ? `Copy ${yesterdaysTasks.length} task(s) from yesterday` : 'No completed tasks from yesterday'}
                     >
-                      <FaCopy className="text-sm w-3.5 h-3.5" />
-                      Same as Yesterday
+                      <FaCopy className="text-sm w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="flex-1">Same as Yesterday</span>
                       {yesterdaysTasks.length > 0 && (
-                        <span className="ml-auto text-xs text-[var(--text-tertiary)]">({yesterdaysTasks.length})</span>
+                        <span className="ml-auto text-xs text-[var(--text-tertiary)] flex-shrink-0">({yesterdaysTasks.length})</span>
                       )}
                     </button>
                 <button
@@ -745,10 +750,10 @@ export const DashboardHome = ({
                         navigate('/dashboard/tasks');
                         setShowMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2 min-h-[36px]"
                     >
-                      <FaTasks className="text-sm w-3.5 h-3.5" />
-                      View All Tasks
+                      <FaTasks className="text-sm w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="flex-1">View All Tasks</span>
                 </button>
                   </motion.div>
               )}
