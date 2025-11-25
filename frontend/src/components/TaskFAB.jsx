@@ -51,7 +51,7 @@ const TaskFAB = memo(({
               aria-label="Add multiple tasks"
             >
               <FaMagic className="text-lg" />
-              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
+              <span className="absolute right-full top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg" style={{ right: 'calc(100% + 1rem)' }}>
                 Multiple Tasks
               </span>
             </motion.button>
@@ -67,7 +67,7 @@ const TaskFAB = memo(({
               aria-label="Add new task"
             >
               <FaPlus className="text-lg" />
-              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg">
+              <span className="absolute right-full top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-medium text-[var(--text-primary)] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg" style={{ right: 'calc(100% + 1rem)' }}>
                 Tasks
               </span>
             </motion.button>
