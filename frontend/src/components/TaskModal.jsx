@@ -50,8 +50,14 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       let taskDueDate = '';
       let taskDueTime = '';
       if (task.dueDate) {
+        // Parse the date from backend (ISO string) and convert to local timezone
         const date = new Date(task.dueDate);
-        taskDueDate = date.toISOString().split('T')[0];
+        // Get local date components
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        taskDueDate = `${year}-${month}-${day}`;
+        // Get local time components
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         taskDueTime = `${hours}:${minutes}`;
@@ -131,6 +137,21 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
     }
   };
 
+  // Helper function to get today's date in local timezone as YYYY-MM-DD
+  const getTodayLocal = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Helper function to parse date string (YYYY-MM-DD) in local timezone
+  const parseLocalDate = (dateString) => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -147,13 +168,12 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
     }
     
     if (dueDate) {
-      const dateObj = new Date(dueDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      dateObj.setHours(0, 0, 0, 0);
+      // Parse date in local timezone and compare with today in local timezone
+      const selectedDate = parseLocalDate(dueDate);
+      const today = parseLocalDate(getTodayLocal());
       
       // Allow today and future dates, but warn about past dates
-      if (dateObj < today) {
+      if (selectedDate < today) {
         newErrors.dueDate = 'Due date cannot be in the past';
       }
     }
@@ -169,17 +189,21 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
       return;
     }
     
-    // Combine date and time into a single Date object
+    // Combine date and time into a single Date object in local timezone
     let dueDateTimeValue = null;
     if (dueDate) {
-      const dateObj = new Date(dueDate);
+      // Parse date in local timezone (YYYY-MM-DD format)
+      const [year, month, day] = dueDate.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      
       if (dueTime) {
-        const [hours, minutes] = dueTime.split(':');
-        dateObj.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        const [hours, minutes] = dueTime.split(':').map(Number);
+        dateObj.setHours(hours, minutes, 0, 0);
       } else {
         // Default to 11:59 PM if no time specified
         dateObj.setHours(23, 59, 0, 0);
       }
+      // Convert to ISO string for backend (this will include timezone info)
       dueDateTimeValue = dateObj.toISOString();
     }
     
@@ -440,8 +464,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                   <button
                     type="button"
                     onClick={() => {
-                      const today = new Date();
-                      setDueDate(today.toISOString().split('T')[0]);
+                      setDueDate(getTodayLocal());
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
@@ -452,7 +475,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     onClick={() => {
                       const tomorrow = new Date();
                       tomorrow.setDate(tomorrow.getDate() + 1);
-                      setDueDate(tomorrow.toISOString().split('T')[0]);
+                      const year = tomorrow.getFullYear();
+                      const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+                      const day = String(tomorrow.getDate()).padStart(2, '0');
+                      setDueDate(`${year}-${month}-${day}`);
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
@@ -463,7 +489,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     onClick={() => {
                       const date = new Date();
                       date.setDate(date.getDate() + 3);
-                      setDueDate(date.toISOString().split('T')[0]);
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setDueDate(`${year}-${month}-${day}`);
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
@@ -474,7 +503,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     onClick={() => {
                       const date = new Date();
                       date.setDate(date.getDate() + 5);
-                      setDueDate(date.toISOString().split('T')[0]);
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setDueDate(`${year}-${month}-${day}`);
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
@@ -485,7 +517,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     onClick={() => {
                       const date = new Date();
                       date.setDate(date.getDate() + 7);
-                      setDueDate(date.toISOString().split('T')[0]);
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setDueDate(`${year}-${month}-${day}`);
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
@@ -496,7 +531,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     onClick={() => {
                       const date = new Date();
                       date.setDate(date.getDate() + 10);
-                      setDueDate(date.toISOString().split('T')[0]);
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setDueDate(`${year}-${month}-${day}`);
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
@@ -507,7 +545,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     onClick={() => {
                       const date = new Date();
                       date.setDate(date.getDate() + 14);
-                      setDueDate(date.toISOString().split('T')[0]);
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setDueDate(`${year}-${month}-${day}`);
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
@@ -518,7 +559,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                     onClick={() => {
                       const date = new Date();
                       date.setDate(date.getDate() + 30);
-                      setDueDate(date.toISOString().split('T')[0]);
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setDueDate(`${year}-${month}-${day}`);
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
                   >
