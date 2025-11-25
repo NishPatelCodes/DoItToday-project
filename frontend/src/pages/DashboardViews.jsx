@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, lazy } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaPlus,
@@ -24,22 +24,25 @@ import {
   FaSquare,
   FaColumns,
   FaList,
-  FaCompass,
   FaClock,
   FaArrowRight,
 } from 'react-icons/fa';
 import { EmptyTasksIllustration, EmptyGoalsIllustration, NoSearchResultsIllustration, WelcomeIllustration, EmptyFriendsIllustration, EmptyChallengesIllustration, CatWorkingIllustration, SquirrelChecklistIllustration, FoxReadingIllustration } from '../components/Illustrations';
-// Recharts will be code-split via Vite config (already configured)
 import {
   ResponsiveContainer,
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
 } from 'recharts';
-import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, addDays } from 'date-fns';
+import { financeAPI } from '../services/api';
+import { formatCurrency } from '../utils/currencyFormatter';
+import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, getDay, addDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
 import HabitCard from '../components/HabitCard';
@@ -55,7 +58,6 @@ import CompletedTasksSection from '../components/CompletedTasksSection';
 import { TaskCardSkeleton, GoalCardSkeleton, Skeleton } from '../components/Skeleton';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { financeAPI } from '../services/api';
 import { LazyWrapper } from '../components/lazy/LazyWrapper';
 import { Suspense } from 'react';
 
@@ -64,10 +66,7 @@ const GoalAnalytics = lazy(() => import('../components/GoalAnalytics'));
 const SmartPlanner = lazy(() => import('../components/SmartPlanner'));
 const TaskKanbanBoard = lazy(() => import('../components/TaskKanbanBoard'));
 const AnalyticsDashboard = lazy(() => import('../components/AnalyticsDashboard'));
-const Challenges = lazy(() => import('../components/Challenges'));
 import ErrorBoundary from '../components/ErrorBoundary';
-import ChartErrorBoundary from '../components/ChartErrorBoundary';
-import { formatCurrency } from '../utils/currencyFormatter';
 import GoalMilestoneGuide from '../components/GoalMilestoneGuide';
 import NotionTimelineCalendar from '../components/NotionTimelineCalendar';
 
@@ -100,9 +99,6 @@ export const DashboardHome = ({
   const [todaysPlanExpanded, setTodaysPlanExpanded] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [incomeTrend, setIncomeTrend] = useState([]);
-  const [incomeMeta, setIncomeMeta] = useState({ currency: 'USD', total: 0 });
-  const [incomeLoading, setIncomeLoading] = useState(false);
 
   // Close menu and search on outside click
   useEffect(() => {
@@ -115,62 +111,6 @@ export const DashboardHome = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
 
-  const buildIncomeTrend = useCallback((transactions = []) => {
-    const now = new Date();
-    return Array.from({ length: 6 }).map((_, index) => {
-      const weeksAgo = 5 - index;
-      const start = startOfWeek(subDays(now, weeksAgo * 7), { weekStartsOn: 0 });
-      const end = endOfWeek(start, { weekStartsOn: 0 });
-      const weeklyIncome = transactions
-        .filter(
-          (transaction) =>
-            transaction?.type === 'income' &&
-            transaction.date &&
-            new Date(transaction.date) >= start &&
-            new Date(transaction.date) <= end
-        )
-        .reduce((sum, txn) => sum + (txn.amount || 0), 0);
-      return {
-        date: start.toISOString(),
-        label: format(start, 'MMM d'),
-        amount: Number(weeklyIncome.toFixed(2)),
-      };
-    });
-  }, []);
-
-
-  // Load lightweight finance trend for dashboard insights
-  useEffect(() => {
-    let isMounted = true;
-    const loadFinanceTrend = async () => {
-      try {
-        setIncomeLoading(true);
-        const response = await financeAPI.getAll();
-        if (!isMounted) return;
-        const transactions = response.data?.transactions || [];
-        const currency = response.data?.accountInfo?.currency || 'USD';
-        const weeklyTrend = buildIncomeTrend(transactions);
-        const totalIncome = transactions
-          .filter((txn) => txn.type === 'income')
-          .reduce((sum, txn) => sum + (txn.amount || 0), 0);
-        setIncomeTrend(weeklyTrend);
-        setIncomeMeta({ currency, total: totalIncome });
-      } catch (error) {
-        if (isMounted) {
-          setIncomeTrend([]);
-          setIncomeMeta({ currency: 'USD', total: 0 });
-        }
-      } finally {
-        if (isMounted) {
-          setIncomeLoading(false);
-        }
-      }
-    };
-    loadFinanceTrend();
-    return () => {
-      isMounted = false;
-    };
-  }, [buildIncomeTrend]);
 
   // Filter search results
   const searchResults = useMemo(() => {
@@ -205,18 +145,6 @@ export const DashboardHome = ({
       return isToday(new Date(task.dueDate));
     });
   }, [tasks]);
-
-  const productivityTrend = useMemo(() => {
-    if (!analytics?.dailyProductivity || analytics.dailyProductivity.length === 0) {
-      return [];
-    }
-    return analytics.dailyProductivity.slice(-7).map((entry) => ({
-      date: entry.date,
-      label: format(new Date(entry.date), 'EEE'),
-      productivity: entry.productivity ?? 0,
-      completed: entry.completed ?? 0,
-    }));
-  }, [analytics]);
 
   // Calculate today's plan progress
   const todaysPlanProgress = useMemo(() => {
@@ -267,55 +195,120 @@ export const DashboardHome = ({
     return Math.min(100, Math.max(0, percentage));
   }, [tasks]);
 
-  const weeklyFocus = useMemo(() => {
-    if (!Array.isArray(tasks) || tasks.length === 0) {
-      return { pending: [], total: 0, completed: 0 };
-    }
-    const today = new Date();
-    const weekStartDate = startOfWeek(today, { weekStartsOn: 0 });
-    const weekEndDate = endOfWeek(today, { weekStartsOn: 0 });
-    const weeklyTasks = tasks.filter((task) => {
-      if (!task?.dueDate) return false;
-      const dueDate = new Date(task.dueDate);
-      return dueDate >= weekStartDate && dueDate <= weekEndDate;
-    });
-    const pending = weeklyTasks
-      .filter((task) => task.status !== 'completed')
-      .sort((a, b) => {
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return new Date(a.dueDate) - new Date(b.dueDate);
-      });
-    const completed = weeklyTasks.length - pending.length;
-    return {
-      pending,
-      total: weeklyTasks.length,
-      completed,
-    };
-  }, [tasks]);
-
-  const weeklyFocusPreview = weeklyFocus.pending.slice(0, 3);
-  const weeklyFocusCompletion =
-    weeklyFocus.total === 0 ? 0 : Math.round((weeklyFocus.completed / weeklyFocus.total) * 100);
-
-  const latestProductivity =
-    productivityTrend.length > 0 ? productivityTrend[productivityTrend.length - 1].productivity || 0 : 0;
-  const averageProductivity =
-    productivityTrend.length === 0
-      ? 0
-      : Math.round(
-          productivityTrend.reduce((sum, entry) => sum + (entry.productivity || 0), 0) /
-            productivityTrend.length
-        );
-
-  const latestIncome = incomeTrend.length > 0 ? incomeTrend[incomeTrend.length - 1].amount || 0 : 0;
-  const averageIncome =
-    incomeTrend.length === 0
-      ? 0
-      : incomeTrend.reduce((sum, entry) => sum + (entry.amount || 0), 0) / incomeTrend.length;
-
   // Get today's spend (placeholder - would come from finance API)
   const todaysSpend = 0;
+
+  // Get tomorrow's tasks
+  const tomorrowsTasks = useMemo(() => {
+    const tomorrow = addDays(new Date(), 1);
+    return tasks.filter(task => {
+      if (!task.dueDate || task.status === 'completed') return false;
+      const taskDate = new Date(task.dueDate);
+      return isSameDay(taskDate, tomorrow);
+    }).slice(0, 3);
+  }, [tasks]);
+
+  // Get categories/tags overview
+  const categoriesOverview = useMemo(() => {
+    const categoryCounts = {};
+    const defaultCategories = ['Work', 'Health', 'Personal', 'Study'];
+    
+    // Count tasks by category
+    tasks.forEach(task => {
+      // Try to get category from task, or infer from title/description
+      let category = task.category;
+      
+      if (!category) {
+        // Simple keyword-based category detection
+        const titleLower = (task.title || '').toLowerCase();
+        const descLower = (task.description || '').toLowerCase();
+        const combined = `${titleLower} ${descLower}`;
+        
+        if (combined.includes('work') || combined.includes('meeting') || combined.includes('project') || combined.includes('office')) {
+          category = 'Work';
+        } else if (combined.includes('gym') || combined.includes('workout') || combined.includes('exercise') || combined.includes('health') || combined.includes('fitness')) {
+          category = 'Health';
+        } else if (combined.includes('study') || combined.includes('assignment') || combined.includes('homework') || combined.includes('exam') || combined.includes('learn')) {
+          category = 'Study';
+        } else {
+          category = 'Personal';
+        }
+      }
+      
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+
+    // Show categories with tasks, prioritizing default categories
+    const result = [];
+    defaultCategories.forEach(cat => {
+      if (categoryCounts[cat] > 0) {
+        result.push({ name: cat, count: categoryCounts[cat] });
+      }
+    });
+    
+    // Add any other categories that have tasks
+    Object.entries(categoryCounts).forEach(([name, count]) => {
+      if (!defaultCategories.includes(name) && count > 0) {
+        result.push({ name, count });
+      }
+    });
+
+    return result.sort((a, b) => b.count - a.count);
+  }, [tasks]);
+
+  // Productivity and expense data
+  const [productivityData, setProductivityData] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
+  const [expenseLoading, setExpenseLoading] = useState(false);
+
+  useEffect(() => {
+    // Build productivity trend from analytics
+    if (analytics?.dailyProductivity && analytics.dailyProductivity.length > 0) {
+      const trend = analytics.dailyProductivity.slice(-7).map((entry) => ({
+        date: format(new Date(entry.date), 'MMM d'),
+        productivity: entry.productivity ?? 0,
+        completed: entry.completed ?? 0,
+      }));
+      setProductivityData(trend);
+    }
+
+    // Load expense data
+    const loadExpenseData = async () => {
+      try {
+        setExpenseLoading(true);
+        const response = await financeAPI.getAll();
+        const transactions = response.data?.transactions || [];
+        const currency = response.data?.accountInfo?.currency || 'USD';
+        
+        // Get last 7 days of expenses
+        const now = new Date();
+        const expenseTrend = Array.from({ length: 7 }).map((_, index) => {
+          const date = subDays(now, 6 - index);
+          const dayExpenses = transactions
+            .filter(txn => 
+              txn.type === 'expense' &&
+              txn.date &&
+              isSameDay(new Date(txn.date), date)
+            )
+            .reduce((sum, txn) => sum + (txn.amount || 0), 0);
+          
+          return {
+            date: format(date, 'MMM d'),
+            amount: Number(dayExpenses.toFixed(2)),
+          };
+        });
+        
+        setExpenseData(expenseTrend);
+      } catch (error) {
+        console.error('Error loading expense data:', error);
+        setExpenseData([]);
+      } finally {
+        setExpenseLoading(false);
+      }
+    };
+
+    loadExpenseData();
+  }, [analytics]);
 
   // Motivation tips array
   const motivationTips = [
@@ -341,33 +334,33 @@ export const DashboardHome = ({
             {format(new Date(), 'EEEE, MMMM d')}
           </div>
           
-          {/* Search Bar */}
+      {/* Search Bar */}
           <div className="flex-1 max-w-md relative">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] text-sm" />
-            <input
-              type="text"
+          <input
+            type="text"
               placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSearchResults(e.target.value.trim().length > 0);
-              }}
-              onFocus={() => setShowSearchResults(searchQuery.trim().length > 0)}
-              onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSearchResults(e.target.value.trim().length > 0);
+            }}
+            onFocus={() => setShowSearchResults(searchQuery.trim().length > 0)}
+            onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
               className="w-full pl-9 pr-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setShowSearchResults(false);
-                }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setShowSearchResults(false);
+              }}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
-              >
+            >
                 <FaTimes className="text-xs" />
-              </button>
-            )}
-          </div>
+            </button>
+          )}
+        </div>
           
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
@@ -399,15 +392,15 @@ export const DashboardHome = ({
         </div>
       </motion.div>
 
-      {/* Search Results Dropdown */}
-      <AnimatePresence>
+        {/* Search Results Dropdown */}
+        <AnimatePresence>
         {showSearchResults && searchQuery.trim().length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             className="fixed top-[73px] left-1/2 transform -translate-x-1/2 w-full max-w-md mt-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto"
-          >
+            >
               {searchResults.tasks.length > 0 || searchResults.goals.length > 0 ? (
                 <>
               {searchResults.tasks.length > 0 && (
@@ -470,22 +463,22 @@ export const DashboardHome = ({
                   <p className="text-sm text-[var(--text-tertiary)]">Try searching with different keywords</p>
                 </div>
               )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       {/* Main Dashboard Content */}
       <div className="p-4 md:p-6 space-y-4">
         {/* Top Row: Today's Progress, Pending, Goals, Challenges */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {/* Today's Progress Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-            style={{
+          style={{
               background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)',
             }}
           >
@@ -494,31 +487,31 @@ export const DashboardHome = ({
               <div className="flex items-baseline gap-2 mb-2">
                 <FaClock className="text-purple-500 text-base" />
                 <span className="text-3xl font-bold text-[var(--text-primary)]">{todaysPlanProgress}%</span>
+          </div>
               </div>
-            </div>
             {nextTask ? (
               <div className="pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-1">Next task</p>
                 <p className="text-sm font-medium text-[var(--text-primary)] truncate">{nextTask.title}</p>
-                {nextTask.dueDate && (
+                  {nextTask.dueDate && (
                   <p className="text-xs text-[var(--text-tertiary)] mt-1">{format(new Date(nextTask.dueDate), 'h:mm a')}</p>
-                )}
+                  )}
               </div>
             ) : (
               <div className="pt-2">
                 <CatWorkingIllustration className="w-16 h-16 mx-auto opacity-40" />
-              </div>
+          </div>
             )}
-          </motion.div>
+        </motion.div>
 
-          {/* Pending Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        {/* Pending Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0.1, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-            style={{
+          style={{
               background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)',
             }}
           >
@@ -526,56 +519,56 @@ export const DashboardHome = ({
             <div className="mb-3">
               <p className="text-4xl font-bold text-[var(--text-primary)] mb-1">{pendingTasks.length}</p>
               <p className="text-xs text-[var(--text-tertiary)]">{format(new Date(), 'h:mm a')}</p>
-            </div>
+          </div>
             {pendingTasks.length > 0 ? (
               <div className="pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-2">Upcoming Tasks</p>
                 <div className="space-y-1.5">
-                  {pendingTasks.slice(0, 2).map(task => (
-                    <div key={task._id} className="flex items-center gap-2 min-w-0">
+                {pendingTasks.slice(0, 2).map(task => (
+                  <div key={task._id} className="flex items-center gap-2 min-w-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></div>
                       <p className="text-xs text-[var(--text-primary)] truncate flex-1">{task.title}</p>
-                      {task.dueDate && (
+                    {task.dueDate && (
                         <span className="text-[10px] text-[var(--text-tertiary)] flex-shrink-0 whitespace-nowrap">
                           {format(new Date(task.dueDate), 'h:mm a')}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                  {pendingTasks.length > 2 && (
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {pendingTasks.length > 2 && (
                     <p className="text-[10px] text-[var(--text-tertiary)] mt-1">+{pendingTasks.length - 2} more</p>
-                  )}
-                </div>
+                )}
               </div>
+            </div>
             ) : (
               <SquirrelChecklistIllustration className="w-16 h-16 mx-auto opacity-40" />
-            )}
-          </motion.div>
+          )}
+        </motion.div>
 
-          {/* Goals Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        {/* Goals Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0.2, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-            style={{
+          style={{
               background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)',
             }}
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Goals</h3>
               <FaBullseye className="text-green-500 text-sm" />
-            </div>
+          </div>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
                 <FaBullseye className="text-green-500 text-base" />
-              </div>
+            </div>
               <div>
                 <p className="text-3xl font-bold text-[var(--text-primary)]">{activeGoals.length}</p>
                 <p className="text-xs text-[var(--text-tertiary)]">Active</p>
-              </div>
             </div>
+          </div>
             {activeGoals.length > 0 ? (
               <div className="pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-secondary)] mb-2">Active</p>
@@ -588,8 +581,8 @@ export const DashboardHome = ({
                         <div className="flex-1 h-1.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500"
-                            style={{ width: `${progress}%` }}
-                          />
+                          style={{ width: `${progress}%` }}
+                        />
                         </div>
                         <span className="text-xs text-[var(--text-primary)] font-medium">{progress}</span>
                       </div>
@@ -603,39 +596,39 @@ export const DashboardHome = ({
             ) : (
               <div className="pt-2">
                 <EmptyGoalsIllustration className="w-16 h-16 mx-auto opacity-40" />
-              </div>
-            )}
-          </motion.div>
+            </div>
+          )}
+        </motion.div>
 
-          {/* Challenges Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        {/* Challenges Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
             transition={{ delay: 0.3, duration: 0.3 }}
             className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg cursor-pointer"
-            onClick={() => navigate('/dashboard/tasks?tab=challenges')}
-            style={{
+          onClick={() => navigate('/dashboard/tasks?tab=challenges')}
+          style={{
               background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
             }}
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Challenges</h3>
               <FaEllipsisV className="text-[var(--text-tertiary)] text-xs" />
-            </div>
+          </div>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
                 <FaTrophy className="text-yellow-500 text-base" />
-              </div>
+            </div>
               <div>
                 <p className="text-3xl font-bold text-[var(--text-primary)]">{activeChallenges.length}</p>
                 <p className="text-xs text-[var(--text-tertiary)]">Active</p>
-              </div>
             </div>
+          </div>
             {activeChallenges.length === 0 && (
               <div className="pt-2">
                 <EmptyChallengesIllustration className="w-16 h-16 mx-auto opacity-40" />
-              </div>
+                        </div>
             )}
             <button
               onClick={(e) => {
@@ -647,24 +640,24 @@ export const DashboardHome = ({
               <FaPlus className="text-xs" />
               <span>Smart Task</span>
             </button>
-          </motion.div>
-        </div>
+        </motion.div>
+      </div>
 
         {/* Middle Section: Today's Plan, Streak, Motivation */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
           {/* Today's Plan Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.01 }}
             transition={{ delay: 0.4, duration: 0.3 }}
             className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Plan</h3>
-              <div className="relative menu-container">
+            <div className="relative menu-container">
                 <button
-                  onClick={() => setShowMenu(!showMenu)}
+                onClick={() => setShowMenu(!showMenu)}
                   className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors p-1"
                 >
                   <FaEllipsisV className="text-xs" />
@@ -725,19 +718,19 @@ export const DashboardHome = ({
               </AnimatePresence>
             </div>
           </div>
-            {todaysPlanExpanded && (
+          {todaysPlanExpanded && (
               <div className="space-y-2">
-                {sortedTodaysTasks.filter(t => t.status !== 'completed').length > 0 ? (
-                  sortedTodaysTasks
-                    .filter(t => t.status !== 'completed')
+              {sortedTodaysTasks.filter(t => t.status !== 'completed').length > 0 ? (
+                sortedTodaysTasks
+                  .filter(t => t.status !== 'completed')
                     .slice(0, 3)
-                    .map((task) => (
+                  .map((task) => (
                     <motion.div
-                      key={task._id}
+                    key={task._id}
                       whileHover={{ x: 4 }}
                       className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer group"
                       onClick={() => onEditTask && onEditTask(task)}
-                    >
+                  >
                       <button
                         type="button"
                         onClick={(e) => {
@@ -755,23 +748,23 @@ export const DashboardHome = ({
                           <FaCheck className="w-3 h-3 text-white" />
                         )}
                       </button>
-                      <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[var(--text-primary)]">{task.title}</p>
-                        {task.dueDate && (
+                      {task.dueDate && (
                           <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{format(new Date(task.dueDate), 'h:mm a')}</p>
-                        )}
-                      </div>
+                      )}
+                    </div>
                       <FaArrowRight className="text-[var(--text-tertiary)] text-xs" />
                     </motion.div>
-                  ))
-                ) : (
+                ))
+              ) : (
                   <div className="text-center py-4">
                     <EmptyTasksIllustration className="w-24 h-24 mx-auto mb-2 opacity-50" />
                     <p className="text-xs text-[var(--text-tertiary)]">No pending tasks for today</p>
                   </div>
                 )}
-              </div>
-            )}
+            </div>
+          )}
             
             {/* Stay Consistent Section */}
             <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
@@ -783,308 +776,226 @@ export const DashboardHome = ({
           {/* Right Side: Streak */}
           <div className="flex flex-col gap-3 md:gap-4">
             {/* Streak Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02, y: -2 }}
               transition={{ delay: 0.5, duration: 0.3 }}
               className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
-              style={{
+            style={{
                 background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
               }}
             >
               <div className="flex items-center gap-2 mb-3">
                 <FaFire className="text-orange-500 text-sm" />
                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">Streak</h3>
-              </div>
+            </div>
               <p className="text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
-            </motion.div>
-
-            {/* Today's Spend Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02, y: -4 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300"
-              style={{
-                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
-                borderColor: 'rgba(255, 255, 255, 0.08)',
-                boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-              }}
-            >
-              <div className="flex items-center justify-between mb-4 lg:mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <span className="text-blue-600 dark:text-blue-400 font-semibold text-lg lg:text-xl">$</span>
-                  </div>
-                  <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Spend</h3>
-                </div>
-                <button
-                  onClick={() => navigate('/dashboard/finance')}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-                >
-                  <FaPlus />
-                </button>
-              </div>
-              <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
-              <p className="text-xs lg:text-sm text-[var(--text-tertiary)] mt-2">Track your expenses</p>
             </motion.div>
           </div>
         </div>
 
-      {/* Lower Middle Section: Momentum */}
-      <div className="grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-        {/* Weekly Momentum Card */}
+      {/* Bottom Section: Today's Spend */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        {/* Today's Spend Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-          className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0 w-full"
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="relative overflow-hidden rounded-xl md:rounded-2xl p-3 md:p-6 shadow-md md:shadow-lg backdrop-blur-sm border transition-all duration-300 flex-shrink-0 w-full"
+          style={{
+            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+          }}
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)]">
-              <FaCompass className="text-base lg:text-lg" />
+          <div className="flex items-center justify-between mb-4 lg:mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <span className="text-blue-600 dark:text-blue-400 font-semibold text-lg lg:text-xl">$</span>
+              </div>
+              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)]">Today's Spend</h3>
             </div>
-            <div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[var(--text-primary)]">Momentum map</h3>
-              <p className="text-xs text-[var(--text-tertiary)]">Place the moves that matter</p>
-            </div>
+            <button
+              onClick={() => navigate('/dashboard/finance')}
+              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <FaPlus />
+            </button>
           </div>
-          {weeklyFocus.total > 0 ? (
-            <div className="space-y-3">
-              {weeklyFocusPreview.map((task) => (
-                <div
-                  key={task._id}
-                  className="flex items-center gap-3 rounded-xl border border-[var(--border-color)]/70 px-3 py-2"
-                >
-                  <span
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ${
-                      task.priority === 'high'
-                        ? 'bg-red-500/15 text-red-500'
-                        : task.priority === 'medium'
-                        ? 'bg-yellow-500/15 text-yellow-500'
-                        : 'bg-blue-500/15 text-blue-500'
-                    }`}
-                  >
-                    {task.priority?.charAt(0)?.toUpperCase() || 'L'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
-                    <p className="text-[11px] text-[var(--text-tertiary)]">
-                      {task.dueDate ? format(new Date(task.dueDate), 'EEE, MMM d') : 'No due date'}
-                    </p>
-                  </div>
-          <button
-                    className="text-[10px] font-semibold text-[var(--accent-primary)] hover:underline"
-                    onClick={() =>
-                      navigate('/dashboard/tasks', { state: { highlightTaskId: task._id } })
-                    }
-                  >
-                    Jump
-          </button>
-          </div>
-              ))}
-              {weeklyFocus.pending.length > weeklyFocusPreview.length && (
-                <p className="text-xs text-[var(--text-tertiary)]">
-                  +{weeklyFocus.pending.length - weeklyFocusPreview.length} more action
-                  {weeklyFocus.pending.length - weeklyFocusPreview.length === 1 ? '' : 's'} to place
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-dashed border-[var(--border-color)] p-4 text-center">
-              <p className="text-sm text-[var(--text-secondary)] mb-2">No week-specific tasks yet.</p>
-              <p className="text-xs text-[var(--text-tertiary)]">Drop two anchor tasks to set the tone.</p>
-            </div>
-          )}
-          <div className="mt-5">
-            <div className="flex items-center justify-between text-[11px] text-[var(--text-tertiary)] mb-1.5">
-              <span>Weekly flow</span>
-              <span>{weeklyFocusCompletion}% locked in</span>
-            </div>
-            <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-full transition-all duration-500"
-                style={{ width: `${weeklyFocusCompletion}%` }}
-            />
-          </div>
-          </div>
-          <button
-            onClick={() => navigate('/dashboard/tasks')}
-            className="w-full mt-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] text-sm font-medium text-[var(--text-primary)] transition-colors"
-          >
-            Plan the rest of the week
-          </button>
+          <p className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
+          <p className="text-xs lg:text-sm text-[var(--text-tertiary)] mt-2">Track your expenses</p>
         </motion.div>
+
       </div>
 
-      {/* Analytics Section - Full Integration */}
+      {/* Categories/Tags Overview and Tomorrow's Tasks - Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+        {/* Categories/Tags Overview */}
+        {categoriesOverview.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.3 }}
+            className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm"
+          >
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Tasks by Category</h3>
+            <div className="flex flex-wrap items-center gap-3 md:gap-4">
+              {categoriesOverview.map((category, index) => (
+                <div
+                  key={category.name}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)]"
+                >
+                  <span className="text-sm font-medium text-[var(--text-primary)]">{category.name}</span>
+                  <span className="text-sm font-bold text-[var(--accent-primary)]">{category.count}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Tomorrow's Tasks */}
+        {tomorrowsTasks.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0, duration: 0.3 }}
+            className="rounded-2xl p-4 md:p-6 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-indigo-500/10 border border-[var(--border-color)] backdrop-blur-sm"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base md:text-lg font-semibold text-[var(--text-primary)]">Tomorrow's Tasks</h3>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">
+                  {tomorrowsTasks.length} task{tomorrowsTasks.length !== 1 ? 's' : ''} scheduled
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <FaClock className="text-purple-500 text-lg" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              {tomorrowsTasks.map((task, index) => (
+                <motion.div
+                  key={task._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.1 + index * 0.1, duration: 0.3 }}
+                  onClick={() => onEditTask && onEditTask(task)}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] border border-[var(--border-color)]/50 cursor-pointer transition-all duration-200 group"
+                >
+                  <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-500"></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{task.title}</p>
+                    {task.description && (
+                      <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">{task.description}</p>
+                    )}
+                  </div>
+                  <FaArrowRight className="text-[var(--text-tertiary)] text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Productivity and Expense Chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0, duration: 0.5 }}
-        className="rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-md md:shadow-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]"
+        transition={{ delay: 1.2, duration: 0.3 }}
+        className="rounded-2xl p-4 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm"
       >
-        <ErrorBoundary>
-          <LazyWrapper minHeight="400px">
-            <AnalyticsDashboard
-              analytics={analytics}
-              tasks={tasks || []}
-              goals={goals || []}
-              habits={habits || []}
-              user={user}
-            />
-          </LazyWrapper>
-        </ErrorBoundary>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 md:gap-4 lg:gap-6 mt-4 md:mt-6">
-          <div className="rounded-xl md:rounded-2xl border border-[var(--border-color)] p-4 md:p-6 bg-[var(--bg-secondary)]">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Productivity pulse</p>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">{latestProductivity}%</p>
-                <p className="text-[11px] text-[var(--text-tertiary)]">Today</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-[var(--text-tertiary)]">Avg (7d)</p>
-                <p className="text-lg font-semibold text-[var(--text-primary)]">{averageProductivity}%</p>
-              </div>
-            </div>
-            {productivityTrend.length > 0 ? (
+        <h3 className="text-base md:text-lg font-semibold text-[var(--text-primary)] mb-4">Productivity & Expenses</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {/* Productivity Chart */}
+          <div>
+            <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Productivity Trend (7 days)</h4>
+            {productivityData.length > 0 ? (
               <div className="h-64">
-                <ChartErrorBoundary
-                  fallback={
-                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                      <p>Chart unavailable</p>
-                      <p className="text-[11px] mt-1">Error loading productivity data.</p>
-                    </div>
-                  }
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={productivityTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
-                      <XAxis
-                        dataKey="label"
-                        stroke="var(--text-tertiary)"
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <YAxis
-                        stroke="var(--text-tertiary)"
-                        domain={[0, 100]}
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '12px',
-                          color: 'var(--text-primary)',
-                        }}
-                        formatter={(value) => [`${value}%`, 'Productivity']}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="productivity"
-                        stroke="#8b5cf6"
-                        strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2, stroke: '#8b5cf6', fill: '#8b5cf6' }}
-                        activeDot={{ r: 6, stroke: '#8b5cf6', fill: '#8b5cf6' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartErrorBoundary>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={productivityData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                    <XAxis
+                      dataKey="date"
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <YAxis
+                      stroke="var(--text-tertiary)"
+                      domain={[0, 100]}
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        color: 'var(--text-primary)',
+                      }}
+                      formatter={(value) => [`${value}%`, 'Productivity']}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="productivity"
+                      stroke="#8b5cf6"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, stroke: '#8b5cf6', fill: '#8b5cf6' }}
+                      activeDot={{ r: 6, stroke: '#8b5cf6', fill: '#8b5cf6' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                <p>No productivity data yet.</p>
-                <p className="text-[11px] mt-1">Complete tasks to unlock the trend.</p>
+              <div className="h-64 flex items-center justify-center text-[var(--text-tertiary)] text-sm">
+                <p>No productivity data available</p>
               </div>
             )}
           </div>
-          <div className="rounded-xl border border-[var(--border-color)] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)] mb-1">Income runway</p>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">
-                  {formatCurrency(latestIncome, incomeMeta.currency, { maximumFractionDigits: 0 })}
-                </p>
-                <p className="text-[11px] text-[var(--text-tertiary)]">Last week</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-[var(--text-tertiary)]">Avg (6w)</p>
-                <p className="text-lg font-semibold text-[var(--text-primary)]">
-                  {formatCurrency(averageIncome || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
-                </p>
-                <p className="text-[11px] text-[var(--text-tertiary)] mt-1">
-                  Total: {formatCurrency(incomeMeta.total || 0, incomeMeta.currency, { maximumFractionDigits: 0 })}
-                </p>
-              </div>
-            </div>
-            {incomeLoading ? (
+
+          {/* Expense Chart */}
+          <div>
+            <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Daily Expenses (7 days)</h4>
+            {expenseLoading ? (
               <div className="h-64 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--accent-primary)] border-t-transparent"></div>
               </div>
-            ) : incomeTrend.length > 0 ? (
+            ) : expenseData.length > 0 ? (
               <div className="h-64">
-                <ChartErrorBoundary
-                  fallback={
-                    <div className="h-full flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                      <p>Chart unavailable</p>
-                      <p className="text-[11px] mt-1">Error loading income data.</p>
-                    </div>
-                  }
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={incomeTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
-                      <XAxis
-                        dataKey="label"
-                        stroke="var(--text-tertiary)"
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <YAxis
-                        stroke="var(--text-tertiary)"
-                        tickFormatter={(value) =>
-                          formatCurrency(value || 0, incomeMeta.currency, {
-                            maximumFractionDigits: 0,
-                            showSymbol: false,
-                          })
-                        }
-                        tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '12px',
-                          color: 'var(--text-primary)',
-                        }}
-                        formatter={(value) => [
-                          formatCurrency(value || 0, incomeMeta.currency, { maximumFractionDigits: 2 }),
-                          'Income',
-                        ]}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="amount"
-                        stroke="#fbbf24"
-                        strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2, stroke: '#fbbf24', fill: '#fbbf24' }}
-                        activeDot={{ r: 6, stroke: '#fbbf24', fill: '#fbbf24' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartErrorBoundary>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={expenseData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.4} />
+                    <XAxis
+                      dataKey="date"
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <YAxis
+                      stroke="var(--text-tertiary)"
+                      tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        color: 'var(--text-primary)',
+                      }}
+                      formatter={(value) => [formatCurrency(value || 0, 'USD', { maximumFractionDigits: 2 }), 'Expense']}
+                    />
+                    <Bar dataKey="amount" fill="#f59e0b" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-center text-[var(--text-tertiary)] text-sm">
-                <p>No income data captured.</p>
-                <p className="text-[11px] mt-1">Log transactions in Finance to see this fill in.</p>
+              <div className="h-64 flex items-center justify-center text-[var(--text-tertiary)] text-sm">
+                <p>No expense data available</p>
               </div>
             )}
           </div>
         </div>
       </motion.div>
+      </div>
     </div>
   );
 };
@@ -1305,10 +1216,10 @@ export const DashboardTasks = ({
         className="mb-4 md:mb-6 lg:mb-8"
       >
         <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
-          {activeTab === 'tasks' ? 'Tasks' : activeTab === 'goals' ? 'Goals' : activeTab === 'challenges' ? 'Challenges' : 'Calendar'}
+          {activeTab === 'tasks' ? 'Tasks' : 'Calendar'}
         </h1>
         <p className="text-sm md:text-base text-[var(--text-secondary)]">
-          {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : activeTab === 'goals' ? 'Track your progress and achievements' : activeTab === 'challenges' ? 'Complete challenges and earn rewards' : 'View your schedule and timeline'}
+          {activeTab === 'tasks' ? 'Manage your daily tasks with ease' : 'View your schedule and timeline'}
         </p>
       </motion.div>
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
@@ -1361,26 +1272,6 @@ export const DashboardTasks = ({
             Tasks
           </button>
           <button
-            onClick={() => setActiveTab('goals')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'goals'
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Goals
-          </button>
-          <button
-            onClick={() => setActiveTab('challenges')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'challenges'
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            Challenges
-          </button>
-          <button
             onClick={() => setActiveTab('calendar')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'calendar'
@@ -1394,25 +1285,6 @@ export const DashboardTasks = ({
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'goals' && (
-        <DashboardGoals
-          goals={goals}
-          tasks={tasks}
-          onUpdateGoalProgress={onUpdateGoalProgress}
-          onDeleteGoal={onDeleteGoal}
-          onEditGoal={onEditGoal}
-          setIsGoalModalOpen={setIsGoalModalOpen}
-          setEditingGoal={setEditingGoal}
-          hideHeader={true}
-        />
-      )}
-
-      {activeTab === 'challenges' && (
-        <Suspense fallback={<Skeleton />}>
-          <Challenges />
-        </Suspense>
-      )}
-
       {activeTab === 'calendar' && (
         <DashboardCalendar
           tasks={tasks}
@@ -1569,7 +1441,7 @@ export const DashboardTasks = ({
             ) : (
               <div className="text-center py-12">
                 <EmptyTasksIllustration />
-                <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
+            <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No tasks found</p>
                 <p className="text-sm text-[var(--text-tertiary)] mb-6">Get started by creating your first task</p>
                 <button
                   onClick={() => {

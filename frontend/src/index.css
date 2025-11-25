@@ -542,4 +542,41 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
   }
+
+  /* Roadmap Scrollbar - Premium Styling */
+  .roadmap-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.4) transparent;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.4);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.6);
+  }
+
+  html[data-theme='dark'] .roadmap-scroll {
+    scrollbar-color: rgba(139, 92, 246, 0.5) transparent;
+  }
+
+  html[data-theme='dark'] .roadmap-scroll::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.5);
+  }
+
+  html[data-theme='dark'] .roadmap-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.7);
+  }
 }
