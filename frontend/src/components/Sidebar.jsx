@@ -433,10 +433,10 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
 
   return (
     <div className="border-t border-[var(--border-color)]">
-      {/* Team and Profile Section */}
+      {/* Socials Section */}
       <div className="p-3 space-y-1">
         <button
-          onClick={() => navigate && navigate('/dashboard/team')}
+          onClick={() => navigate && navigate('/dashboard/profile')}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
         >
           <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
@@ -451,26 +451,7 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
             transition={{ duration: 0.2 }}
             className="font-medium text-sm whitespace-nowrap overflow-hidden"
           >
-            Team
-          </motion.span>
-        </button>
-        <button
-          onClick={() => navigate && navigate('/dashboard/profile')}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-        >
-          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-            <FaUser className="w-full h-full" />
-          </div>
-          <motion.span
-            initial={false}
-            animate={{
-              opacity: shouldExpand ? 1 : 0,
-              width: shouldExpand ? 'auto' : 0,
-            }}
-            transition={{ duration: 0.2 }}
-            className="font-medium text-sm whitespace-nowrap overflow-hidden"
-          >
-            Profile
+            Socials
           </motion.span>
         </button>
       </div>
@@ -626,25 +607,16 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
           {/* Bottom Section */}
           <div className="border-t border-[var(--border-color)]">
-            {/* Team and Profile Section */}
+            {/* Socials Section */}
             <div className="p-3 space-y-1">
-              <button
-                onClick={() => navigate('/dashboard/team')}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-              >
-                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                  <FaUserFriends className="w-full h-full" />
-                </div>
-                <span className="font-medium text-sm">Team</span>
-              </button>
               <button
                 onClick={() => navigate('/dashboard/profile')}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
               >
                 <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                  <FaUser className="w-full h-full" />
+                  <FaUserFriends className="w-full h-full" />
                 </div>
-                <span className="font-medium text-sm">Profile</span>
+                <span className="font-medium text-sm">Socials</span>
               </button>
             </div>
 
