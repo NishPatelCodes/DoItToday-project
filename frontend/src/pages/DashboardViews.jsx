@@ -476,8 +476,8 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            transition={{ delay: 0, duration: 0.3 }}
-            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+            transition={{ delay: 0, duration: 0.15, ease: "easeOut" }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-150 hover:shadow-lg"
           style={{
               background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)',
             }}
@@ -509,8 +509,8 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            transition={{ delay: 0.1, duration: 0.3 }}
-            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+            transition={{ delay: 0.1, duration: 0.15, ease: "easeOut" }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-150 hover:shadow-lg"
           style={{
               background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)',
             }}
@@ -550,8 +550,8 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            transition={{ delay: 0.2, duration: 0.3 }}
-            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+            transition={{ delay: 0.2, duration: 0.15, ease: "easeOut" }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-150 hover:shadow-lg"
           style={{
               background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)',
             }}
@@ -605,8 +605,8 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02, y: -2 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
-            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg cursor-pointer"
+            transition={{ delay: 0.3, duration: 0.15, ease: "easeOut" }}
+            className="relative overflow-hidden rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-150 hover:shadow-lg cursor-pointer"
           onClick={() => navigate('/dashboard/tasks?tab=challenges')}
           style={{
               background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
@@ -650,8 +650,8 @@ export const DashboardHome = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.01 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-            className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+            transition={{ delay: 0.4, duration: 0.15, ease: "easeOut" }}
+            className="lg:col-span-2 rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-150 hover:shadow-lg"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Today's Plan</h3>
@@ -780,8 +780,8 @@ export const DashboardHome = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02, y: -2 }}
-              transition={{ delay: 0.5, duration: 0.3 }}
-              className="rounded-2xl p-5 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+              transition={{ delay: 0.5, duration: 0.15, ease: "easeOut" }}
+              className="rounded-2xl p-5 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-150 hover:shadow-lg"
             style={{
                 background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
               }}
@@ -798,8 +798,8 @@ export const DashboardHome = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02, y: -2 }}
-              transition={{ delay: 0.6, duration: 0.3 }}
-              className="rounded-2xl p-5 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+              transition={{ delay: 0.6, duration: 0.15, ease: "easeOut" }}
+              className="rounded-2xl p-5 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-150 hover:shadow-lg"
               style={{
                 background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
                 borderColor: 'rgba(255, 255, 255, 0.08)',
