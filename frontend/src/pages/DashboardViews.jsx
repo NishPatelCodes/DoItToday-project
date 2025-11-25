@@ -781,16 +781,16 @@ export const DashboardHome = ({
             animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02, y: -2 }}
               transition={{ delay: 0.5, duration: 0.3 }}
-              className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+              className="rounded-2xl p-5 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
             style={{
                 background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
               }}
             >
-              <div className="flex items-center gap-2 mb-3">
-                <FaFire className="text-orange-500 text-sm" />
+              <div className="flex items-center gap-2 mb-4">
+                <FaFire className="text-orange-500 text-base" />
                 <h3 className="text-sm font-semibold text-[var(--text-primary)]">Streak</h3>
             </div>
-              <p className="text-4xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
+              <p className="text-4xl md:text-5xl font-bold text-[var(--text-primary)]">{user?.streak || 0} days</p>
             </motion.div>
 
             {/* Today's Spend Card */}
@@ -799,14 +799,14 @@ export const DashboardHome = ({
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02, y: -2 }}
               transition={{ delay: 0.6, duration: 0.3 }}
-              className="rounded-2xl p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
+              className="rounded-2xl p-5 md:p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] backdrop-blur-sm transition-all duration-300 hover:shadow-lg"
               style={{
                 background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.12) 100%)',
                 borderColor: 'rgba(255, 255, 255, 0.08)',
                 boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
               }}
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                     <span className="text-blue-600 dark:text-blue-400 font-semibold text-base">$</span>
@@ -820,7 +820,7 @@ export const DashboardHome = ({
                   <FaPlus className="text-xs" />
                 </button>
               </div>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">${todaysSpend.toFixed(2)}</p>
               <p className="text-xs text-[var(--text-tertiary)] mt-2">Track your expenses</p>
             </motion.div>
           </div>
