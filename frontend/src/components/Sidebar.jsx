@@ -75,8 +75,9 @@ export const MainContentWrapper = ({ children, className, ...props }) => {
         marginLeft: isMobile ? 0 : `${sidebarWidth}px`,
       }}
       transition={{
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
+        type: 'spring',
+        damping: 20,
+        stiffness: 200,
       }}
       className={cn('flex-1 w-full pt-16 md:pt-0', className)}
       style={{ willChange: 'margin-left' }}
@@ -200,8 +201,9 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         width: sidebarWidth,
       }}
       transition={{
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
+        type: 'spring',
+        damping: 20,
+        stiffness: 200,
       }}
       className={cn(
         'hidden md:flex fixed left-0 top-0 h-screen border-r border-[var(--border-color)] z-50 flex-col overflow-hidden',
@@ -316,10 +318,12 @@ export const SidebarLink = ({ link, className, ...props }) => {
         animate={{
           opacity: shouldExpand ? 1 : 0,
           width: shouldExpand ? 'auto' : 0,
+          x: shouldExpand ? 0 : -8,
         }}
         transition={{
-          duration: 0.3,
-          ease: [0.4, 0, 0.2, 1],
+          type: 'spring',
+          damping: 20,
+          stiffness: 200,
         }}
         className="font-medium text-sm whitespace-nowrap overflow-hidden"
         style={{ 
@@ -364,15 +368,8 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
 
   return (
     <div className="p-4 border-b border-[var(--border-color)]">
-      <motion.div
-        initial={false}
-        animate={{
-          justifyContent: shouldExpand ? 'space-between' : 'center',
-        }}
-        transition={{ duration: 0.3 }}
-        className="flex items-center gap-3"
-      >
-        {/* Logo icon - always visible */}
+      <div className="flex items-center gap-3" style={{ minHeight: '2rem' }}>
+        {/* Logo icon - always visible, fixed size */}
         <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center" style={{ paddingLeft: '12px', paddingRight: '12px' }}>
           <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
             D
@@ -383,13 +380,19 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
           animate={{
             opacity: shouldExpand ? 1 : 0,
             width: shouldExpand ? 'auto' : 0,
+            x: shouldExpand ? 0 : -8,
           }}
           transition={{
-            duration: 0.3,
-            ease: [0.4, 0, 0.2, 1],
+            type: 'spring',
+            damping: 20,
+            stiffness: 200,
           }}
           className="overflow-hidden flex flex-col justify-center"
-          style={{ minHeight: '2rem' }}
+          style={{ 
+            minHeight: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
           <h1 className="text-base font-bold gradient-text whitespace-nowrap leading-tight">DoItToday</h1>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-tight">Task Manager</p>
@@ -401,13 +404,13 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             exit={{ opacity: 0, scale: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setOpen && setOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0 ml-auto"
             aria-label="Collapse sidebar"
           >
             <FaTimes className="w-4 h-4" />
           </motion.button>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 };
@@ -458,13 +461,19 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
             animate={{
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
+              x: shouldExpand ? 0 : -8,
             }}
             transition={{
-              duration: 0.3,
-              ease: [0.4, 0, 0.2, 1],
+              type: 'spring',
+              damping: 20,
+              stiffness: 200,
             }}
             className="overflow-hidden text-left flex flex-col justify-center"
-            style={{ minHeight: '2rem' }}
+            style={{ 
+              minHeight: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+            }}
           >
             <p className="text-sm font-medium text-[var(--text-primary)] truncate leading-tight">
               {user?.name || 'User'}
@@ -490,10 +499,12 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
             animate={{
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
+              x: shouldExpand ? 0 : -8,
             }}
             transition={{
-              duration: 0.3,
-              ease: [0.4, 0, 0.2, 1],
+              type: 'spring',
+              damping: 20,
+              stiffness: 200,
             }}
             className="font-medium text-sm whitespace-nowrap overflow-hidden"
             style={{ 
@@ -517,10 +528,12 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
             animate={{
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
+              x: shouldExpand ? 0 : -8,
             }}
             transition={{
-              duration: 0.3,
-              ease: [0.4, 0, 0.2, 1],
+              type: 'spring',
+              damping: 20,
+              stiffness: 200,
             }}
             className="font-medium text-sm whitespace-nowrap overflow-hidden"
             style={{ 
@@ -564,7 +577,6 @@ const MainSidebar = ({ isOpen, onClose }) => {
     { icon: FaStickyNote, label: 'Notes', href: '/dashboard/notes' },
     { icon: FaHeart, label: 'Gratitude', href: '/dashboard/gratitude' },
     { icon: FaChartLine, label: 'Analytics', href: '/dashboard/analytics' },
-    { icon: FaUserFriends, label: 'Socials', href: '/dashboard/profile' },
   ];
 
   return (
