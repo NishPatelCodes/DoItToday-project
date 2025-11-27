@@ -219,6 +219,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         willChange: 'width',
         overflow: 'hidden',
         backdropFilter: 'blur(10px)',
+        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)',
       }}
       {...props}
     >
@@ -309,10 +310,10 @@ export const SidebarLink = ({ link, className, ...props }) => {
           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
         className
       )}
-      style={{ paddingLeft: '0px', paddingRight: '0px', minHeight: '40px' }}
+      style={{ paddingLeft: '0px', paddingRight: '0px', minHeight: '40px', position: 'relative' }}
       {...props}
     >
-      <div className="flex-shrink-0 w-full flex items-center justify-center" style={{ position: 'relative', zIndex: 1, width: '60px', minWidth: '60px' }}>
+      <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
         <div className="w-5 h-5 flex items-center justify-center">
           {typeof link.icon === 'function' ? (
             <link.icon className="w-full h-full flex-shrink-0" />
@@ -376,14 +377,13 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
   const shouldExpand = isMobile ? actualOpen : (actualOpen || isHovered);
 
   return (
-    <div className="p-4 border-b border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ minHeight: '64px' }}>
-      <div className="relative flex items-center" style={{ minHeight: '2rem', width: '100%' }}>
+    <div className="relative border-b border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ minHeight: '64px', width: '100%', backgroundColor: 'var(--bg-secondary)' }}>
+      <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
         {/* Logo icon - always visible, fixed size */}
-        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '60px', minWidth: '60px', position: 'relative', zIndex: 1 }}>
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
-            D
-          </div>
+        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
+          D
         </div>
+      </div>
         <motion.div
           initial={false}
           animate={{
@@ -403,6 +403,8 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             alignItems: 'flex-start',
             position: 'absolute',
             left: '60px',
+            top: '50%',
+            transform: 'translateY(-50%)',
             maxWidth: 'calc(100% - 100px)',
           }}
         >
@@ -416,7 +418,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             exit={{ opacity: 0, scale: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setOpen && setOpen(false)}
-            className="absolute right-4 p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
             aria-label="Collapse sidebar"
             style={{ zIndex: 2 }}
           >
@@ -459,15 +461,15 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
   };
 
   return (
-    <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', minWidth: '100%' }}>
+    <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', minWidth: '100%' }}>
       {/* User Profile Section */}
-      <div className="p-3 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]">
+      <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={() => navigate && navigate('/dashboard/profile')}
           className="relative flex items-center w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200"
-          style={{ padding: '8px 0px', minHeight: '48px' }}
+          style={{ padding: '0px', minHeight: '48px', position: 'relative' }}
         >
-          <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '60px', minWidth: '60px', position: 'relative', zIndex: 1 }}>
+          <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
               {getUserInitials()}
             </div>
@@ -503,13 +505,13 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
       </div>
 
       {/* Settings and Logout */}
-      <div className="p-3 border-t border-[var(--border-color)] space-y-1">
+      <div className="border-t border-[var(--border-color)] space-y-1 bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={toggleTheme}
-          className="relative flex items-center py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-          style={{ paddingLeft: '0px', paddingRight: '0px', minHeight: '40px' }}
+          className="relative flex items-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+          style={{ padding: '0px', minHeight: '40px', position: 'relative' }}
         >
-          <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '60px', minWidth: '60px', position: 'relative', zIndex: 1 }}>
+          <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
             <div className="w-5 h-5 flex items-center justify-center">
               {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
             </div>
@@ -539,10 +541,10 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
         </button>
         <button
           onClick={logout}
-          className="relative flex items-center py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
-          style={{ paddingLeft: '0px', paddingRight: '0px', minHeight: '40px' }}
+          className="relative flex items-center rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+          style={{ padding: '0px', minHeight: '40px', position: 'relative' }}
         >
-          <div className="flex-shrink-0 flex items-center justify-center" style={{ width: '60px', minWidth: '60px', position: 'relative', zIndex: 1 }}>
+          <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
             <div className="w-5 h-5 flex items-center justify-center">
               <FaSignOutAlt className="w-full h-full" />
             </div>
@@ -613,7 +615,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           <DesktopSidebarLogo open={open} setOpen={setOpen} />
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-hidden p-3 space-y-1 bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', minWidth: '100%' }}>
+          <nav className="flex-1 overflow-hidden space-y-1 bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', minWidth: '100%', paddingTop: '12px', paddingBottom: '12px' }}>
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
