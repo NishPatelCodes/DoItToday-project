@@ -249,7 +249,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-x-hidden"
+            className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-x-hidden"
             onClick={handleClose}
         >
           <motion.div
@@ -257,7 +257,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="p-5 w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl mx-4 flex flex-col"
+            className="p-3 sm:p-5 w-full max-w-2xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden rounded-t-3xl sm:rounded-2xl mx-0 sm:mx-4 flex flex-col"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleEscape}
             ref={modalRef}
@@ -269,8 +269,13 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               boxShadow: 'var(--shadow-2xl), 0 0 0 1px var(--border-color)',
             }}
           >
-            <div className="flex items-center justify-between mb-4 flex-shrink-0 pb-4 border-b border-[var(--border-color)]">
-              <h2 id="task-modal-title" className="text-xl font-bold text-[var(--text-primary)]">
+            {/* Mobile drag handle */}
+            <div className="sm:hidden flex justify-center mb-2 pt-2 flex-shrink-0">
+              <div className="w-12 h-1.5 bg-[var(--border-color)] rounded-full"></div>
+            </div>
+            
+            <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0 pb-3 sm:pb-4 border-b border-[var(--border-color)]">
+              <h2 id="task-modal-title" className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
                 {task ? 'Edit Task' : 'New Task'}
               </h2>
                 <button
@@ -297,11 +302,11 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               />
 
               <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              <div className="flex-1 overflow-y-auto pr-2 space-y-3" style={{ scrollbarWidth: 'thin' }}>
+              <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-2.5 sm:space-y-3" style={{ scrollbarWidth: 'thin' }}>
                 {/* Title and Description Row */}
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
                   <div>
-                    <label htmlFor="task-title" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    <label htmlFor="task-title" className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                       Title *
                     </label>
                     <input
@@ -314,21 +319,21 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                           setErrors({ ...errors, title: '' });
                         }
                       }}
-                      className={`input-field py-2.5 text-sm ${errors.title ? 'border-red-500' : ''}`}
+                      className={`input-field py-2 sm:py-2.5 text-sm ${errors.title ? 'border-red-500' : ''}`}
                       required
                       placeholder="Task title"
                       aria-invalid={errors.title ? 'true' : 'false'}
                       aria-describedby={errors.title ? 'title-error' : undefined}
                     />
                     {errors.title && (
-                      <p id="title-error" className="mt-1 text-xs text-red-600" role="alert">
+                      <p id="title-error" className="mt-0.5 sm:mt-1 text-xs text-red-600" role="alert">
                         {errors.title}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="task-description" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    <label htmlFor="task-description" className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                       Description
                     </label>
                     <textarea
@@ -340,12 +345,12 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                           setErrors({ ...errors, description: '' });
                         }
                       }}
-                      className={`input-field py-2.5 text-sm min-h-[60px] max-h-[80px] resize-none ${errors.description ? 'border-red-500' : ''}`}
+                      className={`input-field py-2 sm:py-2.5 text-sm min-h-[50px] sm:min-h-[60px] max-h-[60px] sm:max-h-[80px] resize-none ${errors.description ? 'border-red-500' : ''}`}
                       placeholder="Task description (optional)"
                       aria-invalid={errors.description ? 'true' : 'false'}
                       aria-describedby={errors.description ? 'description-error' : undefined}
                     />
-                    <div className="flex justify-between items-center mt-1">
+                    <div className="flex justify-between items-center mt-0.5 sm:mt-1">
                       {errors.description && (
                         <p id="description-error" className="text-xs text-red-600" role="alert">
                           {errors.description}
@@ -359,16 +364,16 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 </div>
 
                 {/* Priority and Date/Time Row */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   <div>
-                    <label htmlFor="task-priority" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    <label htmlFor="task-priority" className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                       Priority
                     </label>
                     <select
                       id="task-priority"
                       value={priority}
                       onChange={(e) => setPriority(e.target.value)}
-                      className="input-field py-2.5 text-sm"
+                      className="input-field py-2 sm:py-2.5 text-sm"
                       aria-label="Task priority"
                     >
                       <option value="low">Low</option>
@@ -378,7 +383,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                       Due Date
                     </label>
                     <input
@@ -391,12 +396,12 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                           setErrors({ ...errors, dueDate: '' });
                         }
                       }}
-                      className={`input-field py-2.5 text-sm ${errors.dueDate ? 'border-red-500' : ''}`}
+                      className={`input-field py-2 sm:py-2.5 text-sm ${errors.dueDate ? 'border-red-500' : ''}`}
                       aria-invalid={errors.dueDate ? 'true' : 'false'}
                       aria-describedby={errors.dueDate ? 'due-date-error' : undefined}
                     />
                     {errors.dueDate && (
-                      <p id="due-date-error" className="mt-1 text-xs text-red-600" role="alert">
+                      <p id="due-date-error" className="mt-0.5 sm:mt-1 text-xs text-red-600" role="alert">
                         {errors.dueDate}
                       </p>
                     )}
@@ -406,7 +411,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 {/* Time and Quick Date Buttons */}
                 {dueDate && (
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                       Time
                     </label>
                     <div className="flex gap-2">
@@ -415,7 +420,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                         type="time"
                         value={dueTime}
                         onChange={(e) => setDueTime(e.target.value)}
-                        className="input-field py-2.5 text-sm flex-1"
+                        className="input-field py-2 sm:py-2.5 text-sm flex-1"
                         placeholder="Optional"
                         aria-label="Due time (optional)"
                       />
@@ -423,25 +428,25 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                         <button
                           type="button"
                           onClick={() => setDueTime('')}
-                          className="px-3 py-2.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500 transition-all"
+                          className="px-2 sm:px-3 py-2 sm:py-2.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500 transition-all"
                         >
                           Clear
                         </button>
                       )}
                     </div>
                     {!dueTime && !errors.dueDate && (
-                      <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                      <p className="mt-0.5 sm:mt-1 text-xs text-[var(--text-secondary)]">
                         Defaults to 11:59 PM
                       </p>
                     )}
                     {/* Quick Time Selection Buttons */}
-                    <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+                    <div className="mt-1.5 sm:mt-2 flex gap-1 sm:gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
                       {['09:00', '12:00', '15:00', '17:00', '19:00', '21:00'].map((time) => (
                         <button
                           key={time}
                           type="button"
                           onClick={() => setDueTime(time)}
-                          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all whitespace-nowrap flex-shrink-0 ${
+                          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 text-xs font-medium rounded-lg border transition-all whitespace-nowrap flex-shrink-0 ${
                             dueTime === time
                               ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]'
                               : 'border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
@@ -456,10 +461,10 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
 
                 {/* Quick Date Selection Buttons */}
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                  <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                     Quick Dates
                   </label>
-                  <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+                  <div className="flex gap-1 sm:gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
                     {[
                       { label: 'Today', days: 0 },
                       { label: 'Tomorrow', days: 1 },
@@ -481,7 +486,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                           key={label}
                           type="button"
                           onClick={() => setDueDate(getDateString(days))}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all whitespace-nowrap flex-shrink-0 ${
+                          className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-medium rounded-lg border transition-all whitespace-nowrap flex-shrink-0 ${
                             dueDate === getDateString(days)
                               ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]'
                               : 'border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
@@ -495,13 +500,13 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 </div>
 
                 {/* Goal and Friends Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                       Goal (Optional)
                     </label>
                     {activeGoals.length === 0 ? (
-                      <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-2 text-center">
+                      <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-1.5 sm:p-2 text-center">
                         <p className="text-xs text-[var(--text-secondary)]">
                           {!goals || goals.length === 0 ? 'No goals yet' : 'All goals completed'}
                         </p>
@@ -510,7 +515,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       <select
                         value={selectedGoalId}
                         onChange={(e) => setSelectedGoalId(e.target.value)}
-                        className="input-field py-2.5 text-sm w-full"
+                        className="input-field py-2 sm:py-2.5 text-sm w-full"
                       >
                         <option value="">No goal</option>
                         {activeGoals.map((goal) => {
@@ -527,15 +532,15 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 sm:mb-1.5">
                       Share with Friends
                     </label>
                     {!friends || friends.length === 0 ? (
-                      <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-2 text-center">
+                      <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-1.5 sm:p-2 text-center">
                         <p className="text-xs text-[var(--text-secondary)]">No friends</p>
                       </div>
                     ) : (
-                      <div className="max-h-32 overflow-y-auto border border-[var(--border-color)] rounded-lg p-2 bg-[var(--bg-secondary)] space-y-1.5" style={{ scrollbarWidth: 'thin' }}>
+                      <div className="max-h-24 sm:max-h-32 overflow-y-auto border border-[var(--border-color)] rounded-lg p-1.5 sm:p-2 bg-[var(--bg-secondary)] space-y-1 sm:space-y-1.5" style={{ scrollbarWidth: 'thin' }}>
                         {friends.map((friend) => {
                           const friendId = friend._id || friend.id;
                           if (!friendId) return null;
@@ -543,7 +548,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                           return (
                             <label
                               key={friendId}
-                              className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all ${
+                              className={`flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 rounded-lg cursor-pointer transition-all ${
                                 isSelected 
                                   ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30' 
                                   : 'hover:bg-[var(--bg-tertiary)] border border-transparent'
@@ -553,9 +558,9 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => toggleFriend(friendId)}
-                                className="w-4 h-4 text-[var(--accent-primary)] rounded focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer flex-shrink-0"
+                                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--accent-primary)] rounded focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer flex-shrink-0"
                               />
-                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-[10px] sm:text-xs flex-shrink-0">
                                 {(friend.name || friend.email || 'F')[0].toUpperCase()}
                               </div>
                               <span className="text-xs font-medium text-[var(--text-primary)] truncate flex-1">
@@ -567,7 +572,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                       </div>
                     )}
                     {selectedFriends.length > 0 && (
-                      <p className="mt-1.5 text-xs text-[var(--accent-primary)] text-center">
+                      <p className="mt-1 sm:mt-1.5 text-xs text-[var(--accent-primary)] text-center">
                         ✓ {selectedFriends.length} selected
                       </p>
                     )}
@@ -576,15 +581,15 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               </div>
 
               {/* Footer Buttons */}
-              <div className="flex gap-3 pt-4 mt-4 border-t border-[var(--border-color)] flex-shrink-0">
+              <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-[var(--border-color)] flex-shrink-0">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn-secondary flex-1 py-2.5"
+                  className="btn-secondary flex-1 py-2 sm:py-2.5 text-sm sm:text-base"
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary flex-1 py-2.5">
+                <button type="submit" className="btn-primary flex-1 py-2 sm:py-2.5 text-sm sm:text-base">
                   <span>{task ? 'Update' : 'Create'} Task</span>
                 </button>
               </div>
