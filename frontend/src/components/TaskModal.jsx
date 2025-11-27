@@ -257,7 +257,7 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="p-5 w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl mx-4 flex flex-col relative"
+            className="p-5 w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl mx-4 flex flex-col"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleEscape}
             ref={modalRef}
@@ -265,24 +265,14 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             aria-modal="true"
             aria-labelledby="task-modal-title"
             style={{
-              background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              backgroundColor: '#f5f5f5',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
             }}
           >
-            {/* Premium subtle glow effect */}
-            <div 
-              className="absolute -inset-0.5 rounded-2xl opacity-50 pointer-events-none"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(139, 92, 246, 0.2) 100%)',
-                filter: 'blur(8px)',
-                zIndex: -1,
-              }}
-            />
-            <div className="relative z-10 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-4 flex-shrink-0 pb-4 border-b border-[var(--border-color)]/50">
-                <h2 id="task-modal-title" className="text-xl font-bold bg-gradient-to-r from-[var(--accent-primary)] to-blue-500 bg-clip-text text-transparent">
-                  {task ? 'Edit Task' : 'New Task'}
-                </h2>
+            <div className="flex items-center justify-between mb-4 flex-shrink-0 pb-4 border-b border-gray-300">
+              <h2 id="task-modal-title" className="text-xl font-bold text-gray-900">
+                {task ? 'Edit Task' : 'New Task'}
+              </h2>
                 <button
                   onClick={handleClose}
                   className="p-2 text-[var(--text-tertiary)] hover:bg-red-500/10 hover:text-red-500 transition-all touch-manipulation min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
@@ -599,7 +589,6 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                 </button>
               </div>
               </form>
-            </div>
           </motion.div>
         </motion.div>
       )}
