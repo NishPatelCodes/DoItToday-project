@@ -256,21 +256,26 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="card p-4 md:p-6 w-full max-w-md max-h-[90vh] md:max-h-[85vh] overflow-y-auto rounded-xl mx-4"
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="card p-5 w-full max-w-2xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl mx-4 flex flex-col shadow-2xl border border-[var(--border-color)]"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleEscape}
             ref={modalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="task-modal-title"
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              backdropFilter: 'blur(20px)',
+            }}
           >
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 id="task-modal-title" className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+              <h2 id="task-modal-title" className="text-xl font-bold text-[var(--text-primary)]">
                 {task ? 'Edit Task' : 'New Task'}
               </h2>
               <button
                 onClick={handleClose}
-                className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors touch-manipulation min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                className="p-2 text-[var(--text-tertiary)] hover:text-red-600 transition-colors touch-manipulation min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                 aria-label="Close modal"
               >
                 <FaTimes className="text-lg" />
@@ -291,316 +296,221 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
               type="warning"
             />
 
-            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
-              <div>
-                <label htmlFor="task-title" className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
-                  Title *
-                </label>
-                <input
-                  id="task-title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => {
-                    setTitle(e.target.value);
-                    if (errors.title) {
-                      setErrors({ ...errors, title: '' });
-                    }
-                  }}
-                  className={`input-field ${errors.title ? 'border-red-500' : ''}`}
-                  required
-                  placeholder="Task title"
-                  aria-invalid={errors.title ? 'true' : 'false'}
-                  aria-describedby={errors.title ? 'title-error' : undefined}
-                />
-                {errors.title && (
-                  <p id="title-error" className="mt-1 text-sm text-red-600" role="alert">
-                    {errors.title}
-                  </p>
-                )}
-              </div>
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto pr-2 space-y-3" style={{ scrollbarWidth: 'thin' }}>
+                {/* Title and Description Row */}
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label htmlFor="task-title" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                      Title *
+                    </label>
+                    <input
+                      id="task-title"
+                      type="text"
+                      value={title}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (errors.title) {
+                          setErrors({ ...errors, title: '' });
+                        }
+                      }}
+                      className={`input-field py-2.5 text-sm ${errors.title ? 'border-red-500' : ''}`}
+                      required
+                      placeholder="Task title"
+                      aria-invalid={errors.title ? 'true' : 'false'}
+                      aria-describedby={errors.title ? 'title-error' : undefined}
+                    />
+                    {errors.title && (
+                      <p id="title-error" className="mt-1 text-xs text-red-600" role="alert">
+                        {errors.title}
+                      </p>
+                    )}
+                  </div>
 
-              <div>
-                <label htmlFor="task-description" className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
-                  Description
-                </label>
-                <textarea
-                  id="task-description"
-                  value={description}
-                  onChange={(e) => {
-                    setDescription(e.target.value);
-                    if (errors.description) {
-                      setErrors({ ...errors, description: '' });
-                    }
-                  }}
-                  className={`input-field min-h-[100px] resize-y ${errors.description ? 'border-red-500' : ''}`}
-                  placeholder="Task description (optional)"
-                  aria-invalid={errors.description ? 'true' : 'false'}
-                  aria-describedby={errors.description ? 'description-error' : undefined}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  {errors.description && (
-                    <p id="description-error" className="text-sm text-red-600" role="alert">
-                      {errors.description}
-                    </p>
-                  )}
-                  <p className={`text-xs ml-auto ${description.length > 1000 ? 'text-red-600' : 'text-[var(--text-tertiary)]'}`}>
-                    {description.length}/1000
-                  </p>
+                  <div>
+                    <label htmlFor="task-description" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                      Description
+                    </label>
+                    <textarea
+                      id="task-description"
+                      value={description}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                        if (errors.description) {
+                          setErrors({ ...errors, description: '' });
+                        }
+                      }}
+                      className={`input-field py-2.5 text-sm min-h-[60px] max-h-[80px] resize-none ${errors.description ? 'border-red-500' : ''}`}
+                      placeholder="Task description (optional)"
+                      aria-invalid={errors.description ? 'true' : 'false'}
+                      aria-describedby={errors.description ? 'description-error' : undefined}
+                    />
+                    <div className="flex justify-between items-center mt-1">
+                      {errors.description && (
+                        <p id="description-error" className="text-xs text-red-600" role="alert">
+                          {errors.description}
+                        </p>
+                      )}
+                      <p className={`text-xs ml-auto ${description.length > 1000 ? 'text-red-600' : 'text-[var(--text-tertiary)]'}`}>
+                        {description.length}/1000
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="task-priority" className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
-                  Priority
-                </label>
-                <select
-                  id="task-priority"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="input-field"
-                  aria-label="Task priority"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
+                {/* Priority and Date/Time Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="task-priority" className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                      Priority
+                    </label>
+                    <select
+                      id="task-priority"
+                      value={priority}
+                      onChange={(e) => setPriority(e.target.value)}
+                      className="input-field py-2.5 text-sm"
+                      aria-label="Task priority"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
-                  Due Date & Time
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    id="task-due-date"
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => {
-                      setDueDate(e.target.value);
-                      if (errors.dueDate) {
-                        setErrors({ ...errors, dueDate: '' });
-                      }
-                    }}
-                    className={`input-field flex-1 ${errors.dueDate ? 'border-red-500' : ''}`}
-                    aria-invalid={errors.dueDate ? 'true' : 'false'}
-                    aria-describedby={errors.dueDate ? 'due-date-error' : undefined}
-                  />
-                  <input
-                    id="task-due-time"
-                    type="time"
-                    value={dueTime}
-                    onChange={(e) => setDueTime(e.target.value)}
-                    className="input-field w-32"
-                    placeholder="Optional"
-                    aria-label="Due time (optional)"
-                  />
+                  <div>
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                      Due Date
+                    </label>
+                    <input
+                      id="task-due-date"
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => {
+                        setDueDate(e.target.value);
+                        if (errors.dueDate) {
+                          setErrors({ ...errors, dueDate: '' });
+                        }
+                      }}
+                      className={`input-field py-2.5 text-sm ${errors.dueDate ? 'border-red-500' : ''}`}
+                      aria-invalid={errors.dueDate ? 'true' : 'false'}
+                      aria-describedby={errors.dueDate ? 'due-date-error' : undefined}
+                    />
+                    {errors.dueDate && (
+                      <p id="due-date-error" className="mt-1 text-xs text-red-600" role="alert">
+                        {errors.dueDate}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                {errors.dueDate && (
-                  <p id="due-date-error" className="mt-1 text-sm text-red-600" role="alert">
-                    {errors.dueDate}
-                  </p>
-                )}
-                {dueDate && !dueTime && !errors.dueDate && (
-                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                    No time specified - will default to 11:59 PM
-                  </p>
-                )}
-                {/* Quick Time Selection Buttons */}
+
+                {/* Time and Quick Date Buttons */}
                 {dueDate && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDueTime('09:00')}
-                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                    >
-                      9 AM
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDueTime('12:00')}
-                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                    >
-                      12 PM
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDueTime('15:00')}
-                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                    >
-                      3 PM
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDueTime('17:00')}
-                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                    >
-                      5 PM
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDueTime('19:00')}
-                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                    >
-                      7 PM
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDueTime('21:00')}
-                      className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all touch-manipulation min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                    >
-                      9 PM
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDueTime('')}
-                      className="px-2 py-1 text-xs font-medium rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-red-500 hover:border-red-500 transition-all"
-                    >
-                      Clear
-                    </button>
+                  <div>
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                      Time
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="task-due-time"
+                        type="time"
+                        value={dueTime}
+                        onChange={(e) => setDueTime(e.target.value)}
+                        className="input-field py-2.5 text-sm flex-1"
+                        placeholder="Optional"
+                        aria-label="Due time (optional)"
+                      />
+                      {dueTime && (
+                        <button
+                          type="button"
+                          onClick={() => setDueTime('')}
+                          className="px-3 py-2.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500 transition-all"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    {!dueTime && !errors.dueDate && (
+                      <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                        Defaults to 11:59 PM
+                      </p>
+                    )}
+                    {/* Quick Time Selection Buttons */}
+                    <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+                      {['09:00', '12:00', '15:00', '17:00', '19:00', '21:00'].map((time) => (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={() => setDueTime(time)}
+                          className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all whitespace-nowrap flex-shrink-0 ${
+                            dueTime === time
+                              ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]'
+                              : 'border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                          }`}
+                        >
+                          {time === '09:00' ? '9 AM' : time === '12:00' ? '12 PM' : time === '15:00' ? '3 PM' : time === '17:00' ? '5 PM' : time === '19:00' ? '7 PM' : '9 PM'}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {/* Quick Date Selection Buttons */}
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDueDate(getTodayLocal());
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      const year = tomorrow.getFullYear();
-                      const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-                      const day = String(tomorrow.getDate()).padStart(2, '0');
-                      setDueDate(`${year}-${month}-${day}`);
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    Tomorrow
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + 3);
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setDueDate(`${year}-${month}-${day}`);
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    In 3 days
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + 5);
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setDueDate(`${year}-${month}-${day}`);
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    In 5 days
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + 7);
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setDueDate(`${year}-${month}-${day}`);
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    In 1 week
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + 10);
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setDueDate(`${year}-${month}-${day}`);
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    In 10 days
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + 14);
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setDueDate(`${year}-${month}-${day}`);
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    In 2 weeks
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + 30);
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setDueDate(`${year}-${month}-${day}`);
-                    }}
-                    className="px-3 py-2 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 touch-manipulation min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2"
-                  >
-                    In 1 month
-                  </button>
-                </div>
-              </div>
 
-              <div className="border-t border-[var(--border-color)] pt-4 mt-4">
-                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2 leading-normal">
-                  Associate with Goal (Optional)
-                </label>
-                {activeGoals.length === 0 ? (
-                  <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-3 text-center">
-                    <p className="text-xs text-[var(--text-secondary)]">
-                      {!goals || goals.length === 0
-                        ? 'No goals yet. Create a goal first to associate tasks with it.'
-                        : 'All goals are completed. Create a new goal to associate tasks with it.'}
-                    </p>
+                {/* Quick Date Selection Buttons */}
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                    Quick Dates
+                  </label>
+                  <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+                    {[
+                      { label: 'Today', days: 0 },
+                      { label: 'Tomorrow', days: 1 },
+                      { label: '3 Days', days: 3 },
+                      { label: '1 Week', days: 7 },
+                      { label: '2 Weeks', days: 14 },
+                      { label: '1 Month', days: 30 },
+                    ].map(({ label, days }) => {
+                      const getDateString = (daysOffset) => {
+                        const date = new Date();
+                        date.setDate(date.getDate() + daysOffset);
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                      };
+                      return (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => setDueDate(getDateString(days))}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all whitespace-nowrap flex-shrink-0 ${
+                            dueDate === getDateString(days)
+                              ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]'
+                              : 'border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
-                ) : (
-                  <>
-                    <div className="relative">
+                </div>
+
+                {/* Goal and Friends Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                      Goal (Optional)
+                    </label>
+                    {activeGoals.length === 0 ? (
+                      <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-2 text-center">
+                        <p className="text-xs text-[var(--text-secondary)]">
+                          {!goals || goals.length === 0 ? 'No goals yet' : 'All goals completed'}
+                        </p>
+                      </div>
+                    ) : (
                       <select
                         value={selectedGoalId}
                         onChange={(e) => setSelectedGoalId(e.target.value)}
-                        className="input-field w-full pr-10"
-                        style={{ 
-                          cursor: 'pointer',
-                          paddingRight: '2.5rem',
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                          backgroundRepeat: 'no-repeat',
-                          backgroundPosition: 'right 0.75rem center',
-                          backgroundSize: '12px',
-                          appearance: 'none',
-                          WebkitAppearance: 'none',
-                          MozAppearance: 'none'
-                        }}
+                        className="input-field py-2.5 text-sm w-full"
                       >
                         <option value="">No goal</option>
                         {activeGoals.map((goal) => {
@@ -613,95 +523,68 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
                           );
                         })}
                       </select>
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                        <svg className="w-4 h-4 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                    {selectedGoalId && (
-                      <p className="mt-2 text-xs text-[var(--text-secondary)] leading-normal">
-                        ✓ This task will help you achieve your goal
-                      </p>
                     )}
-                  </>
-                )}
-              </div>
-
-              <div className="border-t border-[var(--border-color)] pt-4 mt-4">
-                <label className="block text-sm font-semibold text-[var(--text-primary)] mb-3 leading-normal">
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span>Share with Friends</span>
-                  </span>
-                </label>
-                {!friends || friends.length === 0 ? (
-                  <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-xl p-4 text-center">
-                    <p className="text-sm text-[var(--text-secondary)] mb-2 leading-normal">
-                      No friends added yet
-                    </p>
-                    <p className="text-xs text-[var(--text-tertiary)] leading-normal">
-                      Add friends from the Team page to share tasks with them
-                    </p>
                   </div>
-                ) : (
-                  <>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-[var(--border-color)] rounded-xl p-3 bg-[var(--bg-secondary)]">
-                      {friends.map((friend) => {
-                        const friendId = friend._id || friend.id;
-                        if (!friendId) {
-                          return null; // Skip friends without ID
-                        }
-                        const isSelected = selectedFriends.includes(friendId);
-                        return (
-                          <label
-                            key={friendId}
-                            className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all min-h-[56px] ${
-                              isSelected 
-                                ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30' 
-                                : 'hover:bg-[var(--bg-tertiary)] border border-transparent'
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleFriend(friendId)}
-                              className="w-5 h-5 text-[var(--accent-primary)] rounded focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer touch-manipulation flex-shrink-0"
-                            />
-                            <div className="flex items-center gap-3 flex-1">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
+                      Share with Friends
+                    </label>
+                    {!friends || friends.length === 0 ? (
+                      <div className="bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg p-2 text-center">
+                        <p className="text-xs text-[var(--text-secondary)]">No friends</p>
+                      </div>
+                    ) : (
+                      <div className="max-h-32 overflow-y-auto border border-[var(--border-color)] rounded-lg p-2 bg-[var(--bg-secondary)] space-y-1.5" style={{ scrollbarWidth: 'thin' }}>
+                        {friends.map((friend) => {
+                          const friendId = friend._id || friend.id;
+                          if (!friendId) return null;
+                          const isSelected = selectedFriends.includes(friendId);
+                          return (
+                            <label
+                              key={friendId}
+                              className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all ${
+                                isSelected 
+                                  ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30' 
+                                  : 'hover:bg-[var(--bg-tertiary)] border border-transparent'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleFriend(friendId)}
+                                className="w-4 h-4 text-[var(--accent-primary)] rounded focus:ring-2 focus:ring-[var(--accent-primary)] cursor-pointer flex-shrink-0"
+                              />
+                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
                                 {(friend.name || friend.email || 'F')[0].toUpperCase()}
                               </div>
-                              <span className="text-sm font-medium text-[var(--text-primary)]">
+                              <span className="text-xs font-medium text-[var(--text-primary)] truncate flex-1">
                                 {friend.name || friend.email || 'Friend'}
                               </span>
-                            </div>
-                          </label>
-                        );
-                      })}
-                    </div>
-                    {selectedFriends.length > 0 && (
-                      <div className="mt-3 p-3 bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 rounded-xl">
-                        <p className="text-xs font-medium text-[var(--accent-primary)] text-center leading-normal">
-                          ✓ {selectedFriends.length} friend{selectedFriends.length > 1 ? 's' : ''} selected
-                        </p>
+                            </label>
+                          );
+                        })}
                       </div>
                     )}
-                  </>
-                )}
+                    {selectedFriends.length > 0 && (
+                      <p className="mt-1.5 text-xs text-[var(--accent-primary)] text-center">
+                        ✓ {selectedFriends.length} selected
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex gap-3 pt-4 mt-6">
+              {/* Footer Buttons */}
+              <div className="flex gap-3 pt-4 mt-4 border-t border-[var(--border-color)] flex-shrink-0">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn-secondary flex-1"
+                  className="btn-secondary flex-1 py-2.5"
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary flex-1">
+                <button type="submit" className="btn-primary flex-1 py-2.5">
                   <span>{task ? 'Update' : 'Create'} Task</span>
                 </button>
               </div>
