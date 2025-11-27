@@ -218,7 +218,6 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         backgroundColor: 'var(--bg-secondary)',
         willChange: 'width',
         overflow: 'hidden',
-        backdropFilter: 'blur(10px)',
         boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)',
       }}
       {...props}
@@ -244,7 +243,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
           />
         )}
       </AnimatePresence>
