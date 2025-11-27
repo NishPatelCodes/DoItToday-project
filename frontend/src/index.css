@@ -31,6 +31,7 @@
     --bg-primary: #ffffff;
     --bg-secondary: rgba(255, 255, 255, 0.7);
     --bg-tertiary: rgba(255, 255, 255, 0.9);
+    --bg-modal: #f5f5f5;
     --border-color: rgba(0, 0, 0, 0.1);
     --text-primary: #18181b;
     --text-secondary: #52525b;
@@ -49,6 +50,7 @@
     --bg-primary: #000000;
     --bg-secondary: rgba(255, 255, 255, 0.04);
     --bg-tertiary: rgba(255, 255, 255, 0.08);
+    --bg-modal: #1a1a1a;
     --border-color: rgba(255, 255, 255, 0.1);
     --text-primary: #f4f4f5;
     --text-secondary: #a1a1aa;

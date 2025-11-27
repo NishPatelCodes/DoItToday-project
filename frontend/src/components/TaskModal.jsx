@@ -265,12 +265,12 @@ const TaskModal = ({ isOpen, onClose, onSave, task = null }) => {
             aria-modal="true"
             aria-labelledby="task-modal-title"
             style={{
-              backgroundColor: '#f5f5f5',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+              backgroundColor: 'var(--bg-modal)',
+              boxShadow: 'var(--shadow-2xl), 0 0 0 1px var(--border-color)',
             }}
           >
-            <div className="flex items-center justify-between mb-4 flex-shrink-0 pb-4 border-b border-gray-300">
-              <h2 id="task-modal-title" className="text-xl font-bold text-gray-900">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0 pb-4 border-b border-[var(--border-color)]">
+              <h2 id="task-modal-title" className="text-xl font-bold text-[var(--text-primary)]">
                 {task ? 'Edit Task' : 'New Task'}
               </h2>
                 <button
