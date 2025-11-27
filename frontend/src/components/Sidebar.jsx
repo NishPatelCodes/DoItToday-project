@@ -409,7 +409,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             maxWidth: 'calc(100% - 80px)',
           }}
         >
-          <div style={{ marginTop: '-0.375rem' }}>
+          <div>
             <h1 className="text-base font-bold gradient-text leading-tight whitespace-nowrap">DoItToday</h1>
             <p className="text-xs text-[var(--text-secondary)] leading-tight whitespace-nowrap mt-0.5">Task Manager</p>
           </div>
@@ -487,6 +487,7 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               type: 'spring',
               damping: 20,
               stiffness: 200,
+              delay: 0,
             }}
             className="overflow-hidden text-left flex flex-col justify-center"
             style={{ 
@@ -495,6 +496,8 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               alignItems: 'center',
               position: 'absolute',
               left: '60px',
+              top: 0,
+              bottom: 0,
               maxWidth: 'calc(100% - 80px)',
             }}
           >
