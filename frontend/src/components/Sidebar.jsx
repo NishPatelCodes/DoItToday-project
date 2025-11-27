@@ -333,16 +333,17 @@ export const SidebarLink = ({ link, className, ...props }) => {
           damping: 20,
           stiffness: 200,
         }}
-        className="font-medium text-sm whitespace-nowrap overflow-hidden"
+        className="font-medium text-sm whitespace-nowrap"
         style={{ 
           display: 'inline-block',
           lineHeight: '1.25rem',
           height: '1.25rem',
-            position: 'absolute',
-            left: '60px',
-          }}
-        >
-          {link.label}
+          position: 'absolute',
+          left: '60px',
+          maxWidth: 'calc(100% - 80px)',
+        }}
+      >
+        {link.label}
       </motion.span>
       {isActive && (
         <motion.div
@@ -399,20 +400,19 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
           }}
           className="flex flex-col justify-center"
           style={{ 
-            minHeight: '2rem',
             display: shouldExpand ? 'flex' : 'none',
             alignItems: 'flex-start',
             position: 'absolute',
             left: '60px',
             top: 0,
             bottom: 0,
-            marginTop: 'auto',
-            marginBottom: 'auto',
-            maxWidth: 'calc(100% - 100px)',
+            maxWidth: 'calc(100% - 80px)',
           }}
         >
-          <h1 className="text-base font-bold gradient-text leading-tight whitespace-nowrap">DoItToday</h1>
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-tight whitespace-nowrap">Task Manager</p>
+          <div style={{ marginTop: '-0.375rem' }}>
+            <h1 className="text-base font-bold gradient-text leading-tight whitespace-nowrap">DoItToday</h1>
+            <p className="text-xs text-[var(--text-secondary)] leading-tight whitespace-nowrap mt-0.5">Task Manager</p>
+          </div>
         </motion.div>
         {shouldExpand && (
           <motion.button
@@ -493,8 +493,9 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               minHeight: '2rem',
               display: 'flex',
               alignItems: 'center',
-            position: 'absolute',
-            left: '60px',
+              position: 'absolute',
+              left: '60px',
+              maxWidth: 'calc(100% - 80px)',
             }}
           >
             <p className="text-sm font-medium text-[var(--text-primary)] truncate leading-tight">
@@ -530,13 +531,14 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               damping: 20,
               stiffness: 200,
             }}
-            className="font-medium text-sm whitespace-nowrap overflow-hidden"
+            className="font-medium text-sm whitespace-nowrap"
             style={{ 
               display: 'inline-block',
               lineHeight: '1.25rem',
               height: '1.25rem',
               position: 'absolute',
               left: '60px',
+              maxWidth: 'calc(100% - 80px)',
             }}
           >
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
@@ -563,13 +565,14 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               damping: 20,
               stiffness: 200,
             }}
-            className="font-medium text-sm whitespace-nowrap overflow-hidden"
+            className="font-medium text-sm whitespace-nowrap"
             style={{ 
               display: 'inline-block',
               lineHeight: '1.25rem',
               height: '1.25rem',
               position: 'absolute',
               left: '60px',
+              maxWidth: 'calc(100% - 80px)',
             }}
           >
             Logout
