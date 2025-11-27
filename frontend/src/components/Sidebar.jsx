@@ -384,6 +384,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
           D
         </div>
       </div>
+      <div className="relative flex items-center" style={{ minHeight: '64px', width: '100%', paddingLeft: '60px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px' }}>
         <motion.div
           initial={false}
           animate={{
@@ -403,8 +404,10 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             alignItems: 'flex-start',
             position: 'absolute',
             left: '60px',
-            top: '50%',
-            transform: 'translateY(-50%)',
+            top: 0,
+            bottom: 0,
+            marginTop: 'auto',
+            marginBottom: 'auto',
             maxWidth: 'calc(100% - 100px)',
           }}
         >
@@ -418,9 +421,9 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             exit={{ opacity: 0, scale: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setOpen && setOpen(false)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+            className="absolute right-4 p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
             aria-label="Collapse sidebar"
-            style={{ zIndex: 2 }}
+            style={{ zIndex: 2, top: '50%', transform: 'translateY(-50%)' }}
           >
             <FaTimes className="w-4 h-4" />
           </motion.button>
