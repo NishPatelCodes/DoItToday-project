@@ -302,14 +302,15 @@ export const SidebarLink = ({ link, className, ...props }) => {
         }
       }}
       className={cn(
-        'flex items-center py-2.5 rounded-lg transition-all duration-200 relative group',
+        'flex items-center rounded-lg transition-all duration-200 relative group',
         'justify-start',
         isActive
           ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
+        isMobile ? 'py-2' : 'py-2.5',
         className
       )}
-      style={{ paddingLeft: '0px', paddingRight: '0px', minHeight: '40px', position: 'relative' }}
+      style={{ paddingLeft: '0px', paddingRight: '0px', minHeight: isMobile ? '36px' : '40px', position: 'relative' }}
       {...props}
     >
       <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
@@ -635,9 +636,9 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
       {/* Mobile Sidebar */}
       <MobileSidebar>
-        <SidebarBody>
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Logo Section */}
-          <div className="p-4 border-b border-[var(--border-color)]">
+          <div className="flex-shrink-0 p-3 border-b border-[var(--border-color)]">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-base font-bold gradient-text">DoItToday</h1>
@@ -653,29 +654,32 @@ const MainSidebar = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 overflow-hidden p-3 space-y-1">
+          {/* Navigation - Scrollable */}
+          <nav className="flex-1 overflow-y-auto p-2 space-y-0.5 min-h-0" style={{ scrollbarWidth: 'thin' }}>
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
           </nav>
 
-          {/* Bottom Section */}
-          <div className="border-t border-[var(--border-color)]">
+          {/* Bottom Section - Fixed at bottom */}
+          <div className="flex-shrink-0 border-t border-[var(--border-color)]">
             {/* User Profile Section */}
-            <div className="p-3 border-t border-[var(--border-color)]">
+            <div className="p-2 border-t border-[var(--border-color)]">
               <button
-                onClick={() => navigate('/dashboard/profile')}
-                className="flex items-center gap-3 w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 p-2"
+                onClick={() => {
+                  navigate('/dashboard/profile');
+                  setOpen(false);
+                }}
+                className="flex items-center gap-2.5 w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 p-1.5"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
                   {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : (user?.email?.[0]?.toUpperCase() || 'U')}
                 </div>
                 <div className="text-left min-w-0 flex-1">
-                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                  <p className="text-xs font-medium text-[var(--text-primary)] truncate">
                     {user?.name || 'User'}
                   </p>
-                  <p className="text-xs text-[var(--text-secondary)] truncate">
+                  <p className="text-[10px] text-[var(--text-secondary)] truncate">
                     {user?.email || ''}
                   </p>
                 </div>
@@ -683,28 +687,28 @@ const MainSidebar = ({ isOpen, onClose }) => {
             </div>
 
             {/* Settings and Logout */}
-            <div className="p-3 border-t border-[var(--border-color)] space-y-1">
+            <div className="p-2 border-t border-[var(--border-color)] space-y-0.5">
               <button
                 onClick={toggleTheme}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
               >
-                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center">
                   {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
                 </div>
-                <span className="font-medium text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                <span className="font-medium text-xs">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
               </button>
               <button
                 onClick={logout}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
               >
-                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center">
                   <FaSignOutAlt className="w-full h-full" />
                 </div>
-                <span className="font-medium text-sm">Logout</span>
+                <span className="font-medium text-xs">Logout</span>
               </button>
             </div>
           </div>
-        </SidebarBody>
+        </div>
       </MobileSidebar>
 
       {/* Mobile Menu Button */}
