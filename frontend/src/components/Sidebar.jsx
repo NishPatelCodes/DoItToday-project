@@ -296,17 +296,17 @@ export const SidebarLink = ({ link, className, ...props }) => {
         }
       }}
       className={cn(
-        'flex items-center gap-3 py-2.5 rounded-lg transition-all duration-200 relative group',
+        'flex items-center py-2.5 rounded-lg transition-all duration-200 relative group',
         'justify-start',
         isActive
           ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
         className
       )}
-      style={{ paddingLeft: '12px', paddingRight: '12px' }}
+      style={{ paddingLeft: '12px', paddingRight: '12px', minHeight: '40px' }}
       {...props}
     >
-      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center min-w-[20px]">
+      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center min-w-[20px]" style={{ position: 'relative', zIndex: 1 }}>
         {typeof link.icon === 'function' ? (
           <link.icon className="w-full h-full flex-shrink-0" />
         ) : (
@@ -318,7 +318,6 @@ export const SidebarLink = ({ link, className, ...props }) => {
         animate={{
           opacity: shouldExpand ? 1 : 0,
           width: shouldExpand ? 'auto' : 0,
-          x: shouldExpand ? 0 : -8,
         }}
         transition={{
           type: 'spring',
@@ -330,6 +329,8 @@ export const SidebarLink = ({ link, className, ...props }) => {
           display: 'inline-block',
           lineHeight: '1.25rem',
           height: '1.25rem',
+          position: 'absolute',
+          left: '44px',
         }}
       >
         {link.label}
@@ -368,9 +369,9 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
 
   return (
     <div className="p-4 border-b border-[var(--border-color)]">
-      <div className="flex items-center gap-3" style={{ minHeight: '2rem' }}>
+      <div className="relative flex items-center" style={{ minHeight: '2rem' }}>
         {/* Logo icon - always visible, fixed size */}
-        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center" style={{ paddingLeft: '12px', paddingRight: '12px' }}>
+        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center" style={{ paddingLeft: '12px', paddingRight: '12px', position: 'relative', zIndex: 1 }}>
           <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
             D
           </div>
@@ -380,7 +381,6 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
           animate={{
             opacity: shouldExpand ? 1 : 0,
             width: shouldExpand ? 'auto' : 0,
-            x: shouldExpand ? 0 : -8,
           }}
           transition={{
             type: 'spring',
@@ -392,6 +392,8 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             minHeight: '2rem',
             display: 'flex',
             alignItems: 'center',
+            position: 'absolute',
+            left: '44px',
           }}
         >
           <h1 className="text-base font-bold gradient-text whitespace-nowrap leading-tight">DoItToday</h1>
@@ -404,7 +406,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
             exit={{ opacity: 0, scale: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setOpen && setOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0 ml-auto"
+            className="absolute right-4 p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
             aria-label="Collapse sidebar"
           >
             <FaTimes className="w-4 h-4" />
@@ -451,9 +453,10 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
       <div className="p-3 border-t border-[var(--border-color)]">
         <button
           onClick={() => navigate && navigate('/dashboard/profile')}
-          className="flex items-center gap-3 w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 p-2"
+          className="relative flex items-center w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200"
+          style={{ padding: '8px 12px', minHeight: '48px' }}
         >
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs" style={{ position: 'relative', zIndex: 1 }}>
             {getUserInitials()}
           </div>
           <motion.div
@@ -461,7 +464,6 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
             animate={{
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
-              x: shouldExpand ? 0 : -8,
             }}
             transition={{
               type: 'spring',
@@ -473,6 +475,8 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               minHeight: '2rem',
               display: 'flex',
               alignItems: 'center',
+              position: 'absolute',
+              left: '44px',
             }}
           >
             <p className="text-sm font-medium text-[var(--text-primary)] truncate leading-tight">
@@ -489,9 +493,10 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
       <div className="p-3 border-t border-[var(--border-color)] space-y-1">
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+          className="relative flex items-center py-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+          style={{ paddingLeft: '12px', paddingRight: '12px', minHeight: '40px' }}
         >
-          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center min-w-[20px]" style={{ position: 'relative', zIndex: 1 }}>
             {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
           </div>
           <motion.span
@@ -499,7 +504,6 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
             animate={{
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
-              x: shouldExpand ? 0 : -8,
             }}
             transition={{
               type: 'spring',
@@ -511,6 +515,8 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               display: 'inline-block',
               lineHeight: '1.25rem',
               height: '1.25rem',
+              position: 'absolute',
+              left: '44px',
             }}
           >
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
@@ -518,9 +524,10 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
         </button>
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+          className="relative flex items-center py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+          style={{ paddingLeft: '12px', paddingRight: '12px', minHeight: '40px' }}
         >
-          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center min-w-[20px]" style={{ position: 'relative', zIndex: 1 }}>
             <FaSignOutAlt className="w-full h-full" />
           </div>
           <motion.span
@@ -528,7 +535,6 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
             animate={{
               opacity: shouldExpand ? 1 : 0,
               width: shouldExpand ? 'auto' : 0,
-              x: shouldExpand ? 0 : -8,
             }}
             transition={{
               type: 'spring',
@@ -540,6 +546,8 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
               display: 'inline-block',
               lineHeight: '1.25rem',
               height: '1.25rem',
+              position: 'absolute',
+              left: '44px',
             }}
           >
             Logout
