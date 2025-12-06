@@ -316,6 +316,7 @@ const FinanceTracker = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [showSetupModal, setShowSetupModal] = useState(false);
+  const [showEditAccountModal, setShowEditAccountModal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [setupForm, setSetupForm] = useState({
@@ -573,6 +574,38 @@ const FinanceTracker = () => {
     }
   };
 
+  const handleEditAccount = () => {
+    if (finance?.accountInfo) {
+      setSetupForm({
+        accountType: finance.accountInfo.accountType || 'checking',
+        accountName: finance.accountInfo.accountName || 'Primary Account',
+        initialBalance: finance.accountInfo.initialBalance?.toString() || '0',
+        currency: finance.accountInfo.currency || 'USD',
+      });
+      setShowEditAccountModal(true);
+    }
+  };
+
+  const handleUpdateAccount = async (e) => {
+    e.preventDefault();
+    try {
+      const parsedInitialBalance = parseFloat(setupForm.initialBalance) || 0;
+      await financeAPI.updateAccount({
+        accountType: setupForm.accountType,
+        accountName: setupForm.accountName,
+        initialBalance: parsedInitialBalance,
+        currency: setupForm.currency,
+      });
+      toast.success('Account updated successfully!');
+      setShowEditAccountModal(false);
+      loadFinanceData();
+    } catch (error) {
+      console.error('Error updating account:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update account';
+      toast.error(errorMessage);
+    }
+  };
+
   const handleAddTransaction = async (e) => {
     e.preventDefault();
     try {
@@ -710,6 +743,16 @@ const FinanceTracker = () => {
                 }
               }}
             />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleEditAccount}
+              className="btn-secondary flex items-center gap-2"
+              title="Edit Account Settings"
+            >
+              <FaEdit />
+              <span className="hidden md:inline">Edit Account</span>
+            </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -1141,6 +1184,21 @@ const FinanceTracker = () => {
             onSave={handleSetup}
             form={setupForm}
             setForm={setSetupForm}
+            isEditing={false}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Edit Account Modal */}
+      <AnimatePresence>
+        {showEditAccountModal && (
+          <SetupModal
+            isOpen={showEditAccountModal}
+            onClose={() => setShowEditAccountModal(false)}
+            onSave={handleUpdateAccount}
+            form={setupForm}
+            setForm={setSetupForm}
+            isEditing={true}
           />
         )}
       </AnimatePresence>
@@ -1149,7 +1207,7 @@ const FinanceTracker = () => {
 };
 
 // Setup Modal Component
-const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
+const SetupModal = ({ isOpen, onClose, onSave, form, setForm, isEditing = false }) => {
   useScrollLock(isOpen);
 
   if (!isOpen) return null;
@@ -1170,7 +1228,9 @@ const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)]">Setup Your Account</h2>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+            {isEditing ? 'Edit Account Settings' : 'Setup Your Account'}
+          </h2>
           <button onClick={onClose} className="p-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors">
             <FaTimes />
           </button>
@@ -1216,7 +1276,7 @@ const SetupModal = ({ isOpen, onClose, onSave, form, setForm }) => {
           <div className="flex gap-3 pt-4">
             <button type="submit" className="btn-primary flex-1">
               <FaCheckCircle className="inline mr-2" />
-              Complete Setup
+              {isEditing ? 'Update Account' : 'Complete Setup'}
             </button>
             <button type="button" onClick={onClose} className="btn-secondary flex-1">
               Cancel

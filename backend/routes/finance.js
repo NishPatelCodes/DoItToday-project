@@ -65,11 +65,43 @@ router.put('/account', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Finance data not found' });
     }
 
+    // Check if initialBalance is being updated
+    const oldInitialBalance = finance.accountInfo?.initialBalance || 0;
+    const newInitialBalance = req.body.initialBalance !== undefined 
+      ? parseFloat(req.body.initialBalance) 
+      : oldInitialBalance;
+
+    // Validate initialBalance if provided
+    if (req.body.initialBalance !== undefined && (isNaN(newInitialBalance) || newInitialBalance < 0)) {
+      return res.status(400).json({ message: 'Initial balance must be a valid number greater than or equal to 0' });
+    }
+
+    // Update account info
     finance.accountInfo = {
       ...finance.accountInfo,
       ...req.body,
+      initialBalance: newInitialBalance,
       isSetupComplete: true,
     };
+
+    // If initial balance changed, recalculate all balance history
+    if (oldInitialBalance !== newInitialBalance) {
+      const balanceDifference = newInitialBalance - oldInitialBalance;
+      
+      // Recalculate all balance history entries
+      finance.balanceHistory = finance.balanceHistory.map(entry => ({
+        date: entry.date,
+        balance: entry.balance + balanceDifference,
+      }));
+
+      // If no history exists, create an initial entry
+      if (finance.balanceHistory.length === 0) {
+        finance.balanceHistory.push({
+          date: new Date(),
+          balance: newInitialBalance,
+        });
+      }
+    }
 
     finance.updatedAt = new Date();
     await finance.save();
