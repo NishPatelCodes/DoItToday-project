@@ -117,6 +117,21 @@ router.post('/transactions', authenticate, async (req, res) => {
   try {
     const { type, category, amount, description, date } = req.body;
 
+    // Validate required fields
+    if (!type || !['income', 'expense'].includes(type)) {
+      return res.status(400).json({ message: 'Invalid transaction type. Must be "income" or "expense"' });
+    }
+
+    if (!category || !category.trim()) {
+      return res.status(400).json({ message: 'Category is required' });
+    }
+
+    // Parse and validate amount
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({ message: 'Amount must be a valid number greater than 0' });
+    }
+
     let finance = await Finance.findOne({ userId: req.user._id });
 
     if (!finance) {
@@ -135,9 +150,9 @@ router.post('/transactions', authenticate, async (req, res) => {
 
     const transaction = {
       type,
-      category,
-      amount,
-      description,
+      category: category.trim(),
+      amount: parsedAmount, // Use parsed amount
+      description: description ? description.trim() : '',
       date: date ? new Date(date) : new Date(),
     };
 
@@ -214,8 +229,41 @@ router.put('/transactions/:id', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Transaction not found' });
     }
 
+    // Validate and prepare update data
+    const updateData = {};
+    
+    if (req.body.type !== undefined) {
+      if (!['income', 'expense'].includes(req.body.type)) {
+        return res.status(400).json({ message: 'Invalid transaction type. Must be "income" or "expense"' });
+      }
+      updateData.type = req.body.type;
+    }
+
+    if (req.body.category !== undefined) {
+      if (!req.body.category || !req.body.category.trim()) {
+        return res.status(400).json({ message: 'Category is required' });
+      }
+      updateData.category = req.body.category.trim();
+    }
+
+    if (req.body.amount !== undefined) {
+      const parsedAmount = parseFloat(req.body.amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({ message: 'Amount must be a valid number greater than 0' });
+      }
+      updateData.amount = parsedAmount;
+    }
+
+    if (req.body.description !== undefined) {
+      updateData.description = req.body.description ? req.body.description.trim() : '';
+    }
+
+    if (req.body.date !== undefined) {
+      updateData.date = req.body.date ? new Date(req.body.date) : new Date();
+    }
+
     // Update transaction
-    Object.assign(transaction, req.body);
+    Object.assign(transaction, updateData);
     
     // Recalculate balance history
     const today = new Date();

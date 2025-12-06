@@ -576,11 +576,32 @@ const FinanceTracker = () => {
   const handleAddTransaction = async (e) => {
     e.preventDefault();
     try {
+      // Validate and parse the form data
+      const amount = parseFloat(transactionForm.amount);
+      if (isNaN(amount) || amount <= 0) {
+        toast.error('Please enter a valid amount greater than 0');
+        return;
+      }
+
+      if (!transactionForm.category) {
+        toast.error('Please select a category');
+        return;
+      }
+
+      // Prepare transaction data with parsed amount
+      const transactionData = {
+        type: transactionForm.type,
+        category: transactionForm.category,
+        amount: amount, // Ensure it's a number
+        description: transactionForm.description || '',
+        date: transactionForm.date,
+      };
+
       if (editingTransaction) {
-        await financeAPI.updateTransaction(editingTransaction._id, transactionForm);
+        await financeAPI.updateTransaction(editingTransaction._id, transactionData);
         toast.success('Transaction updated');
       } else {
-        await financeAPI.addTransaction(transactionForm);
+        await financeAPI.addTransaction(transactionData);
         toast.success('Transaction added');
       }
       setShowTransactionModal(false);
@@ -594,7 +615,9 @@ const FinanceTracker = () => {
       });
       loadFinanceData();
     } catch (error) {
-      toast.error('Failed to save transaction');
+      console.error('Error saving transaction:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save transaction';
+      toast.error(errorMessage);
     }
   };
 
