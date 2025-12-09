@@ -45,6 +45,8 @@ import { formatCurrency } from '../utils/currencyFormatter';
 import { format, isToday, isYesterday, startOfWeek, endOfWeek, isSameDay, startOfDay, differenceInDays, subDays, getDay, addDays } from 'date-fns';
 import TaskCard from '../components/TaskCard';
 import GoalTracker from '../components/GoalTracker';
+import GoalCard from '../components/goals/GoalCard';
+import MilestoneTimeline from '../components/goals/MilestoneTimeline';
 import HabitCard from '../components/HabitCard';
 import DisciplinePoints from '../components/DisciplinePoints';
 import FriendStatus from '../components/FriendStatus';
@@ -1543,34 +1545,35 @@ export const DashboardGoals = ({
   hideHeader = false,
 }) => {
   const [selectedGoalForAnalytics, setSelectedGoalForAnalytics] = useState(null);
+  const [selectedGoalIndex, setSelectedGoalIndex] = useState(0);
+  
+  const safeGoals = Array.isArray(goals) ? goals : [];
+  const activeGoal = safeGoals.length > 0 ? safeGoals[selectedGoalIndex] : null;
 
   return (
     <div className={hideHeader ? "overflow-x-hidden" : "p-4 md:p-6 lg:p-8 overflow-x-hidden space-y-4 md:space-y-6 lg:space-y-8"}>
+      {/* Minimal Header */}
       {!hideHeader && (
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-4 md:mb-6 lg:mb-8"
-      >
-        <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">Goals</h1>
-        <p className="text-sm md:text-base text-[var(--text-secondary)]">Track your progress and achievements</p>
-      </motion.div>
-      )}
-      {!hideHeader && (
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4 md:mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-6"
+        >
           <div>
-            <button
-              onClick={() => {
-                setEditingGoal(null);
-                setIsGoalModalOpen(true);
-              }}
-              className="btn-primary flex items-center gap-2"
-            >
-              <FaPlus />
-              <span>New Goal</span>
-            </button>
+            <h1 className="text-2xl md:text-3xl font-bold text-white/90 mb-1">Goals</h1>
+            <p className="text-sm text-white/60">Track your progress and achievements</p>
           </div>
-        </div>
+          <button
+            onClick={() => {
+              setEditingGoal(null);
+              setIsGoalModalOpen(true);
+            }}
+            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl transition-all duration-200 text-white font-medium flex items-center gap-2 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]"
+          >
+            <FaPlus />
+            <span>New Goal</span>
+          </button>
+        </motion.div>
       )}
       {hideHeader && (
         <div className="flex justify-end mb-4">
@@ -1579,7 +1582,7 @@ export const DashboardGoals = ({
               setEditingGoal(null);
               setIsGoalModalOpen(true);
             }}
-            className="btn-primary flex items-center gap-2"
+            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl transition-all duration-200 text-white font-medium flex items-center gap-2 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]"
           >
             <FaPlus />
             <span>New Goal</span>
@@ -1587,46 +1590,68 @@ export const DashboardGoals = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
-        {/* Goals List */}
-        <div className="lg:col-span-2 space-y-3 md:space-y-4">
-          {goals && goals.length > 0 ? (
-            goals.map((goal) => (
-              <GoalTracker
-                key={goal._id}
-                goal={goal}
+      {/* 2-Column Grid Layout */}
+      {safeGoals.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Active Goal Card */}
+          <div className="space-y-4">
+            {safeGoals.length > 1 && (
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  onClick={() => setSelectedGoalIndex(Math.max(0, selectedGoalIndex - 1))}
+                  disabled={selectedGoalIndex === 0}
+                  className="px-3 py-1.5 text-sm bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ← Prev
+                </button>
+                <span className="text-sm text-white/60">
+                  {selectedGoalIndex + 1} of {safeGoals.length}
+                </span>
+                <button
+                  onClick={() => setSelectedGoalIndex(Math.min(safeGoals.length - 1, selectedGoalIndex + 1))}
+                  disabled={selectedGoalIndex === safeGoals.length - 1}
+                  className="px-3 py-1.5 text-sm bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+            {activeGoal && (
+              <GoalCard
+                goal={activeGoal}
                 onUpdate={onUpdateGoalProgress}
                 onDelete={onDeleteGoal}
                 onEdit={onEditGoal}
-                onViewAnalytics={() => setSelectedGoalForAnalytics(goal)}
+                onViewAnalytics={() => setSelectedGoalForAnalytics(activeGoal)}
               />
-            ))
-          ) : (
-            <div className="rounded-xl md:rounded-2xl p-8 md:p-12 text-center border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-md md:shadow-lg">
-              <EmptyGoalsIllustration />
-              <p className="text-[var(--text-secondary)] mb-2 font-medium text-lg">No goals yet</p>
-              <p className="text-sm text-[var(--text-tertiary)] mb-6">Create your first goal to get started!</p>
-              <button
-                onClick={() => {
-                  setEditingGoal(null);
-                  setIsGoalModalOpen(true);
-                }}
-                className="btn-primary"
-              >
-                <FaPlus className="inline mr-2" />
-                Create Goal
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Strategy Sidebar */}
-        <div className="space-y-3 md:space-y-4 lg:space-y-6">
-          <ErrorBoundary>
-            <GoalMilestoneGuide goals={Array.isArray(goals) ? goals : []} tasks={Array.isArray(tasks) ? tasks : []} />
-          </ErrorBoundary>
+          {/* Right: Milestone Timeline */}
+          <div>
+            <ErrorBoundary>
+              <MilestoneTimeline goals={safeGoals} tasks={Array.isArray(tasks) ? tasks : []} />
+            </ErrorBoundary>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-neutral-900 border border-white/10 rounded-2xl p-12 text-center shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          <EmptyGoalsIllustration />
+          <p className="text-white/90 mb-2 font-medium text-lg">No goals yet</p>
+          <p className="text-sm text-white/60 mb-6">Create your first goal to get started!</p>
+          <button
+            onClick={() => {
+              setEditingGoal(null);
+              setIsGoalModalOpen(true);
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl transition-all duration-200 text-white font-medium flex items-center gap-2 mx-auto shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]"
+          >
+            <FaPlus className="inline" />
+            Create Goal
+          </button>
+        </div>
+      )}
+
       {selectedGoalForAnalytics && (
         <GoalAnalytics
           goal={selectedGoalForAnalytics}
