@@ -89,9 +89,9 @@ const MilestoneTimeline = ({ goals = [], tasks = [] }) => {
 
   if (safeGoals.length === 0) {
     return (
-      <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 md:p-8 text-center shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-        <FaFlagCheckered className="text-4xl text-purple-400 mx-auto mb-4" />
-        <p className="text-white/60">Create a goal to unlock milestone planning.</p>
+      <div className="bg-neutral-900 border border-white/5 rounded-xl p-5 text-center shadow-inner shadow-black/40">
+        <FaFlagCheckered className="text-3xl text-purple-400 mx-auto mb-3" />
+        <p className="text-sm text-white/60">Create a goal to unlock milestone planning.</p>
       </div>
     );
   }
@@ -140,17 +140,17 @@ const MilestoneTimeline = ({ goals = [], tasks = [] }) => {
   };
 
   return (
-    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 md:p-8 shadow-[0_0_20px_rgba(0,0,0,0.5)] space-y-6">
+    <div className="bg-neutral-900 border border-white/5 rounded-xl p-5 shadow-inner shadow-black/40 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-wider text-white/50 mb-1">Milestone Progress</p>
-          <h3 className="text-lg font-semibold text-white/90">{selectedGoal?.title || 'No goal selected'}</h3>
+          <p className="text-[10px] uppercase tracking-wider text-white/50 mb-0.5">Milestone Progress</p>
+          <h3 className="text-base font-semibold text-white/90">{selectedGoal?.title || 'No goal selected'}</h3>
         </div>
         <select
           value={selectedGoalId || getGoalId(selectedGoal) || ''}
           onChange={(e) => setSelectedGoalId(e.target.value)}
-          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 hover:bg-white/10 transition-colors"
+          className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-white/90 focus:outline-none focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 hover:bg-white/10 transition-colors"
         >
           {safeGoals.map((goal) => {
             const goalId = getGoalId(goal);
@@ -165,14 +165,14 @@ const MilestoneTimeline = ({ goals = [], tasks = [] }) => {
       </div>
 
       {/* Completion Stats */}
-      <div className="rounded-xl bg-white/5 border border-white/10 p-4 flex items-center justify-between gap-4">
+      <div className="rounded-lg bg-white/5 border border-white/10 p-3 flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs text-white/50 mb-1">Milestones complete</p>
-          <p className="text-2xl font-bold text-white/90">{milestoneCompletion}%</p>
+          <p className="text-[10px] text-white/50 mb-0.5">Milestones complete</p>
+          <p className="text-lg font-bold text-white/90">{milestoneCompletion}%</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-white/50 mb-1">Days left</p>
-          <p className="text-xl font-semibold text-white/90">
+          <p className="text-[10px] text-white/50 mb-0.5">Days left</p>
+          <p className="text-base font-semibold text-white/90">
             {daysRemaining === '∞' ? 'Open' : `${daysRemaining}d`}
           </p>
         </div>
@@ -185,55 +185,53 @@ const MilestoneTimeline = ({ goals = [], tasks = [] }) => {
           const isLast = index === milestonePlan.length - 1;
 
           return (
-            <div key={phase.id} className="relative flex gap-4">
+            <div key={phase.id} className="relative flex gap-3">
               {/* Vertical Line */}
               {!isLast && (
-                <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-white/10" />
+                <div className="absolute left-3 top-8 bottom-0 w-0.5 bg-white/10" />
               )}
 
               {/* Circle Indicator */}
-              <div className="flex-shrink-0 relative z-10">
+              <div className="flex-shrink-0 relative z-10 mt-0.5">
                 <button
                   onClick={() => toggleMilestone(phase.id)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  className={`w-3 h-3 rounded-full flex items-center justify-center transition-all duration-200 ${
                     isComplete
-                      ? 'bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_15px_rgba(139,92,246,0.5)]'
-                      : 'bg-white/5 border-2 border-white/20 hover:border-purple-500/50'
+                      ? 'bg-gradient-to-r from-purple-600/80 to-blue-600/80'
+                      : 'bg-white/5 border border-white/20 hover:border-purple-500/50'
                   }`}
                 >
                   {isComplete ? (
-                    <FaCheckCircle className="text-white text-sm" />
-                  ) : (
-                    <FaRegCircle className="text-white/40 text-sm" />
-                  )}
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                  ) : null}
                 </button>
               </div>
 
               {/* Milestone Card */}
               <motion.div
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className={`flex-1 rounded-xl border px-4 py-3 mb-4 transition-all duration-200 ${
+                className={`flex-1 rounded-lg border px-3 py-2 mb-3 transition-all duration-200 ${
                   isComplete
-                    ? 'border-purple-500/40 bg-purple-500/10'
-                    : 'border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/10'
+                    ? 'border-purple-500/30 bg-purple-500/5'
+                    : 'border-white/10 bg-white/5 hover:border-purple-500/20 hover:bg-white/10'
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-white/90">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <p className="text-xs font-semibold text-white/90">
                         {index + 1}. {phase.title}
                       </p>
                       {isComplete && (
-                        <span className="px-2 py-0.5 text-[10px] font-medium bg-purple-500/20 text-purple-300 rounded-full">
+                        <span className="px-1.5 py-0.5 text-[9px] font-medium bg-purple-500/20 text-purple-300 rounded-full">
                           Done
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/60 mt-1">{phase.tip}</p>
+                    <p className="text-[11px] text-white/60 leading-snug">{phase.tip}</p>
                   </div>
-                  <span className="text-[11px] text-white/50 flex-shrink-0">
+                  <span className="text-[10px] text-white/40 flex-shrink-0">
                     {format(phase.targetDate, 'MMM d')}
                   </span>
                 </div>
@@ -244,24 +242,24 @@ const MilestoneTimeline = ({ goals = [], tasks = [] }) => {
       </div>
 
       {/* Next Moves */}
-      <div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <FaTasks className="text-purple-400" />
-          <p className="font-semibold text-white/90 text-sm">Next Moves</p>
+      <div className="rounded-lg border border-dashed border-white/20 bg-white/5 p-3">
+        <div className="flex items-center gap-1.5 mb-2">
+          <FaTasks className="text-purple-400 text-xs" />
+          <p className="font-semibold text-white/90 text-xs">Next Moves</p>
         </div>
         {actionableTasks.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {actionableTasks.map((task) => {
               if (!task || !task._id) return null;
               return (
                 <div
                   key={task._id}
-                  className="flex items-center gap-2 text-sm group hover:bg-white/5 rounded-lg px-2 py-1.5 transition-colors"
+                  className="flex items-center gap-1.5 text-xs group hover:bg-white/5 rounded px-1.5 py-1 transition-colors"
                 >
-                  <FaArrowRight className="text-purple-400/60 group-hover:text-purple-400 text-xs flex-shrink-0 transition-colors" />
+                  <FaArrowRight className="text-purple-400/60 group-hover:text-purple-400 text-[10px] flex-shrink-0 transition-colors" />
                   <p className="text-white/70 truncate flex-1">{task.title || 'Untitled Task'}</p>
                   {task.dueDate && (
-                    <span className="text-[11px] text-white/50 flex-shrink-0">
+                    <span className="text-[10px] text-white/40 flex-shrink-0">
                       {format(new Date(task.dueDate), 'MMM d')}
                     </span>
                   )}
@@ -270,7 +268,7 @@ const MilestoneTimeline = ({ goals = [], tasks = [] }) => {
             })}
           </div>
         ) : (
-          <p className="text-xs text-white/50">
+          <p className="text-[11px] text-white/50 leading-snug">
             Break this milestone into 2–3 tasks and link them to <strong className="text-white/70">{selectedGoal?.title || 'this goal'}</strong>.
           </p>
         )}

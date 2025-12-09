@@ -1551,40 +1551,40 @@ export const DashboardGoals = ({
   const activeGoal = safeGoals.length > 0 ? safeGoals[selectedGoalIndex] : null;
 
   return (
-    <div className={hideHeader ? "overflow-x-hidden" : "p-4 md:p-6 lg:p-8 overflow-x-hidden space-y-4 md:space-y-6 lg:space-y-8"}>
+    <div className={hideHeader ? "overflow-x-hidden max-w-[95%] mx-auto" : "p-4 md:p-6 overflow-x-hidden max-w-[95%] mx-auto"}>
       {/* Minimal Header */}
       {!hideHeader && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-6"
+          className="flex items-center justify-between mb-4"
         >
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white/90 mb-1">Goals</h1>
-            <p className="text-sm text-white/60">Track your progress and achievements</p>
+            <h1 className="text-xl md:text-2xl font-bold text-white/90 mb-0.5">Goals</h1>
+            <p className="text-xs text-white/60">Track your progress and achievements</p>
           </div>
           <button
             onClick={() => {
               setEditingGoal(null);
               setIsGoalModalOpen(true);
             }}
-            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl transition-all duration-200 text-white font-medium flex items-center gap-2 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]"
+            className="px-3 py-1.5 text-xs bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-600 hover:to-blue-600 rounded-lg transition-all duration-200 text-white font-medium flex items-center gap-1.5"
           >
-            <FaPlus />
+            <FaPlus className="text-xs" />
             <span>New Goal</span>
           </button>
         </motion.div>
       )}
       {hideHeader && (
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end mb-3">
           <button
             onClick={() => {
               setEditingGoal(null);
               setIsGoalModalOpen(true);
             }}
-            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl transition-all duration-200 text-white font-medium flex items-center gap-2 shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]"
+            className="px-3 py-1.5 text-xs bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-600 hover:to-blue-600 rounded-lg transition-all duration-200 text-white font-medium flex items-center gap-1.5"
           >
-            <FaPlus />
+            <FaPlus className="text-xs" />
             <span>New Goal</span>
           </button>
         </div>
@@ -1592,25 +1592,25 @@ export const DashboardGoals = ({
 
       {/* 2-Column Grid Layout */}
       {safeGoals.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left: Active Goal Card */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {safeGoals.length > 1 && (
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1">
                 <button
                   onClick={() => setSelectedGoalIndex(Math.max(0, selectedGoalIndex - 1))}
                   disabled={selectedGoalIndex === 0}
-                  className="px-3 py-1.5 text-sm bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-2.5 py-1 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ← Prev
                 </button>
-                <span className="text-sm text-white/60">
+                <span className="text-xs text-white/60">
                   {selectedGoalIndex + 1} of {safeGoals.length}
                 </span>
                 <button
                   onClick={() => setSelectedGoalIndex(Math.min(safeGoals.length - 1, selectedGoalIndex + 1))}
                   disabled={selectedGoalIndex === safeGoals.length - 1}
-                  className="px-3 py-1.5 text-sm bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-2.5 py-1 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next →
                 </button>
@@ -1635,18 +1635,18 @@ export const DashboardGoals = ({
           </div>
         </div>
       ) : (
-        <div className="bg-neutral-900 border border-white/10 rounded-2xl p-12 text-center shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+        <div className="bg-neutral-900 border border-white/5 rounded-xl p-8 text-center shadow-inner shadow-black/40">
           <EmptyGoalsIllustration />
-          <p className="text-white/90 mb-2 font-medium text-lg">No goals yet</p>
-          <p className="text-sm text-white/60 mb-6">Create your first goal to get started!</p>
+          <p className="text-white/90 mb-2 font-medium text-base">No goals yet</p>
+          <p className="text-xs text-white/60 mb-4">Create your first goal to get started!</p>
           <button
             onClick={() => {
               setEditingGoal(null);
               setIsGoalModalOpen(true);
             }}
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl transition-all duration-200 text-white font-medium flex items-center gap-2 mx-auto shadow-lg hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]"
+            className="px-4 py-2 text-xs bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-600 hover:to-blue-600 rounded-lg transition-all duration-200 text-white font-medium flex items-center gap-1.5 mx-auto"
           >
-            <FaPlus className="inline" />
+            <FaPlus className="inline text-xs" />
             Create Goal
           </button>
         </div>
