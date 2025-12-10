@@ -17,7 +17,7 @@ const NoteEditor = ({ note, onSave, onDelete, onClose, onPin, onArchive }) => {
 
   // Theme-aware color palettes
   const lightColors = [
-    { id: 'default', light: '#f8f9fa', dark: '#1e1e2d' },
+    { id: 'default', light: '#f8f9fa', dark: '#1a1a1a' },
     { id: 'orange', light: '#fff4e6', dark: '#2d1f0f' },
     { id: 'green', light: '#e8f5e9', dark: '#1a2e1a' },
     { id: 'blue', light: '#e3f2fd', dark: '#1a2433' },

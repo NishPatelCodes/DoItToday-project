@@ -45,23 +45,23 @@
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   }
 
-  /* Dark Theme - Premium Rich Dark with Subtle Blue Tint */
+  /* Dark Theme - Premium Pure Black with Multiple Shades */
   html[data-theme='dark'] {
-    --bg-primary: #0a0a0f;
-    --bg-secondary: rgba(30, 30, 40, 0.8);
-    --bg-tertiary: rgba(40, 40, 55, 0.9);
-    --bg-modal: #151520;
-    --border-color: rgba(255, 255, 255, 0.12);
-    --text-primary: #f8f9fa;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #94a3b8;
+    --bg-primary: #000000;
+    --bg-secondary: rgba(20, 20, 20, 0.95);
+    --bg-tertiary: rgba(30, 30, 30, 0.95);
+    --bg-modal: #0a0a0a;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: #d4d4d4;
+    --text-tertiary: #a3a3a3;
     --accent-primary: #8b5cf6;
     --accent-hover: #7c3aed;
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
-    --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03);
-    --shadow-lg: 0 10px 20px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
-    --shadow-xl: 0 20px 30px -6px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --shadow-lg: 0 10px 20px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.07);
+    --shadow-xl: 0 20px 30px -6px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.09);
   }
 
   body {
@@ -71,7 +71,7 @@
   }
 
   html[data-theme='dark'] body {
-    background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 50%, #0a0a0f 100%);
+    background: #000000;
     background-attachment: fixed;
   }
 
@@ -83,7 +83,7 @@
   }
 
   html[data-theme='dark'] #root {
-    background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 50%, #0a0a0f 100%);
+    background: #000000;
     background-attachment: fixed;
   }
 
@@ -94,7 +94,7 @@
   }
 
   html[data-theme='dark'] * {
-    scrollbar-color: rgba(139, 92, 246, 0.4) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -116,7 +116,7 @@
   }
 
   html[data-theme='dark'] *::-webkit-scrollbar-thumb {
-    background: rgba(139, 92, 246, 0.4);
+    background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
@@ -125,7 +125,7 @@
   }
 
   html[data-theme='dark'] *::-webkit-scrollbar-thumb:hover {
-    background: rgba(139, 92, 246, 0.6);
+    background: rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.1);
   }
 
@@ -150,11 +150,11 @@
   }
 
   html[data-theme='dark'] .card {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), 
-                0 0 0 1px rgba(255, 255, 255, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), 
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .card-hover {
@@ -169,12 +169,12 @@
   }
 
   html[data-theme='dark'] .card-hover:hover {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%);
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.7), 
-                0 0 0 1px rgba(255, 255, 255, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08),
-                0 0 20px rgba(139, 92, 246, 0.1);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.9), 
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 0 20px rgba(139, 92, 246, 0.15);
     transform: translateY(-2px);
   }
 
@@ -189,11 +189,11 @@
   }
 
   html[data-theme='dark'] .glass-card {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), 
-                0 0 0 1px rgba(255, 255, 255, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), 
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .glass-card-hover {
@@ -208,12 +208,12 @@
   }
 
   html[data-theme='dark'] .glass-card-hover:hover {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%);
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.7), 
-                0 0 0 1px rgba(255, 255, 255, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08),
-                0 0 20px rgba(139, 92, 246, 0.1);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.9), 
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 0 20px rgba(139, 92, 246, 0.15);
     transform: translateY(-2px);
   }
 
@@ -272,11 +272,11 @@
   }
 
   html[data-theme='dark'] .btn-secondary {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.5), 
-                0 0 0 1px rgba(255, 255, 255, 0.06),
-                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.7), 
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
   .btn-secondary:hover {
@@ -287,11 +287,11 @@
   }
 
   html[data-theme='dark'] .btn-secondary:hover {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%);
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.7), 
-                0 0 0 1px rgba(255, 255, 255, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.9), 
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   .btn-secondary:focus-visible {
@@ -314,11 +314,11 @@
   }
 
   html[data-theme='dark'] .input-field {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.5), 
-                0 0 0 1px rgba(255, 255, 255, 0.06),
-                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.7), 
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
   .input-field::placeholder {
@@ -333,12 +333,12 @@
   }
 
   html[data-theme='dark'] .input-field:focus {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
     border-color: #8b5cf6;
-    box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.4), 
-                0 0 0 3px rgba(139, 92, 246, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.06),
-                0 0 20px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.5), 
+                0 0 0 3px rgba(139, 92, 246, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 0 20px rgba(139, 92, 246, 0.2);
   }
 
   .input-field:focus-visible {
@@ -357,8 +357,8 @@
   }
 
   html[data-theme='dark'] .oauth-button {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .oauth-button:hover {
@@ -368,8 +368,8 @@
   }
 
   html[data-theme='dark'] .oauth-button:hover {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   .oauth-button-apple {
@@ -383,8 +383,8 @@
   html[data-theme='dark'] .oauth-button-apple {
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
   }
 
@@ -394,8 +394,8 @@
   }
 
   html[data-theme='dark'] .oauth-button-apple:hover {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   /* Icon Hover Glow */
@@ -495,7 +495,7 @@
   html[data-theme='dark'] input[type="password"],
   html[data-theme='dark'] input[type="number"],
   html[data-theme='dark'] input[type="date"] {
-    color: #f8f9fa !important;
+    color: #ffffff !important;
   }
 
   /* Select and Option Dark Mode Styling */
@@ -506,9 +506,9 @@
   }
 
   html[data-theme='dark'] select {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%) !important;
-    color: #f8f9fa !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
   }
 
   select option {
@@ -517,8 +517,8 @@
   }
 
   html[data-theme='dark'] select option {
-    background-color: #151520 !important;
-    color: #f8f9fa !important;
+    background-color: #0a0a0a !important;
+    color: #ffffff !important;
   }
 
   /* Ensure select dropdown menu respects dark mode */
@@ -528,14 +528,14 @@
   }
 
   html[data-theme='dark'] select:focus {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%) !important;
-    color: #f8f9fa !important;
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%) !important;
+    color: #ffffff !important;
   }
 
   /* Additional styling for select when open */
   html[data-theme='dark'] select:active,
   html[data-theme='dark'] select:focus {
-    background: linear-gradient(135deg, rgba(40, 40, 55, 0.98) 0%, rgba(35, 35, 50, 0.98) 100%) !important;
+    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%) !important;
   }
 
   /* Notes Editor */
@@ -573,11 +573,11 @@
   }
 
   html[data-theme='dark'] .login-card {
-    background: linear-gradient(135deg, rgba(30, 30, 45, 0.98) 0%, rgba(25, 25, 40, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.8), 
-                0 0 0 1px rgba(255, 255, 255, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.9), 
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   /* Roadmap Scrollbar - Premium Styling */
