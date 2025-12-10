@@ -11,7 +11,7 @@ const NoteCard = memo(({ note, onSelect, onDelete, onPin, onArchive, isSelected 
 
   // Theme-aware color palettes (same as NoteEditor)
   const colorPalettes = {
-    default: { light: '#f8f9fa', dark: '#1a1a1a' },
+    default: { light: '#f8f9fa', dark: '#1e1e2d' },
     orange: { light: '#fff4e6', dark: '#2d1f0f' },
     green: { light: '#e8f5e9', dark: '#1a2e1a' },
     blue: { light: '#e3f2fd', dark: '#1a2433' },

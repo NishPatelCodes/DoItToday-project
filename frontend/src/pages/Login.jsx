@@ -714,7 +714,7 @@ const Login = () => {
             }}
                       whileHover={{ scale: 1.01, y: -1 }}
                       whileTap={{ scale: 0.99 }}
-                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-900 dark:border-[#4B5563] rounded-xl bg-gray-900 dark:bg-[#374151] hover:bg-black dark:hover:bg-[#4B5563] transition-all duration-200 shadow-sm dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.4)] hover:shadow-md dark:hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:focus:ring-[#818CF8]/40"
+                      className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-900 dark:border-[var(--border-color)] rounded-xl bg-gray-900 dark:bg-[var(--bg-tertiary)] hover:bg-black dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shadow-sm dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.4)] hover:shadow-md dark:hover:shadow-[0_4px_12px_0_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-gray-400/30 dark:focus:ring-[var(--accent-primary)]/40"
                       aria-label="Continue with Apple"
           >
                       <svg className="w-5 h-5 flex-shrink-0 text-white" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
