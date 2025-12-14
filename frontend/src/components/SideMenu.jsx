@@ -104,7 +104,7 @@ const SideMenu = () => {
       </button>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] z-40 flex-col">
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 border-r border-[var(--border-color)] z-40 flex-col" style={{ backgroundColor: '#03045e' }}>
         <MenuContent />
       </aside>
 
@@ -124,7 +124,8 @@ const SideMenu = () => {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 h-full w-64 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] z-50 flex flex-col md:hidden"
+              className="fixed left-0 top-0 h-full w-64 border-r border-[var(--border-color)] z-50 flex flex-col md:hidden"
+              style={{ backgroundColor: '#03045e' }}
             >
               <MenuContent />
             </motion.aside>
