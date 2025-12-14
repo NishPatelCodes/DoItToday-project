@@ -47,7 +47,7 @@
 
   /* Dark Theme - Premium Pure Black with Multiple Shades */
   html[data-theme='dark'] {
-    --bg-primary: #000000;
+    --bg-primary: #0a0a0a;
     --bg-secondary: rgba(20, 20, 20, 0.95);
     --bg-tertiary: rgba(30, 30, 30, 0.95);
     --bg-modal: #0a0a0a;
@@ -71,7 +71,7 @@
   }
 
   html[data-theme='dark'] body {
-    background: #000000;
+    background: #0a0a0a;
     background-attachment: fixed;
   }
 
@@ -83,7 +83,7 @@
   }
 
   html[data-theme='dark'] #root {
-    background: #000000;
+    background: #0a0a0a;
     background-attachment: fixed;
   }
 
@@ -374,7 +374,7 @@
 
   .oauth-button-apple {
     @apply w-full flex items-center justify-center gap-3 px-4 py-3 border rounded-xl transition-all duration-300 ease-out;
-    background: #000000;
+    background: #0a0a0a;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
     min-height: 48px;
