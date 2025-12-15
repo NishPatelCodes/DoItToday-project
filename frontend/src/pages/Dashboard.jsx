@@ -41,6 +41,7 @@ const AnalyticsPage = lazy(() => import('./AnalyticsPage'));
 const GratitudePage = lazy(() => import('./GratitudePage'));
 const TeamPage = lazy(() => import('./TeamPage'));
 const FocusModePage = lazy(() => import('./FocusModePage'));
+const NotesView = lazy(() => import('../components/NotesView'));
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -928,7 +929,14 @@ const Dashboard = () => {
           />
           {/* Redirects for old routes */}
           <Route path="calendar" element={<Navigate to="/dashboard/tasks" replace />} />
-          <Route path="notes" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="notes"
+            element={
+              <LazyWrapper>
+                <NotesView />
+              </LazyWrapper>
+            }
+          />
         </Routes>
 
         {/* Modals */}
