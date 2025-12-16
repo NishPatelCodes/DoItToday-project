@@ -332,7 +332,7 @@ export const DashboardHome = ({
       >
         <div className="flex items-center justify-between gap-4">
           {/* Date with Hamburger Space */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ml-12 md:ml-14">
             <div className="text-sm md:text-base font-medium text-[var(--text-primary)]">
               {format(new Date(), 'EEEE, MMMM d')}
             </div>
