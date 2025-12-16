@@ -128,15 +128,12 @@ export const Sidebar = ({ children, open: openProp, setOpen: setOpenProp, animat
 
 // SidebarBody Component
 export const SidebarBody = ({ children, ...props }) => {
-  const { theme } = useThemeStore();
-  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
-  
   return (
     <div
       {...props}
       className={cn('flex flex-col h-full overflow-hidden', props.className)}
       style={{
-        backgroundColor: sidebarBg,
+        backgroundColor: 'var(--bg-sidebar)',
         minWidth: '100%',
       }}
     >
@@ -148,11 +145,8 @@ export const SidebarBody = ({ children, ...props }) => {
 // DesktopSidebar Component
 export const DesktopSidebar = ({ children, className, ...props }) => {
   const { open, setOpen, sidebarWidth } = useSidebar();
-  const { theme } = useThemeStore();
   const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef(null);
-  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
-  const boxShadow = theme === 'dark' ? '2px 0 8px rgba(0, 0, 0, 0.3)' : '2px 0 8px rgba(0, 0, 0, 0.1)';
 
   useEffect(() => {
     const checkMobile = () => {
@@ -169,7 +163,6 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
       initial={false}
       animate={{
         width: sidebarWidth,
-        backgroundColor: sidebarBg,
       }}
       transition={{
         type: 'spring',
@@ -181,10 +174,10 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         className
       )}
       style={{
-        backgroundColor: sidebarBg,
+        backgroundColor: 'var(--bg-sidebar)',
         willChange: 'width',
         overflow: 'hidden',
-        boxShadow: boxShadow,
+        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.15)',
       }}
       {...props}
     >
@@ -196,10 +189,8 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
 // MobileSidebar Component
 export const MobileSidebar = ({ children, className, ...props }) => {
   const { open, setOpen } = useSidebar();
-  const { theme } = useThemeStore();
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   useScrollLock(open && isMobile);
-  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
 
   return (
     <>
@@ -221,7 +212,6 @@ export const MobileSidebar = ({ children, className, ...props }) => {
         initial={false}
         animate={{
           x: open ? 0 : -300,
-          backgroundColor: sidebarBg,
         }}
         transition={{
           type: 'spring',
@@ -233,7 +223,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
           className
         )}
         style={{
-          backgroundColor: sidebarBg,
+          backgroundColor: 'var(--bg-sidebar)',
         }}
         {...props}
       >
@@ -305,10 +295,8 @@ export const SidebarLink = ({ link, className, ...props }) => {
 // DesktopSidebarLogo Component
 const DesktopSidebarLogo = ({ open, setOpen }) => {
   const { open: contextOpen } = useSidebar();
-  const { theme } = useThemeStore();
   const [isMobile, setIsMobile] = useState(false);
   const actualOpen = open !== undefined ? open : contextOpen;
-  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
 
   useEffect(() => {
     const checkMobile = () => {
@@ -322,7 +310,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
   return (
     <div 
       className="relative border-b border-[var(--border-color)]" 
-      style={{ minHeight: '64px', width: '100%', backgroundColor: sidebarBg }}
+      style={{ minHeight: '64px', width: '100%', backgroundColor: 'var(--bg-sidebar)' }}
     >
       <div className="flex items-center justify-between h-full px-4">
         <div className="flex items-center gap-3">
@@ -388,13 +376,10 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
     return user?.email?.[0]?.toUpperCase() || 'U';
   };
 
-  // Use theme from props (already passed in)
-  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
-
   return (
-    <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: sidebarBg, width: '100%' }}>
+    <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%' }}>
       {/* User Profile Section */}
-      <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: sidebarBg, width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={() => navigate && navigate('/dashboard/profile')}
           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 w-full"
@@ -422,7 +407,7 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
       </div>
 
       {/* Settings and Logout */}
-      <div className="border-t border-[var(--border-color)] space-y-1" style={{ backgroundColor: sidebarBg, width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)] space-y-1" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={toggleTheme}
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
@@ -508,7 +493,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           style={{ 
             width: '48px', 
             height: '48px',
-            backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff'
+            backgroundColor: 'var(--bg-sidebar)'
           }}
           aria-label="Open menu"
         >
@@ -523,7 +508,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           <DesktopSidebarLogo open={open} setOpen={setOpen} />
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1" style={{ backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff' }}>
+          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
@@ -536,7 +521,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
       {/* Mobile Sidebar */}
       <MobileSidebar>
-        <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff' }}>
+        <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
           {/* Logo Section */}
           <div className="flex-shrink-0 p-4 border-b border-[var(--border-color)]">
             <div className="flex items-center justify-between">
@@ -626,7 +611,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           style={{ 
             width: '48px', 
             height: '48px',
-            backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff'
+            backgroundColor: 'var(--bg-sidebar)'
           }}
           aria-label="Open menu"
         >
