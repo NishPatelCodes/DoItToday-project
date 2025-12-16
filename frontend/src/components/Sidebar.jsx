@@ -383,7 +383,7 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
     return user?.email?.[0]?.toUpperCase() || 'U';
   };
 
-  const { theme } = useThemeStore();
+  // Use theme from props (already passed in)
   const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
 
   return (
