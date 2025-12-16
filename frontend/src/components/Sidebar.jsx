@@ -489,15 +489,16 @@ const MainSidebar = ({ isOpen, onClose }) => {
           animate={{ opacity: open ? 0 : 1, scale: open ? 0.8 : 1, pointerEvents: open ? 'none' : 'auto' }}
           transition={{ duration: 0.2 }}
           onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-50 p-3 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:flex hidden items-center justify-center sidebar-bg"
+          className="fixed left-4 md:left-6 top-3 z-[100] p-2 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:flex hidden items-center justify-center sidebar-bg"
           style={{ 
-            width: '48px', 
-            height: '48px',
-            backgroundColor: 'var(--bg-sidebar)'
+            width: '36px', 
+            height: '36px',
+            backgroundColor: 'var(--bg-sidebar)',
+            marginTop: '0px'
           }}
           aria-label="Open menu"
         >
-          <FaBars className="w-5 h-5" />
+          <FaBars className="w-4 h-4" />
         </motion.button>
       )}
 

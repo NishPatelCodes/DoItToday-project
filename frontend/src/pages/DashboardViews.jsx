@@ -331,9 +331,11 @@ export const DashboardHome = ({
         className="sticky top-0 z-50 bg-[var(--bg-primary)]/95 backdrop-blur-lg border-b border-[var(--border-color)] px-4 md:px-6 py-3 shadow-sm"
       >
         <div className="flex items-center justify-between gap-4">
-          {/* Date */}
-          <div className="text-sm md:text-base font-medium text-[var(--text-primary)]">
-            {format(new Date(), 'EEEE, MMMM d')}
+          {/* Date with Hamburger Space */}
+          <div className="flex items-center gap-3">
+            <div className="text-sm md:text-base font-medium text-[var(--text-primary)]">
+              {format(new Date(), 'EEEE, MMMM d')}
+            </div>
           </div>
           
       {/* Search Bar */}
