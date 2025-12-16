@@ -49,10 +49,10 @@
   /* Dark Theme - Premium Pure Black with Multiple Shades */
   html[data-theme='dark'] {
     --bg-primary: #0a0a0a;
-    --bg-secondary: rgba(20, 20, 20, 0.95);
-    --bg-tertiary: rgba(30, 30, 30, 0.95);
+    --bg-secondary: #121212;
+    --bg-tertiary: #151515;
     --bg-modal: #0a0a0a;
-    --bg-sidebar: #1a1a1a;
+    --bg-sidebar: #0f0f0f;
     --border-color: rgba(255, 255, 255, 0.1);
     --text-primary: #ffffff;
     --text-secondary: #d4d4d4;
@@ -157,7 +157,7 @@
   }
 
   html[data-theme='dark'] .card {
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    background: #121212;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), 
                 0 0 0 1px rgba(255, 255, 255, 0.06),
@@ -176,7 +176,7 @@
   }
 
   html[data-theme='dark'] .card-hover:hover {
-    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
+    background: #151515;
     border-color: rgba(255, 255, 255, 0.15);
     box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.9), 
                 0 0 0 1px rgba(255, 255, 255, 0.1),
@@ -196,7 +196,7 @@
   }
 
   html[data-theme='dark'] .glass-card {
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+    background: #121212;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), 
                 0 0 0 1px rgba(255, 255, 255, 0.06),
@@ -215,7 +215,7 @@
   }
 
   html[data-theme='dark'] .glass-card-hover:hover {
-    background: linear-gradient(135deg, rgba(30, 30, 30, 1) 0%, rgba(25, 25, 25, 1) 100%);
+    background: #151515;
     border-color: rgba(255, 255, 255, 0.15);
     box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.9), 
                 0 0 0 1px rgba(255, 255, 255, 0.1),
