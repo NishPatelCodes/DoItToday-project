@@ -328,7 +328,7 @@ export const DashboardHome = ({
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-[var(--bg-primary)]/95 backdrop-blur-lg border-b border-[var(--border-color)] px-4 md:px-6 py-3 shadow-sm"
+        className="sticky top-0 z-50 bg-[var(--bg-primary)]/95 backdrop-blur-lg px-4 md:px-6 py-3 shadow-sm"
       >
         <div className="flex items-center justify-between gap-4">
           {/* Date with Hamburger Space */}

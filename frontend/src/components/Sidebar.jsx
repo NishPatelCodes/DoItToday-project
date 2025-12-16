@@ -170,7 +170,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         stiffness: 300,
       }}
       className={cn(
-        'hidden md:flex fixed left-0 top-0 h-screen border-r border-[var(--border-color)] z-50 flex-col sidebar-bg',
+        'hidden md:flex fixed left-0 top-0 h-screen z-50 flex-col sidebar-bg',
         className
       )}
       style={{
@@ -219,7 +219,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
           stiffness: 300,
         }}
         className={cn(
-          'fixed left-0 top-0 h-screen w-64 border-r border-[var(--border-color)] z-50 flex flex-col md:hidden sidebar-bg',
+          'fixed left-0 top-0 h-screen w-64 z-50 flex flex-col md:hidden sidebar-bg',
           className
         )}
         style={{
