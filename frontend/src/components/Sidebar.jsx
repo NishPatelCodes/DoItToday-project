@@ -128,12 +128,15 @@ export const Sidebar = ({ children, open: openProp, setOpen: setOpenProp, animat
 
 // SidebarBody Component
 export const SidebarBody = ({ children, ...props }) => {
+  const { theme } = useThemeStore();
+  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
+  
   return (
     <div
       {...props}
       className={cn('flex flex-col h-full overflow-hidden', props.className)}
       style={{
-        backgroundColor: '#1a1a1a',
+        backgroundColor: sidebarBg,
         minWidth: '100%',
       }}
     >
@@ -145,8 +148,11 @@ export const SidebarBody = ({ children, ...props }) => {
 // DesktopSidebar Component
 export const DesktopSidebar = ({ children, className, ...props }) => {
   const { open, setOpen, sidebarWidth } = useSidebar();
+  const { theme } = useThemeStore();
   const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef(null);
+  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
+  const boxShadow = theme === 'dark' ? '2px 0 8px rgba(0, 0, 0, 0.3)' : '2px 0 8px rgba(0, 0, 0, 0.1)';
 
   useEffect(() => {
     const checkMobile = () => {
@@ -174,10 +180,10 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         className
       )}
       style={{
-        backgroundColor: '#1a1a1a',
+        backgroundColor: sidebarBg,
         willChange: 'width',
         overflow: 'hidden',
-        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.3)',
+        boxShadow: boxShadow,
       }}
       {...props}
     >
@@ -189,8 +195,10 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
 // MobileSidebar Component
 export const MobileSidebar = ({ children, className, ...props }) => {
   const { open, setOpen } = useSidebar();
+  const { theme } = useThemeStore();
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   useScrollLock(open && isMobile);
+  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
 
   return (
     <>
@@ -223,7 +231,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
           className
         )}
         style={{
-          backgroundColor: '#1a1a1a',
+          backgroundColor: sidebarBg,
         }}
         {...props}
       >
@@ -295,8 +303,10 @@ export const SidebarLink = ({ link, className, ...props }) => {
 // DesktopSidebarLogo Component
 const DesktopSidebarLogo = ({ open, setOpen }) => {
   const { open: contextOpen } = useSidebar();
+  const { theme } = useThemeStore();
   const [isMobile, setIsMobile] = useState(false);
   const actualOpen = open !== undefined ? open : contextOpen;
+  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
 
   useEffect(() => {
     const checkMobile = () => {
@@ -308,7 +318,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
   }, []);
 
   return (
-    <div className="relative border-b border-[var(--border-color)]" style={{ minHeight: '64px', width: '100%', backgroundColor: '#1a1a1a' }}>
+    <div className="relative border-b border-[var(--border-color)]" style={{ minHeight: '64px', width: '100%', backgroundColor: sidebarBg }}>
       <div className="flex items-center justify-between h-full px-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
@@ -373,10 +383,13 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
     return user?.email?.[0]?.toUpperCase() || 'U';
   };
 
+  const { theme } = useThemeStore();
+  const sidebarBg = theme === 'dark' ? '#1a1a1a' : '#ffffff';
+
   return (
-    <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: '#1a1a1a', width: '100%' }}>
+    <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: sidebarBg, width: '100%' }}>
       {/* User Profile Section */}
-      <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: '#1a1a1a', width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: sidebarBg, width: '100%', padding: '12px 0px' }}>
         <button
           onClick={() => navigate && navigate('/dashboard/profile')}
           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 w-full"
@@ -404,7 +417,7 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
       </div>
 
       {/* Settings and Logout */}
-      <div className="border-t border-[var(--border-color)] space-y-1" style={{ backgroundColor: '#1a1a1a', width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)] space-y-1" style={{ backgroundColor: sidebarBg, width: '100%', padding: '12px 0px' }}>
         <button
           onClick={toggleTheme}
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
@@ -486,9 +499,13 @@ const MainSidebar = ({ isOpen, onClose }) => {
           animate={{ opacity: open ? 0 : 1, scale: open ? 0.8 : 1, pointerEvents: open ? 'none' : 'auto' }}
           transition={{ duration: 0.2 }}
           onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-50 p-3 rounded-lg bg-[#1a1a1a] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:flex hidden items-center justify-center"
+          className="fixed left-4 top-4 z-50 p-3 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:flex hidden items-center justify-center"
+          style={{ 
+            width: '48px', 
+            height: '48px',
+            backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff'
+          }}
           aria-label="Open menu"
-          style={{ width: '48px', height: '48px' }}
         >
           <FaBars className="w-5 h-5" />
         </motion.button>
@@ -501,7 +518,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           <DesktopSidebarLogo open={open} setOpen={setOpen} />
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1" style={{ backgroundColor: '#1a1a1a' }}>
+          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1" style={{ backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff' }}>
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
@@ -514,7 +531,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
       {/* Mobile Sidebar */}
       <MobileSidebar>
-        <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: '#1a1a1a' }}>
+        <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff' }}>
           {/* Logo Section */}
           <div className="flex-shrink-0 p-4 border-b border-[var(--border-color)]">
             <div className="flex items-center justify-between">
@@ -600,9 +617,13 @@ const MainSidebar = ({ isOpen, onClose }) => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-40 p-3 rounded-lg bg-[#1a1a1a] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:hidden"
+          className="fixed left-4 top-4 z-40 p-3 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:hidden"
+          style={{ 
+            width: '48px', 
+            height: '48px',
+            backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff'
+          }}
           aria-label="Open menu"
-          style={{ width: '48px', height: '48px' }}
         >
           <FaBars className="w-5 h-5" />
         </motion.button>
