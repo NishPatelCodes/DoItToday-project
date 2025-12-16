@@ -169,6 +169,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
       initial={false}
       animate={{
         width: sidebarWidth,
+        backgroundColor: sidebarBg,
       }}
       transition={{
         type: 'spring',
@@ -220,6 +221,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
         initial={false}
         animate={{
           x: open ? 0 : -300,
+          backgroundColor: sidebarBg,
         }}
         transition={{
           type: 'spring',
@@ -318,7 +320,10 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
   }, []);
 
   return (
-    <div className="relative border-b border-[var(--border-color)]" style={{ minHeight: '64px', width: '100%', backgroundColor: sidebarBg }}>
+    <div 
+      className="relative border-b border-[var(--border-color)]" 
+      style={{ minHeight: '64px', width: '100%', backgroundColor: sidebarBg }}
+    >
       <div className="flex items-center justify-between h-full px-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
