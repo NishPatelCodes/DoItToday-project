@@ -162,7 +162,7 @@ export const SidebarBody = ({ children, ...props }) => {
       {...props}
       className={cn('flex flex-col h-full overflow-hidden bg-[var(--bg-secondary)]', props.className)}
       style={{
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#000000',
         minWidth: '100%',
       }}
     >
@@ -215,7 +215,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         className
       )}
       style={{
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#000000',
         willChange: 'width',
         overflow: 'hidden',
         boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)',
@@ -265,7 +265,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
         className
       )}
       style={{
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#000000',
       }}
         {...props}
       >
@@ -378,7 +378,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
   const shouldExpand = isMobile ? actualOpen : (actualOpen || isHovered);
 
   return (
-    <div className="relative border-b border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ minHeight: '64px', width: '100%', backgroundColor: '#0a0a0a' }}>
+    <div className="relative border-b border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ minHeight: '64px', width: '100%', backgroundColor: '#000000' }}>
       <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
         {/* Logo icon - always visible, fixed size */}
         <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
