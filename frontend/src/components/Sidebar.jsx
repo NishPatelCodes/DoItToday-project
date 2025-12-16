@@ -22,7 +22,7 @@ import {
 } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../hooks/useTheme';
-import { motion, AnimatePresence, useMotionValueEvent, useScroll } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { cn } from '../utils/cn';
 
@@ -30,21 +30,16 @@ import { cn } from '../utils/cn';
 const SidebarContext = createContext({
   open: false,
   setOpen: (open) => {},
-  isHovered: false,
-  setIsHovered: (hovered) => {},
-  sidebarWidth: 60,
+  sidebarWidth: 0,
 });
 
 const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {
-    // Return default values if not in provider (for components outside sidebar)
     return {
       open: false,
       setOpen: () => {},
-      isHovered: false,
-      setIsHovered: () => {},
-      sidebarWidth: 60,
+      sidebarWidth: 0,
     };
   }
   return context;
@@ -91,13 +86,11 @@ export const MainContentWrapper = ({ children, className, ...props }) => {
 // SidebarProvider Component
 export const SidebarProvider = ({ children, open: openProp, setOpen: setOpenProp }) => {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const isControlled = openProp !== undefined && setOpenProp !== undefined;
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? setOpenProp : setInternalOpen;
 
-  // Check mobile on mount and resize
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -107,13 +100,13 @@ export const SidebarProvider = ({ children, open: openProp, setOpen: setOpenProp
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Calculate sidebar width synchronously based on current state (reactive)
+  // Calculate sidebar width - only open when explicitly opened, no hover
   const sidebarWidth = isMobile 
     ? (open ? 256 : 0)
-    : (open || isHovered ? 240 : 60);
+    : (open ? 256 : 0);
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen, isHovered, setIsHovered, sidebarWidth }}>
+    <SidebarContext.Provider value={{ open, setOpen, sidebarWidth }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -125,32 +118,10 @@ export const Sidebar = ({ children, open: openProp, setOpen: setOpenProp, animat
   const isControlled = openProp !== undefined && setOpenProp !== undefined;
   const open = isControlled ? openProp : contextOpen;
   const setOpen = isControlled ? setOpenProp : setContextOpen;
-  const [isMobile, setIsMobile] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const sidebarRef = useRef(null);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Expand on hover for desktop
-  const shouldExpand = isMobile ? open : (open || isHovered);
 
   return (
     <SidebarProvider open={open} setOpen={setOpen}>
-      <div
-        ref={sidebarRef}
-        onMouseEnter={() => !isMobile && setIsHovered(true)}
-        onMouseLeave={() => !isMobile && setIsHovered(false)}
-        className="relative"
-      >
-        {children}
-      </div>
+      {children}
     </SidebarProvider>
   );
 };
@@ -158,22 +129,22 @@ export const Sidebar = ({ children, open: openProp, setOpen: setOpenProp, animat
 // SidebarBody Component
 export const SidebarBody = ({ children, ...props }) => {
   return (
-    <motion.div
+    <div
       {...props}
-      className={cn('flex flex-col h-full overflow-hidden bg-[var(--bg-secondary)]', props.className)}
+      className={cn('flex flex-col h-full overflow-hidden', props.className)}
       style={{
-        backgroundColor: '#000000',
+        backgroundColor: '#1a1a1a',
         minWidth: '100%',
       }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 };
 
 // DesktopSidebar Component
 export const DesktopSidebar = ({ children, className, ...props }) => {
-  const { open, setOpen, isHovered, setIsHovered, sidebarWidth } = useSidebar();
+  const { open, setOpen, sidebarWidth } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef(null);
 
@@ -189,36 +160,24 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
   return (
     <motion.aside
       ref={sidebarRef}
-            onMouseEnter={() => {
-        if (!isMobile) {
-          setIsHovered(true);
-        }
-      }}
-      onMouseLeave={() => {
-        if (!isMobile && !open) {
-          // Only collapse on mouse leave if not manually opened
-          setIsHovered(false);
-        }
-      }}
       initial={false}
       animate={{
         width: sidebarWidth,
       }}
       transition={{
         type: 'spring',
-        damping: 20,
-        stiffness: 200,
+        damping: 25,
+        stiffness: 300,
       }}
       className={cn(
         'hidden md:flex fixed left-0 top-0 h-screen border-r border-[var(--border-color)] z-50 flex-col',
-        'bg-[var(--bg-secondary)]',
         className
       )}
       style={{
-        backgroundColor: '#000000',
+        backgroundColor: '#1a1a1a',
         willChange: 'width',
         overflow: 'hidden',
-        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)',
+        boxShadow: '2px 0 8px rgba(0, 0, 0, 0.3)',
       }}
       {...props}
     >
@@ -257,16 +216,15 @@ export const MobileSidebar = ({ children, className, ...props }) => {
         transition={{
           type: 'spring',
           damping: 25,
-          stiffness: 200,
+          stiffness: 300,
         }}
-      className={cn(
-        'fixed left-0 top-0 h-screen w-64 border-r border-[var(--border-color)] z-50 flex flex-col md:hidden',
-        'bg-[var(--bg-secondary)]',
-        className
-      )}
-      style={{
-        backgroundColor: '#000000',
-      }}
+        className={cn(
+          'fixed left-0 top-0 h-screen w-64 border-r border-[var(--border-color)] z-50 flex flex-col md:hidden',
+          className
+        )}
+        style={{
+          backgroundColor: '#1a1a1a',
+        }}
         {...props}
       >
         {children}
@@ -277,7 +235,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
 
 // SidebarLink Component
 export const SidebarLink = ({ link, className, ...props }) => {
-  const { open, setOpen, isHovered } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
 
@@ -290,7 +248,6 @@ export const SidebarLink = ({ link, className, ...props }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const shouldExpand = isMobile ? open : (open || isHovered);
   const isActive = location.pathname === link.href || location.pathname.startsWith(link.href + '/');
 
   return (
@@ -302,49 +259,24 @@ export const SidebarLink = ({ link, className, ...props }) => {
         }
       }}
       className={cn(
-        'flex items-center rounded-lg transition-all duration-200 relative group',
-        'justify-start',
+        'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative group',
         isActive
           ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]',
-        isMobile ? 'py-2' : 'py-2.5',
         className
       )}
-      style={{ paddingLeft: '0px', paddingRight: '0px', minHeight: isMobile ? '36px' : '40px', position: 'relative' }}
       {...props}
     >
-      <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
-        <div className="w-5 h-5 flex items-center justify-center">
-          {typeof link.icon === 'function' ? (
-            <link.icon className="w-full h-full flex-shrink-0" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">{link.icon}</div>
-          )}
-        </div>
+      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+        {typeof link.icon === 'function' ? (
+          <link.icon className="w-full h-full" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">{link.icon}</div>
+        )}
       </div>
-      <motion.span
-        initial={false}
-        animate={{
-          opacity: shouldExpand ? 1 : 0,
-          width: shouldExpand ? 'auto' : 0,
-        }}
-        transition={{
-          type: 'spring',
-          damping: 20,
-          stiffness: 200,
-        }}
-        className="font-medium text-sm whitespace-nowrap"
-        style={{ 
-          display: 'inline-block',
-          lineHeight: '1.25rem',
-          height: '1.25rem',
-          position: 'absolute',
-          left: '60px',
-          maxWidth: 'calc(100% - 80px)',
-        }}
-      >
+      <span className="font-medium text-sm whitespace-nowrap">
         {link.label}
-      </motion.span>
+      </span>
       {isActive && (
         <motion.div
           layoutId="activeIndicator"
@@ -362,7 +294,7 @@ export const SidebarLink = ({ link, className, ...props }) => {
 
 // DesktopSidebarLogo Component
 const DesktopSidebarLogo = ({ open, setOpen }) => {
-  const { open: contextOpen, isHovered } = useSidebar();
+  const { open: contextOpen } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const actualOpen = open !== undefined ? open : contextOpen;
 
@@ -375,55 +307,35 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const shouldExpand = isMobile ? actualOpen : (actualOpen || isHovered);
-
   return (
-    <div className="relative border-b border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ minHeight: '64px', width: '100%', backgroundColor: '#000000' }}>
-      <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
-        {/* Logo icon - always visible, fixed size */}
-        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs">
-          D
-        </div>
-      </div>
-      <div className="relative flex items-center" style={{ minHeight: '64px', width: '100%', paddingLeft: '60px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px' }}>
-        <motion.div
-          initial={false}
-          animate={{
-            opacity: shouldExpand ? 1 : 0,
-            width: shouldExpand ? 'auto' : 0,
-            pointerEvents: shouldExpand ? 'auto' : 'none',
-          }}
-          transition={{
-            type: 'spring',
-            damping: 20,
-            stiffness: 200,
-          }}
-          className="flex flex-col justify-center"
-          style={{ 
-            display: shouldExpand ? 'flex' : 'none',
-            alignItems: 'flex-start',
-            position: 'absolute',
-            left: '60px',
-            top: 0,
-            bottom: 0,
-            maxWidth: 'calc(100% - 80px)',
-          }}
-        >
-          <div>
-            <h1 className="text-base font-bold gradient-text leading-tight whitespace-nowrap" style={{ lineHeight: '1.25rem' }}>DoItToday</h1>
-            <p className="text-xs text-[var(--text-secondary)] leading-tight whitespace-nowrap mt-0.5" style={{ lineHeight: '1rem' }}>Task Manager</p>
+    <div className="relative border-b border-[var(--border-color)]" style={{ minHeight: '64px', width: '100%', backgroundColor: '#1a1a1a' }}>
+      <div className="flex items-center justify-between h-full px-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+            D
           </div>
-        </motion.div>
-        {shouldExpand && (
+          {actualOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col"
+            >
+              <h1 className="text-base font-bold gradient-text leading-tight">DoItToday</h1>
+              <p className="text-xs text-[var(--text-secondary)] leading-tight">Task Manager</p>
+            </motion.div>
+          )}
+        </div>
+        {actualOpen && (
           <motion.button
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setOpen && setOpen(false)}
-            className="absolute right-4 p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
-            aria-label="Collapse sidebar"
-            style={{ zIndex: 2, top: '50%', transform: 'translateY(-50%)' }}
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+            aria-label="Close sidebar"
           >
             <FaTimes className="w-4 h-4" />
           </motion.button>
@@ -435,7 +347,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
 
 // DesktopSidebarFooter Component
 const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate }) => {
-  const { open: contextOpen, isHovered } = useSidebar();
+  const { open: contextOpen } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const actualOpen = open !== undefined ? open : contextOpen;
 
@@ -447,8 +359,6 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  const shouldExpand = isMobile ? actualOpen : (actualOpen || isHovered);
 
   // Get user initials for avatar
   const getUserInitials = () => {
@@ -464,121 +374,74 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
   };
 
   return (
-    <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', minWidth: '100%' }}>
+    <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: '#1a1a1a', width: '100%' }}>
       {/* User Profile Section */}
-      <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: '#1a1a1a', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={() => navigate && navigate('/dashboard/profile')}
-          className="relative flex items-center w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200"
-          style={{ padding: '0px', minHeight: '48px', position: 'relative' }}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 w-full"
         >
-          <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
-              {getUserInitials()}
-            </div>
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+            {getUserInitials()}
           </div>
-          <motion.div
-            initial={false}
-            animate={{
-              opacity: shouldExpand ? 1 : 0,
-              width: shouldExpand ? 'auto' : 0,
-            }}
-            transition={{
-              type: 'spring',
-              damping: 20,
-              stiffness: 200,
-            }}
-            className="overflow-hidden text-left flex flex-col justify-center"
-            style={{ 
-              minHeight: '2rem',
-              display: 'flex',
-              alignItems: 'center',
-              position: 'absolute',
-              left: '60px',
-              top: 0,
-              bottom: 0,
-              maxWidth: 'calc(100% - 80px)',
-            }}
-          >
-            <p className="text-sm font-medium text-[var(--text-primary)] truncate leading-tight">
-              {user?.name || 'User'}
-            </p>
-            <p className="text-xs text-[var(--text-secondary)] truncate leading-tight mt-0.5">
-              {user?.email || ''}
-            </p>
-          </motion.div>
+          {actualOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col text-left min-w-0 flex-1"
+            >
+              <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                {user?.name || 'User'}
+              </p>
+              <p className="text-xs text-[var(--text-secondary)] truncate">
+                {user?.email || ''}
+              </p>
+            </motion.div>
+          )}
         </button>
       </div>
 
       {/* Settings and Logout */}
-      <div className="border-t border-[var(--border-color)] space-y-1 bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)] space-y-1" style={{ backgroundColor: '#1a1a1a', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={toggleTheme}
-          className="relative flex items-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
-          style={{ padding: '0px', minHeight: '40px', position: 'relative' }}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
         >
-          <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
-            <div className="w-5 h-5 flex items-center justify-center">
-              {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
-            </div>
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
           </div>
-          <motion.span
-            initial={false}
-            animate={{
-              opacity: shouldExpand ? 1 : 0,
-              width: shouldExpand ? 'auto' : 0,
-            }}
-            transition={{
-              type: 'spring',
-              damping: 20,
-              stiffness: 200,
-            }}
-            className="font-medium text-sm whitespace-nowrap"
-            style={{ 
-              display: 'inline-block',
-              lineHeight: '1.25rem',
-              height: '1.25rem',
-              position: 'absolute',
-              left: '60px',
-              maxWidth: 'calc(100% - 80px)',
-            }}
-          >
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-          </motion.span>
+          {actualOpen && (
+            <motion.span
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="font-medium text-sm whitespace-nowrap"
+            >
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </motion.span>
+          )}
         </button>
         <button
           onClick={logout}
-          className="relative flex items-center rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
-          style={{ padding: '0px', minHeight: '40px', position: 'relative' }}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
         >
-          <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center" style={{ width: '60px', zIndex: 1 }}>
-            <div className="w-5 h-5 flex items-center justify-center">
-              <FaSignOutAlt className="w-full h-full" />
-            </div>
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            <FaSignOutAlt className="w-full h-full" />
           </div>
-          <motion.span
-            initial={false}
-            animate={{
-              opacity: shouldExpand ? 1 : 0,
-              width: shouldExpand ? 'auto' : 0,
-            }}
-            transition={{
-              type: 'spring',
-              damping: 20,
-              stiffness: 200,
-            }}
-            className="font-medium text-sm whitespace-nowrap"
-            style={{ 
-              display: 'inline-block',
-              lineHeight: '1.25rem',
-              height: '1.25rem',
-              position: 'absolute',
-              left: '60px',
-              maxWidth: 'calc(100% - 80px)',
-            }}
-          >
-            Logout
-          </motion.span>
+          {actualOpen && (
+            <motion.span
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="font-medium text-sm whitespace-nowrap"
+            >
+              Logout
+            </motion.span>
+          )}
         </button>
       </div>
     </div>
@@ -616,6 +479,21 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
   return (
     <>
+      {/* Hamburger Button - Always visible on desktop when sidebar is closed */}
+      {!isMobile && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: open ? 0 : 1, scale: open ? 0.8 : 1, pointerEvents: open ? 'none' : 'auto' }}
+          transition={{ duration: 0.2 }}
+          onClick={() => setOpen(true)}
+          className="fixed left-4 top-4 z-50 p-3 rounded-lg bg-[#1a1a1a] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:flex hidden items-center justify-center"
+          aria-label="Open menu"
+          style={{ width: '48px', height: '48px' }}
+        >
+          <FaBars className="w-5 h-5" />
+        </motion.button>
+      )}
+
       {/* Desktop Sidebar */}
       <DesktopSidebar>
         <SidebarBody>
@@ -623,7 +501,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           <DesktopSidebarLogo open={open} setOpen={setOpen} />
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-hidden space-y-1 bg-[var(--bg-secondary)]" style={{ backgroundColor: 'var(--bg-secondary)', width: '100%', minWidth: '100%', paddingTop: '12px', paddingBottom: '12px' }}>
+          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1" style={{ backgroundColor: '#1a1a1a' }}>
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
@@ -636,13 +514,18 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
       {/* Mobile Sidebar */}
       <MobileSidebar>
-        <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: '#1a1a1a' }}>
           {/* Logo Section */}
-          <div className="flex-shrink-0 p-3 border-b border-[var(--border-color)]">
+          <div className="flex-shrink-0 p-4 border-b border-[var(--border-color)]">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-base font-bold gradient-text">DoItToday</h1>
-                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Task Manager</p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                  D
+                </div>
+                <div>
+                  <h1 className="text-base font-bold gradient-text">DoItToday</h1>
+                  <p className="text-xs text-[var(--text-secondary)]">Task Manager</p>
+                </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -655,7 +538,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Navigation - Scrollable */}
-          <nav className="flex-1 overflow-y-auto p-2 space-y-0.5 min-h-0" style={{ scrollbarWidth: 'thin' }}>
+          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1 min-h-0">
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
@@ -670,16 +553,16 @@ const MainSidebar = ({ isOpen, onClose }) => {
                   navigate('/dashboard/profile');
                   setOpen(false);
                 }}
-                className="flex items-center gap-2.5 w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 p-1.5"
+                className="flex items-center gap-3 w-full rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 p-2"
               >
-                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
                   {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : (user?.email?.[0]?.toUpperCase() || 'U')}
                 </div>
                 <div className="text-left min-w-0 flex-1">
-                  <p className="text-xs font-medium text-[var(--text-primary)] truncate">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                     {user?.name || 'User'}
                   </p>
-                  <p className="text-[10px] text-[var(--text-secondary)] truncate">
+                  <p className="text-xs text-[var(--text-secondary)] truncate">
                     {user?.email || ''}
                   </p>
                 </div>
@@ -687,24 +570,24 @@ const MainSidebar = ({ isOpen, onClose }) => {
             </div>
 
             {/* Settings and Logout */}
-            <div className="p-2 border-t border-[var(--border-color)] space-y-0.5">
+            <div className="p-2 border-t border-[var(--border-color)] space-y-1">
               <button
                 onClick={toggleTheme}
-                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
+                className="flex items-center gap-3 px-2 py-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
               >
-                <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center">
+                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                   {theme === 'dark' ? <FaSun className="w-full h-full" /> : <FaMoon className="w-full h-full" />}
                 </div>
-                <span className="font-medium text-xs">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                <span className="font-medium text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
               </button>
               <button
                 onClick={logout}
-                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
+                className="flex items-center gap-3 px-2 py-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-200 w-full"
               >
-                <div className="flex-shrink-0 w-4 h-4 flex items-center justify-center">
+                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                   <FaSignOutAlt className="w-full h-full" />
                 </div>
-                <span className="font-medium text-xs">Logout</span>
+                <span className="font-medium text-sm">Logout</span>
               </button>
             </div>
           </div>
@@ -717,13 +600,13 @@ const MainSidebar = ({ isOpen, onClose }) => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-40 p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:hidden"
+          className="fixed left-4 top-4 z-40 p-3 rounded-lg bg-[#1a1a1a] border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:hidden"
           aria-label="Open menu"
+          style={{ width: '48px', height: '48px' }}
         >
           <FaBars className="w-5 h-5" />
         </motion.button>
       )}
-
     </>
   );
 };
