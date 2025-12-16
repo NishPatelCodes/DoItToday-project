@@ -89,6 +89,11 @@
     background-attachment: fixed;
   }
 
+  /* Sidebar Background - Theme Aware */
+  .sidebar-bg {
+    background-color: var(--bg-sidebar) !important;
+  }
+
   /* Premium Glass Scrollbar */
   * {
     scrollbar-width: thin;

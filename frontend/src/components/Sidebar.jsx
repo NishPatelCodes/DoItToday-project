@@ -131,7 +131,7 @@ export const SidebarBody = ({ children, ...props }) => {
   return (
     <div
       {...props}
-      className={cn('flex flex-col h-full overflow-hidden', props.className)}
+      className={cn('flex flex-col h-full overflow-hidden sidebar-bg', props.className)}
       style={{
         backgroundColor: 'var(--bg-sidebar)',
         minWidth: '100%',
@@ -170,7 +170,7 @@ export const DesktopSidebar = ({ children, className, ...props }) => {
         stiffness: 300,
       }}
       className={cn(
-        'hidden md:flex fixed left-0 top-0 h-screen border-r border-[var(--border-color)] z-50 flex-col',
+        'hidden md:flex fixed left-0 top-0 h-screen border-r border-[var(--border-color)] z-50 flex-col sidebar-bg',
         className
       )}
       style={{
@@ -219,7 +219,7 @@ export const MobileSidebar = ({ children, className, ...props }) => {
           stiffness: 300,
         }}
         className={cn(
-          'fixed left-0 top-0 h-screen w-64 border-r border-[var(--border-color)] z-50 flex flex-col md:hidden',
+          'fixed left-0 top-0 h-screen w-64 border-r border-[var(--border-color)] z-50 flex flex-col md:hidden sidebar-bg',
           className
         )}
         style={{
@@ -309,7 +309,7 @@ const DesktopSidebarLogo = ({ open, setOpen }) => {
 
   return (
     <div 
-      className="relative border-b border-[var(--border-color)]" 
+      className="relative border-b border-[var(--border-color)] sidebar-bg" 
       style={{ minHeight: '64px', width: '100%', backgroundColor: 'var(--bg-sidebar)' }}
     >
       <div className="flex items-center justify-between h-full px-4">
@@ -377,9 +377,9 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
   };
 
   return (
-    <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%' }}>
+    <div className="border-t border-[var(--border-color)] sidebar-bg" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%' }}>
       {/* User Profile Section */}
-      <div className="border-t border-[var(--border-color)]" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)] sidebar-bg" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={() => navigate && navigate('/dashboard/profile')}
           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 w-full"
@@ -407,7 +407,7 @@ const DesktopSidebarFooter = ({ open, theme, toggleTheme, logout, user, navigate
       </div>
 
       {/* Settings and Logout */}
-      <div className="border-t border-[var(--border-color)] space-y-1" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%', padding: '12px 0px' }}>
+      <div className="border-t border-[var(--border-color)] space-y-1 sidebar-bg" style={{ backgroundColor: 'var(--bg-sidebar)', width: '100%', padding: '12px 0px' }}>
         <button
           onClick={toggleTheme}
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200 w-full"
@@ -489,7 +489,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           animate={{ opacity: open ? 0 : 1, scale: open ? 0.8 : 1, pointerEvents: open ? 'none' : 'auto' }}
           transition={{ duration: 0.2 }}
           onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-50 p-3 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:flex hidden items-center justify-center"
+          className="fixed left-4 top-4 z-50 p-3 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:flex hidden items-center justify-center sidebar-bg"
           style={{ 
             width: '48px', 
             height: '48px',
@@ -508,7 +508,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           <DesktopSidebarLogo open={open} setOpen={setOpen} />
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
+          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1 sidebar-bg" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
             {navItems.map((item) => (
               <SidebarLink key={item.href} link={item} />
             ))}
@@ -521,7 +521,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
 
       {/* Mobile Sidebar */}
       <MobileSidebar>
-        <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
+        <div className="flex flex-col h-full overflow-hidden sidebar-bg" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
           {/* Logo Section */}
           <div className="flex-shrink-0 p-4 border-b border-[var(--border-color)]">
             <div className="flex items-center justify-between">
@@ -607,7 +607,7 @@ const MainSidebar = ({ isOpen, onClose }) => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setOpen(true)}
-          className="fixed left-4 top-4 z-40 p-3 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:hidden"
+          className="fixed left-4 top-4 z-40 p-3 rounded-lg border border-[var(--border-color)] shadow-lg text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors md:hidden sidebar-bg"
           style={{ 
             width: '48px', 
             height: '48px',
